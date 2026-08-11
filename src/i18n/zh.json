@@ -1,0 +1,113 @@
+{
+  "app": {
+    "name": "Phira+",
+    "tagline": "Phira 公共伴生站"
+  },
+  "nav": {
+    "home": "首页",
+    "rooms": "房间",
+    "charts": "谱面",
+    "community": "社区",
+    "downloads": "下载",
+    "notifications": "通知",
+    "profile": "我的",
+    "terms": "用户协议",
+    "docs": "文档"
+  },
+  "common": {
+    "loading": "加载中…",
+    "error": "出错了",
+    "close": "关闭",
+    "cancel": "取消",
+    "confirm": "确认",
+    "back": "返回",
+    "version": "版本",
+    "visitCount": "访问量",
+    "serverStatus": "服务器状态",
+    "online": "在线",
+    "offline": "离线",
+    "unknown": "未知",
+    "retry": "重试"
+  },
+  "rooms": {
+    "searchPlaceholder": "搜索房间…",
+    "empty": "暂无公开房间（占位）"
+  },
+  "charts": {
+    "searchPlaceholder": "搜索谱面…",
+    "empty": "暂无谱面数据（占位）"
+  },
+  "community": {
+    "empty": "社区模块占位：用户资料、好友与公开 Replay。"
+  },
+  "downloads": {
+    "empty": "下载信息由 PPB public content 配置（占位）。"
+  },
+  "notifications": {
+    "empty": "暂无通知（占位）。"
+  },
+  "profile": {
+    "empty": "个人中心占位：登录后可查看 MyPhira、好友与偏好。",
+    "loginCta": "登录"
+  },
+  "home": {
+    "heroTitle": "连接 Phira 的每一个瞬间",
+    "heroSubtitle": "房间、谱面、社区与 Replay —— Phira+ 伴生站",
+    "ctaRooms": "浏览房间",
+    "ctaCharts": "浏览谱面",
+    "announcements": "公告",
+    "serverSummary": "服务器摘要",
+    "popularCharts": "热门谱面",
+    "recentRooms": "最近公开房间"
+  },
+  "login": {
+    "title": "登录 Phira+",
+    "subtitle": "通过 Phira 账户登录。你的 Phira 凭证由服务端代为验证，不会出现在浏览器中。",
+    "gatewayCta": "前往 Phira 认证网关登录",
+    "gatewayHint": "你将被带往 api-phira.htadiy.com 完成登录，随后返回本站。",
+    "agreement": "继续即表示你同意 {terms} 与隐私政策。",
+    "backHome": "返回首页"
+  },
+  "terms": {
+    "title": "用户协议与隐私",
+    "intro": "本页面为占位内容，正式协议正文待定（OWNER LATER）。"
+  },
+  "context": {
+    "empty": "「{title}」内容占位（Context Window 骨架）"
+  },
+  "preferences": {
+    "title": "显示偏好",
+    "theme": "主题",
+    "themeSystem": "跟随系统",
+    "themeLight": "浅色",
+    "themeDark": "深色",
+    "accent": "强调色",
+    "background": "背景",
+    "reducedMotion": "减弱动态效果",
+    "reducedTransparency": "减弱透明度",
+    "lowPerformance": "低性能模式"
+  },
+  "footer": {
+    "docs": "文档",
+    "github": "GitHub",
+    "terms": "用户协议",
+    "privacy": "隐私政策",
+    "community": "社区",
+    "dataSources": "数据来源",
+    "buildInfo": "构建信息"
+  },
+  "error": {
+    "request_id": "请求处理异常",
+    "pagination": "分页参数不正确",
+    "validation": "输入校验未通过",
+    "rate_limit": "请求过于频繁，请稍后再试",
+    "auth": "需要登录",
+    "session": "会话已过期",
+    "permission_denied": "没有权限执行此操作",
+    "pmp_unavailable": "多人服务器暂不可用",
+    "capability_not_supported": "当前环境不支持该能力",
+    "phira_api_unavailable": "Phira 服务暂不可用",
+    "phira_reauth_required": "需要重新验证 Phira 身份",
+    "long_job_accepted": "任务已受理，请稍后查看结果"
+  }
+}

@@ -1,0 +1,113 @@
+{
+  "app": {
+    "name": "Phira+",
+    "tagline": "Phira public companion site"
+  },
+  "nav": {
+    "home": "Home",
+    "rooms": "Rooms",
+    "charts": "Charts",
+    "community": "Community",
+    "downloads": "Downloads",
+    "notifications": "Notifications",
+    "profile": "Profile",
+    "terms": "Terms",
+    "docs": "Docs"
+  },
+  "common": {
+    "loading": "Loading…",
+    "error": "Something went wrong",
+    "close": "Close",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "back": "Back",
+    "version": "Version",
+    "visitCount": "Visits",
+    "serverStatus": "Server status",
+    "online": "Online",
+    "offline": "Offline",
+    "unknown": "Unknown",
+    "retry": "Retry"
+  },
+  "rooms": {
+    "searchPlaceholder": "Search rooms…",
+    "empty": "No public rooms yet (placeholder)"
+  },
+  "charts": {
+    "searchPlaceholder": "Search charts…",
+    "empty": "No chart data yet (placeholder)"
+  },
+  "community": {
+    "empty": "Community placeholder: user profiles, friends, public replays."
+  },
+  "downloads": {
+    "empty": "Download info is configured via PPB public content (placeholder)."
+  },
+  "notifications": {
+    "empty": "No notifications yet (placeholder)."
+  },
+  "profile": {
+    "empty": "Profile placeholder: after signing in you can view MyPhira, friends and preferences.",
+    "loginCta": "Sign in"
+  },
+  "home": {
+    "heroTitle": "Connect every moment of Phira",
+    "heroSubtitle": "Rooms, charts, community and replays — the Phira+ companion site",
+    "ctaRooms": "Browse rooms",
+    "ctaCharts": "Browse charts",
+    "announcements": "Announcements",
+    "serverSummary": "Server summary",
+    "popularCharts": "Popular charts",
+    "recentRooms": "Recent public rooms"
+  },
+  "login": {
+    "title": "Sign in to Phira+",
+    "subtitle": "Sign in with your Phira account. Your Phira credentials are verified server-side and never appear in your browser.",
+    "gatewayCta": "Continue to the Phira auth gateway",
+    "gatewayHint": "You will be taken to api-phira.htadiy.com to finish signing in, then returned here.",
+    "agreement": "By continuing you agree to the {terms} and the privacy policy.",
+    "backHome": "Back to home"
+  },
+  "terms": {
+    "title": "Terms & Privacy",
+    "intro": "This page is a placeholder. Final terms text is pending (OWNER LATER)."
+  },
+  "context": {
+    "empty": "Placeholder for “{title}” (Context Window skeleton)"
+  },
+  "preferences": {
+    "title": "Display preferences",
+    "theme": "Theme",
+    "themeSystem": "System",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "accent": "Accent",
+    "background": "Background",
+    "reducedMotion": "Reduce motion",
+    "reducedTransparency": "Reduce transparency",
+    "lowPerformance": "Low-performance mode"
+  },
+  "footer": {
+    "docs": "Docs",
+    "github": "GitHub",
+    "terms": "Terms",
+    "privacy": "Privacy",
+    "community": "Community",
+    "dataSources": "Data sources",
+    "buildInfo": "Build info"
+  },
+  "error": {
+    "request_id": "Request processing error",
+    "pagination": "Invalid pagination parameters",
+    "validation": "Validation failed",
+    "rate_limit": "Too many requests, please try again later",
+    "auth": "Please sign in",
+    "session": "Session expired",
+    "permission_denied": "You do not have permission to do that",
+    "pmp_unavailable": "Multiplayer server unavailable",
+    "capability_not_supported": "This capability is not supported here",
+    "phira_api_unavailable": "Phira service unavailable",
+    "phira_reauth_required": "Phira identity re-authentication required",
+    "long_job_accepted": "Job accepted, please check back later"
+  }
+}
