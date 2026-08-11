@@ -1,0 +1,38 @@
+# Phira+ — Tauri 2 app shell (Phase D scaffold, design §17)
+#
+# CONFIG/STUB ONLY. Nothing here compiles locally — the native toolchain is
+# broken and packaging is CI-only (see README.md). This crate is standalone
+# (no [workspace]) and intentionally OUTSIDE the `viewer/` WASM workspace.
+#
+# Remote push (FCM for Android / WNS for Windows, design §14.7) is stubbed in
+# `src/native_adapter.rs` and requires Owner credentials before it can run.
+[package]
+name = "phira-plus"
+version = "0.1.0"
+description = "Phira+ — Phira 公共伴生站 (Tauri 2 Windows + Android shell)"
+authors = ["Phira+"]
+edition = "2021"
+rust-version = "1.77.2"
+
+[lib]
+name = "phira_plus_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-notification = "2"
+tauri-plugin-store = "2"
+tauri-plugin-deep-link = "2"
+tauri-plugin-shell = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Tauri 2 mobile builds need the custom-protocol feature; keep it default so
+# `cargo tauri build` works for desktop too. Actual Android signing is a CI /
+# Owner step (see tauri.conf.json bundle.android).
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]
