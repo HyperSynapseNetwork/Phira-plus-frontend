@@ -152,7 +152,9 @@
     "dismiss": "忽略",
     "replyPlaceholder": "回复…",
     "send": "发送",
-    "open": "打开"
+    "open": "打开",
+    "actionSuccess": "已执行",
+    "replySent": "已发送"
   },
   "profile": {
     "empty": "登录后可查看 MyPhira、好友与偏好。",
@@ -275,6 +277,7 @@
     "pause": "暂停",
     "seek": "进度",
     "volume": "音量",
+    "volumeUnsupported": "当前 WASM 播放器尚不支持音量控制。",
     "muted": "静音",
     "fullscreen": "全屏",
     "lowPerf": "低性能渲染",
@@ -283,6 +286,7 @@
     "dataSource": "数据来源：PPB Viewer 接口",
     "noBlob": "无法获取谱面数据。",
     "replayShare": "共享 Replay",
+    "replayShareToken": "Token：{token}",
     "replayPlay": "播放 Replay",
     "replayPause": "暂停",
     "replaySeek": "进度",
@@ -291,6 +295,7 @@
     "replayNoRawDownload": "不提供原始文件下载。"
   },
   "live": {
+    "modeLabel": "延迟模式",
     "modeLowLatency": "低延迟",
     "modeStable": "稳定",
     "connecting": "连接中…",
@@ -298,7 +303,19 @@
     "reconnecting": "连接中断，正在重新同步…",
     "closed": "连接已关闭",
     "unavailable": "Live 视图当前不可用（WASM 未构建）。",
-    "dataSource": "实时数据经 PPB Live Gateway，最终来自 PMP 高频流。"
+    "dataSource": "实时数据经 PPB Live Gateway，最终来自 PMP 高频流。",
+    "connect": "连接",
+    "disconnect": "断开",
+    "hint": "点击连接开始观战，再次点击断开。",
+    "roomState": "房间状态",
+    "round": "对局",
+    "touches": "Touch 帧",
+    "judges": "判定帧",
+    "heartbeat": "心跳",
+    "players": "玩家",
+    "noPlayers": "暂无玩家",
+    "wsError": "实时连接出错。",
+    "wasmVisualPending": "WASM 画面渲染将在二进制 Touch/Judge 帧契约冻结后提供（P-81）。"
   },
   "joinIntent": {
     "title": "加入房间",
@@ -319,11 +336,15 @@
     "enable": "启用推送",
     "disable": "关闭推送",
     "error": "推送设置出错，请重试。",
-    "vapidMissing": "推送服务端密钥尚未配置，启用后由 PPB 提供。"
+    "vapidMissing": "推送服务端密钥尚未配置，启用后由 PPB 提供。",
+    "permissionDenied": "已拒绝通知权限。",
+    "subscribeFailed": "订阅推送失败。",
+    "syncFailed": "同步推送订阅到服务器失败。"
   },
   "replays": {
     "title": "Replay",
-    "empty": "暂无 Replay（PPB Replay 接口就绪后显示）。"
+    "empty": "暂无 Replay（PPB Replay 接口就绪后显示）。",
+    "pending": "Replay 列表加载中…"
   },
   "error": {
     "request_id": "请求处理异常",

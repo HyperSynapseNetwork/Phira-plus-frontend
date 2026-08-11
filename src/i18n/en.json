@@ -152,7 +152,9 @@
     "dismiss": "Dismiss",
     "replyPlaceholder": "Reply…",
     "send": "Send",
-    "open": "Open"
+    "open": "Open",
+    "actionSuccess": "Done",
+    "replySent": "Sent"
   },
   "profile": {
     "empty": "Sign in to view MyPhira, friends and preferences.",
@@ -275,6 +277,7 @@
     "pause": "Pause",
     "seek": "Seek",
     "volume": "Volume",
+    "volumeUnsupported": "The current WASM player does not support volume control yet.",
     "muted": "Muted",
     "fullscreen": "Fullscreen",
     "lowPerf": "Low-perf rendering",
@@ -283,6 +286,7 @@
     "dataSource": "Source: PPB viewer endpoint",
     "noBlob": "Could not fetch chart data.",
     "replayShare": "Shared Replay",
+    "replayShareToken": "Token: {token}",
     "replayPlay": "Play replay",
     "replayPause": "Pause",
     "replaySeek": "Seek",
@@ -291,6 +295,7 @@
     "replayNoRawDownload": "Raw file download is not provided."
   },
   "live": {
+    "modeLabel": "Latency mode",
     "modeLowLatency": "Low latency",
     "modeStable": "Stable",
     "connecting": "Connecting…",
@@ -298,7 +303,19 @@
     "reconnecting": "Connection lost, re-syncing…",
     "closed": "Connection closed",
     "unavailable": "Live view is currently unavailable (WASM not built).",
-    "dataSource": "Live data flows via the PPB Live Gateway from the PMP high-frequency stream."
+    "dataSource": "Live data flows via the PPB Live Gateway from the PMP high-frequency stream.",
+    "connect": "Connect",
+    "disconnect": "Disconnect",
+    "hint": "Click connect to watch live; click again to disconnect.",
+    "roomState": "Room state",
+    "round": "Round",
+    "touches": "Touch frames",
+    "judges": "Judge frames",
+    "heartbeat": "Heartbeat",
+    "players": "Players",
+    "noPlayers": "No players yet",
+    "wsError": "Live connection error.",
+    "wasmVisualPending": "WASM visual rendering is provided once the binary Touch/Judge frame contract is frozen (P-81)."
   },
   "joinIntent": {
     "title": "Join room",
@@ -319,11 +336,15 @@
     "enable": "Enable push",
     "disable": "Disable push",
     "error": "Push setup failed, please retry.",
-    "vapidMissing": "The push server key is not configured yet; PPB will provide it."
+    "vapidMissing": "The push server key is not configured yet; PPB will provide it.",
+    "permissionDenied": "Notification permission denied.",
+    "subscribeFailed": "Push subscription failed.",
+    "syncFailed": "Failed to sync the push subscription to the server."
   },
   "replays": {
     "title": "Replays",
-    "empty": "No replays yet (shown once the PPB replay API is ready)."
+    "empty": "No replays yet (shown once the PPB replay API is ready).",
+    "pending": "Loading replays…"
   },
   "error": {
     "request_id": "Request processing error",
