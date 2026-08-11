@@ -1,9 +1,10 @@
 # Phira+ PPF — WASM Viewer workspace
 #
 # Vendored from HyperSynapseNetwork/phira-web-monitor (monitor-common +
-# monitor-client). The WASM viewer is built ONLY in CI (wasm-pack,
-# --target web) into `src/public/viewer/`; local Rust toolchain is broken.
-# Do NOT build this workspace locally.
+# monitor-client) plus a pinned snapshot of phira-mp-common/phira-mp-macros
+# (commit c59f9868, Apache-2.0). The WASM viewer is built ONLY in CI
+# (wasm-pack, --target web) into `src/public/viewer/`; the local Rust
+# toolchain is broken. Do NOT build this workspace locally.
 #
 # Live/replay binary frames reference monitor-common `LiveEvent/TouchFrame/
 # JudgeEvent` (contracts/README.md §4). Chart blobs are bincode
@@ -14,4 +15,25 @@ resolver = "2"
 members = [
     "monitor-common",
     "monitor-client",
+    "phira-mp/phira-mp-common",
+    "phira-mp/phira-mp-macros",
 ]
+
+[workspace.package]
+edition = "2024"
+license-file = "phira-mp/LICENSE"
+
+[workspace.dependencies]
+anyhow = { version = "1.0", features = ["backtrace"] }
+chrono = "0.4.43"
+tokio = { version = "1.49.0", features = [
+    "macros",
+    "rt-multi-thread",
+    "rt",
+    "net",
+    "io-util",
+    "time",
+    "sync",
+] }
+tracing = "0.1.44"
+uuid = "1.21.0"
