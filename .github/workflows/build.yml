@@ -1,0 +1,58 @@
+name: build
+
+# PPF CI (design §26.3) — Phase A scope only.
+# Tauri Windows/Android pipelines are Phase D and intentionally NOT included.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Lint / typecheck / test / SSG build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.8.0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: ESLint
+        run: pnpm lint
+
+      - name: vue-tsc
+        run: pnpm vue-tsc
+
+      - name: Unit / component tests
+        run: pnpm test
+
+      - name: Nuxt SSG build
+        run: pnpm build
+
+      - name: Link / static sanity
+        run: |
+          test -f .output/public/index.html
+          test -f .output/public/robots.txt
+          test -f .output/public/sitemap_index.xml
+          grep -q "Skip to content" .output/public/index.html
+          grep -q "Phira+" .output/public/index.html
