@@ -1,5 +1,6 @@
 import type { ApiError, Paginated, PaginationParams } from '~/utils/api/types'
 import { apiFetch, getApiBase, getApiClient } from '~/utils/api/client'
+import { toApiError } from '~/utils/api/errors'
 
 /**
  * `useApi()` — composition helpers for the frozen PPB REST contract.
@@ -43,4 +44,66 @@ export function isPaginated<T>(value: unknown): value is Paginated<T> {
     return false
   const v = value as Record<string, unknown>
   return Array.isArray(v.items) && typeof v.total === 'number' && typeof v.page === 'number'
+}
+
+/**
+ * Graceful client-only data fetch bound to the PPB base (SSG-safe).
+ *
+ * - `server: false` keeps dynamic data out of the prerendered HTML, leaving a
+ *   static skeleton (SEO) and hydrating on the client.
+ * - `defaultVal` renders when PPB is unreachable (Phase B may not be ready).
+ * - The returned `error` ref is normalized to `ApiError` (P4/P5).
+ */
+export function useApiData<T>(key: string, path: string, defaultVal: T) {
+  // Manual client-only fetch instead of Nuxt `useFetch`:
+  // - Nuxt's generic `useFetch<T>` typing is unusable for a generic `T`
+  //   (`default: () => T` and even the plain return type break on the
+  //   `T extends void ? unknown : T` conditional).
+  // - We get exact semantics we need: SSG-safe (server: false), graceful
+  //   fallback to `defaultVal` while PPB is unreachable, normalized ApiError.
+  // - `useState` shares the payload across routes and is serialized to the
+  //   prerendered HTML (so the skeleton renders without a client flash).
+  const raw = useState<T | null>(key, () => defaultVal)
+  const pending = ref(false)
+  const error = ref<ApiError | null>(null)
+
+  const data = computed<T>(() => raw.value ?? defaultVal)
+
+  async function refresh(): Promise<void> {
+    pending.value = true
+    error.value = null
+    try {
+      raw.value = await apiFetch<T>(path)
+    }
+    catch (err) {
+      error.value = toApiError(err)
+    }
+    finally {
+      pending.value = false
+    }
+  }
+
+  if (import.meta.client) {
+    // Registered from component setup — all callers use these composables in setup.
+    onMounted(refresh)
+  }
+
+  return { data, error, pending, refresh }
+}
+
+/**
+ * Append query params to a `/api/v1/...` path (stringified, skips undefined).
+ */
+export function withQuery(path: string, params: Record<string, unknown>): string {
+  const search = new URLSearchParams()
+  for (const [k, v] of Object.entries(params)) {
+    if (v === undefined || v === null || v === '')
+      continue
+    if (Array.isArray(v))
+      v.forEach(item => search.append(k, String(item)))
+    else
+      search.set(k, String(v))
+  }
+  const qs = search.toString()
+  return qs ? `${path}?${qs}` : path
 }
