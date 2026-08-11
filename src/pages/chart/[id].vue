@@ -2,10 +2,9 @@
 /**
  * Chart detail page `/chart/:id` (design §16.4).
  *
- * Shows Phira metadata, a data-source badge (Phira vs Phira+), a lazy Chart
- * Preview placeholder (the real WASM viewer ships in Phase D), the global
- * record ranking and the current user's best. All data is client-only with
- * graceful fallbacks — PPB Phase B may be unready.
+ * Shows Phira metadata, a data-source badge (Phira vs Phira+), a lazy WASM
+ * Chart Preview, the global record ranking and the current user's best. All
+ * data is client-only with graceful fallbacks — PPB Phase B may be unready.
  */
 import type { ChartRecord } from '~/utils/api/types'
 import { useChart, useChartRecords } from '~/composables/useCharts'
@@ -25,8 +24,6 @@ const chartIdValid = computed(() => Number.isFinite(rawId.value))
 
 const { chart, error, pending, refresh } = useChart(chartId)
 const { records, error: recordsError, pending: recordsPending, refresh: refreshRecords } = useChartRecords(chartId)
-
-const showPreview = ref(false)
 
 const ranking = computed<ChartRecord[]>(() => {
   if (records.value.length)
@@ -202,24 +199,12 @@ function fmtDate(value?: string): string {
         </div>
       </section>
 
-      <!-- Chart Preview (lazy placeholder; real viewer ships in Phase D) -->
+      <!-- Chart Preview (WASM viewer, lazy — design §12.7) -->
       <section class="content-surface p-6">
-        <div class="flex items-center justify-between gap-3">
-          <h2 class="text-sm font-semibold text-slate-100">
-            {{ $t('chart.preview') }}
-          </h2>
-          <BaseButton v-if="!showPreview" size="sm" variant="ghost" @click="showPreview = true">
-            {{ $t('chart.previewLoad') }}
-          </BaseButton>
-        </div>
-        <div
-          v-if="showPreview"
-          class="mt-4 flex aspect-video items-center justify-center rounded-lg border border-dashed border-white/10 bg-white/[0.03] px-4"
-        >
-          <p class="max-w-md text-center text-sm text-slate-400">
-            {{ $t('chart.previewPlaceholder') }}
-          </p>
-        </div>
+        <h2 class="text-sm font-semibold text-slate-100">
+          {{ $t('chart.preview') }}
+        </h2>
+        <ChartPlayerCanvas class="mt-4" :chart-id="chart.id" />
       </section>
 
       <!-- Global ranking -->
