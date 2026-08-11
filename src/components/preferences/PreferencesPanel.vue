@@ -7,9 +7,24 @@ import type { AccentKey, BackgroundKey } from '~/types/preferences'
  * preference namespaces (`common` / `ppf`); device prefs stay local.
  */
 import { usePreferences } from '~/composables/usePreferences'
+import { usePreferencesSync } from '~/composables/usePreferencesSync'
 
 const { prefs, update } = usePreferences()
 const { t } = useI18n()
+const { authenticated, syncing, saving, syncError, lastSavedAt, saveAll } = usePreferencesSync()
+
+const saveResult = ref<'idle' | 'saved' | 'error'>('idle')
+
+async function onSave(): Promise<void> {
+  saveResult.value = 'idle'
+  try {
+    await saveAll()
+    saveResult.value = 'saved'
+  }
+  catch {
+    saveResult.value = 'error'
+  }
+}
 
 const accentOptions: { value: AccentKey, label: string, swatch: string }[] = [
   { value: 'cyan', label: 'Cyan', swatch: '#00F7FF' },
@@ -100,5 +115,31 @@ const backgroundOptions: { value: BackgroundKey, label: string }[] = [
         <input v-model="prefs.lowPerformance" type="checkbox" class="h-4 w-4 accent-[var(--color-accent)]">
       </label>
     </div>
+
+    <!-- Account sync (only when signed in) -->
+    <template v-if="authenticated">
+      <div class="border-t border-white/10 pt-4">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <span class="text-xs text-slate-400">
+            {{ $t('preferences.accountSyncHint') }}
+          </span>
+          <BaseButton size="sm" :disabled="saving || syncing" @click="onSave">
+            {{ saving ? $t('common.loading') : $t('preferences.saveToAccount') }}
+          </BaseButton>
+        </div>
+        <p v-if="syncing" class="mt-2 text-xs text-slate-500">
+          {{ $t('common.loading') }}
+        </p>
+        <p v-else-if="saveResult === 'saved'" class="mt-2 text-xs text-emerald-400">
+          {{ $t('preferences.syncSaved') }}
+        </p>
+        <p v-else-if="saveResult === 'error' || syncError" class="mt-2 text-xs text-rose-400">
+          {{ $t('preferences.syncFailed') }}
+        </p>
+        <p v-else-if="lastSavedAt" class="mt-2 text-xs text-slate-500">
+          {{ $t('preferences.lastSyncedAt', { time: new Date(lastSavedAt).toLocaleString() }) }}
+        </p>
+      </div>
+    </template>
   </div>
 </template>

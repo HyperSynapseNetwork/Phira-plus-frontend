@@ -5,7 +5,12 @@
  * Mobile:  Logo + 通知/头像 in a top bar (main nav lives in MobileNav).
  */
 
+import { useSession } from '~/composables/useSession'
+
 const { locale, setLocale } = useI18n()
+const route = useRoute()
+const { authenticated, profile, pending: sessionPending } = useSession()
+
 const localeLinks = computed<{ code: 'zh' | 'en', label: string }[]>(() => [
   { code: 'zh', label: '中文' },
   { code: 'en', label: 'EN' },
@@ -17,6 +22,9 @@ const mainLinks = computed(() => [
   { to: '/charts', label: 'nav.charts' },
   { to: '/community', label: 'nav.community' },
 ])
+
+const avatarText = computed(() => profile.value?.username?.charAt(0).toUpperCase() || '')
+const loginHref = computed(() => `/login?return_to=${encodeURIComponent(route.path)}`)
 </script>
 
 <template>
@@ -91,16 +99,29 @@ const mainLinks = computed(() => [
           </svg>
         </NuxtLink>
 
-        <!-- Avatar / profile -->
+        <!-- Avatar / profile / login -->
+        <template v-if="authenticated">
+          <NuxtLink
+            to="/profile"
+            class="glass-focusable flex h-9 items-center gap-2 overflow-hidden rounded-full bg-white/10 pr-1 pl-0.5 text-slate-200 hover:text-white"
+            :aria-label="$t('nav.profile')"
+            :title="profile?.username"
+          >
+            <span class="grid h-8 w-8 place-items-center rounded-full bg-accent/20 text-sm font-semibold text-accent">
+              {{ avatarText }}
+            </span>
+            <span class="hidden max-w-28 truncate text-xs font-medium sm:block">
+              {{ profile?.username }}
+            </span>
+          </NuxtLink>
+        </template>
         <NuxtLink
-          to="/profile"
-          class="glass-focusable grid h-9 w-9 place-items-center overflow-hidden rounded-full bg-white/10 text-slate-200 hover:text-white"
-          :aria-label="$t('nav.profile')"
+          v-else
+          :to="loginHref"
+          class="glass-focusable rounded-md px-3 py-1.5 text-sm font-medium text-accent hover:bg-accent/10"
+          :aria-disabled="sessionPending || undefined"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-            <circle cx="12" cy="7" r="4" />
-          </svg>
+          {{ $t('login.gatewayCta') }}
         </NuxtLink>
       </div>
     </div>
