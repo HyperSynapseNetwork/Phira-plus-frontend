@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Room, RoomChart, RoomState } from '~/utils/api/types'
+import { defineAsyncComponent } from 'vue'
 import { useRoom } from '~/composables/useRooms'
 
 /**
@@ -7,8 +8,8 @@ import { useRoom } from '~/composables/useRooms'
  * on the full room page (`/room/:room_id`).
  *
  * Tabs: Overview | Players | Chat | Live | History.
- * Chat is delegated to RoomChatPanel (uses `useRoomChat`); Live/History are
- * Phase-D placeholders.
+ * Chat is delegated to RoomChatPanel (uses `useRoomChat`); Live is the live
+ * monitor tab (design §12.6 / contract §4); History is a Phase-D placeholder.
  */
 
 const props = defineProps<{ roomUuid: string }>()
@@ -16,6 +17,56 @@ const props = defineProps<{ roomUuid: string }>()
 const { t } = useI18n()
 
 const { room, error, pending, refresh } = useRoom(() => props.roomUuid)
+
+/**
+ * Live monitor statuses (contract §4 / design §12.6). Mirrors the Viewer
+ * agent's `useGameMonitor` / `LiveMonitor` status-change payload.
+ */
+type LiveStatus = 'connecting' | 'live' | 'reconnecting' | 'closed' | 'unavailable'
+
+/** Jitter-buffer modes (contract §4): `low_latency` / `stable`. Local ref this pass. */
+const liveModes = [
+  { id: 'low_latency', label: 'live.modeLowLatency' },
+  { id: 'stable', label: 'live.modeStable' },
+] as const
+
+const liveMode = ref<'low_latency' | 'stable'>('stable')
+
+const liveStatus = ref<LiveStatus>('connecting')
+
+const LIVE_STATUS_KEYS: Record<LiveStatus, string> = {
+  connecting: 'live.connecting',
+  live: 'live.live',
+  reconnecting: 'live.reconnecting',
+  closed: 'live.closed',
+  unavailable: 'live.unavailable',
+}
+
+const LIVE_STATUS_CLASSES: Record<LiveStatus, string> = {
+  connecting: 'text-sky-400',
+  live: 'text-emerald-400',
+  reconnecting: 'text-amber-400',
+  closed: 'text-slate-400',
+  unavailable: 'text-slate-400',
+}
+
+function onLiveStatus(status: LiveStatus): void {
+  liveStatus.value = status
+}
+
+/**
+ * LiveMonitor (Viewer agent) — resolved lazily so an absent module / WASM
+ * degrades to the status strip instead of breaking the tab. Prop contract:
+ * `{ roomUuid: string }`, emits `status-change(status: LiveStatus)`.
+ */
+const LiveMonitor = defineAsyncComponent({
+  loader: () => import('~/components/viewer/LiveMonitor.vue'),
+  onError(error, retry, fail) {
+    // Component/module unavailable (e.g. WASM not built yet) → surface it.
+    liveStatus.value = 'unavailable'
+    fail()
+  },
+})
 
 type TabId = 'overview' | 'players' | 'chat' | 'live' | 'history'
 
@@ -217,9 +268,37 @@ function serverOnlineClass(r: Room): string {
           v-else-if="activeTab === 'live'"
           id="tab-panel-live"
           role="tabpanel"
-          class="rounded-md border border-dashed border-white/10 p-6 text-center text-sm text-slate-400"
+          class="space-y-4"
         >
-          {{ $t('room.livePlaceholder') }}
+          <!-- Jitter-buffer mode toggle (contract §4: low_latency / stable) -->
+          <div role="group" :aria-label="$t('live.modeLabel')" class="flex flex-wrap items-center gap-2">
+            <button
+              v-for="mode in liveModes"
+              :key="mode.id"
+              type="button"
+              class="glass-focusable rounded-md px-3 py-1.5 text-xs font-medium transition"
+              :class="liveMode === mode.id
+                ? 'bg-accent/15 text-accent ring-1 ring-accent/30'
+                : 'text-slate-400 hover:text-slate-200'"
+              @click="liveMode = mode.id"
+            >
+              {{ $t(mode.label) }}
+            </button>
+          </div>
+
+          <!-- Live status strip -->
+          <p class="flex items-center gap-2 text-sm" :class="LIVE_STATUS_CLASSES[liveStatus]">
+            <span class="h-1.5 w-1.5 rounded-full bg-current" />
+            {{ $t(LIVE_STATUS_KEYS[liveStatus]) }}
+          </p>
+
+          <!-- Live monitor (PPB Live Gateway, JSON envelope — contract P-81/P-82).
+               Live WS uses the ROOM ID (not the shareable room_uuid). -->
+          <LiveMonitor :room-id="room.id || roomUuid" @status-change="onLiveStatus" />
+
+          <p class="text-xs text-slate-500">
+            {{ $t('live.dataSource') }}
+          </p>
         </div>
 
         <div

@@ -17,6 +17,8 @@ import { useSession } from '~/composables/useSession'
 
 useHead({ title: '通知' })
 
+const { t } = useI18n()
+
 const { inbox, error, pending, refresh } = useNotifications()
 const { authenticated } = useSession()
 
@@ -26,7 +28,15 @@ const items = computed(() => inbox.value.items)
 const replyOpen = ref<Record<string, string>>({})
 
 const actionBusy = ref<Record<string, boolean>>({})
-const actionError = ref<string | null>(null)
+/** Inline toast-ish result of the last action / reply / dismiss. */
+const lastActionResult = ref<{ kind: 'success' | 'error', message: string } | null>(null)
+
+function setActionError(err: unknown): void {
+  lastActionResult.value = {
+    kind: 'error',
+    message: isApiError(err) ? err.message : String(err),
+  }
+}
 
 function fmtTime(iso?: string): string {
   if (!iso)
@@ -52,24 +62,27 @@ async function onRead(n: AppNotification): Promise<void> {
 }
 
 async function onDismiss(n: AppNotification): Promise<void> {
+  lastActionResult.value = null
   try {
     await dismissNotification(n.id)
     await refresh()
+    lastActionResult.value = { kind: 'success', message: t('notifications.actionSuccess') }
   }
   catch (err) {
-    actionError.value = isApiError(err) ? err.message : String(err)
+    setActionError(err)
   }
 }
 
 async function onAction(n: AppNotification, actionId: string): Promise<void> {
   actionBusy.value[`${n.id}:${actionId}`] = true
-  actionError.value = null
+  lastActionResult.value = null
   try {
     await runNotificationAction(n.id, actionId)
     await refresh()
+    lastActionResult.value = { kind: 'success', message: t('notifications.actionSuccess') }
   }
   catch (err) {
-    actionError.value = isApiError(err) ? err.message : String(err)
+    setActionError(err)
   }
   finally {
     actionBusy.value[`${n.id}:${actionId}`] = false
@@ -81,18 +94,29 @@ async function onSubmitReply(n: AppNotification): Promise<void> {
   if (!text)
     return
   actionBusy.value[`${n.id}:input`] = true
-  actionError.value = null
+  lastActionResult.value = null
   try {
     await sendNotificationInput(n.id, text)
     replyOpen.value[n.id] = ''
     await refresh()
+    lastActionResult.value = { kind: 'success', message: t('notifications.replySent') }
   }
   catch (err) {
-    actionError.value = isApiError(err) ? err.message : String(err)
+    setActionError(err)
   }
   finally {
     actionBusy.value[`${n.id}:input`] = false
   }
+}
+
+/** Relative PPF deep links use SPA navigation; absolute/external stay `<a>`. */
+function isExternalDeepLink(href: string): boolean {
+  return !href.startsWith('/')
+}
+
+/** Deep-link clicks also mark the notification read (mirrors `li` click). */
+async function onDeepLink(n: AppNotification): Promise<void> {
+  await onRead(n)
 }
 </script>
 
@@ -115,8 +139,13 @@ async function onSubmitReply(n: AppNotification): Promise<void> {
       </NuxtLink>
     </header>
 
-    <p v-if="actionError" class="text-sm text-rose-400">
-      {{ actionError }}
+    <p
+      v-if="lastActionResult"
+      class="text-sm"
+      :class="lastActionResult.kind === 'success' ? 'text-emerald-400' : 'text-rose-400'"
+      role="status"
+    >
+      {{ lastActionResult.message }}
     </p>
 
     <p v-if="!authenticated && items.length === 0" class="text-sm text-slate-400">
@@ -206,15 +235,25 @@ async function onSubmitReply(n: AppNotification): Promise<void> {
           </BaseButton>
         </div>
 
-        <!-- Deep link -->
+        <!-- Deep link (SPA navigation for relative links; new tab for external) -->
         <NuxtLink
-          v-if="n.deep_link"
+          v-if="n.deep_link && !isExternalDeepLink(n.deep_link)"
           :to="n.deep_link"
           class="mt-3 inline-block text-xs text-accent hover:underline"
-          @click.stop
+          @click.stop="onDeepLink(n)"
         >
           {{ $t('notifications.open') }} →
         </NuxtLink>
+        <a
+          v-else-if="n.deep_link"
+          :href="n.deep_link"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="mt-3 inline-block text-xs text-accent hover:underline"
+          @click.stop="onDeepLink(n)"
+        >
+          {{ $t('notifications.open') }} →
+        </a>
       </li>
     </ul>
 
