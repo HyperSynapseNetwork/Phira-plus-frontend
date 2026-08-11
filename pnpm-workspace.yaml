@@ -1,0 +1,17 @@
+shellEmulator: true
+
+# pnpm 11 workspace settings
+# Reproducible-install baseline: only these packages may run build scripts.
+# NOTE: `trustPolicy: no-downgrade` is intentionally NOT set — the npmmirror
+# registry does not carry npm provenance attestation, so that policy rejects
+# the lockfile locally. Reproducibility is guaranteed by pnpm-lock.yaml.
+allowBuilds:
+  esbuild: true
+  sharp: true
+  vue-demi: true
+
+# @intlify 10.x version alignment: @intlify/core-base@10.0.8 requires
+# `sanitizeTranslatedHtml` from @intlify/shared, which only exists in 10.0.8.
+# @nuxtjs/i18n@9.5.6 pins @intlify/shared@10.0.7, so force the v10 line to 10.0.8.
+overrides:
+  '@intlify/shared@10': 10.0.8
