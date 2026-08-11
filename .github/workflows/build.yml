@@ -41,13 +41,22 @@ jobs:
 
       # Builds the vendored viewer to src/public/viewer (web target, ESM).
       # Uses an absolute --out-dir to avoid wasm-pack CWD ambiguity.
+      # NOTE: wasm-pack names the JS module with underscores (crate name),
+      # so the ESM entry is `monitor_client.js` + `monitor_client_bg.wasm`.
       - name: Build viewer
         run: wasm-pack build --target web --out-dir "$GITHUB_WORKSPACE/src/public/viewer" viewer/monitor-client
 
       - name: Verify artifacts
         run: |
-          test -f src/public/viewer/monitor-client_bg.wasm
-          test -f src/public/viewer/monitor-client.js
+          test -f src/public/viewer/monitor_client_bg.wasm
+          test -f src/public/viewer/monitor_client.js
+
+      - name: Upload generated Cargo.lock (reproducibility)
+        uses: actions/upload-artifact@v4
+        with:
+          name: viewer-cargo-lock
+          path: viewer/Cargo.lock
+          if-no-files-found: warn
 
       - name: Upload viewer artifact
         uses: actions/upload-artifact@v4
