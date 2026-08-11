@@ -130,6 +130,7 @@
     "friends": "好友",
     "friendRequests": "好友请求",
     "findUsers": "查找用户",
+    "findUsersHint": "输入 Phira ID 后访问 /user/:phira_id 查看用户主页。",
     "noFriends": "暂无好友",
     "noRequests": "暂无好友请求"
   },

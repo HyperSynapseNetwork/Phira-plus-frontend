@@ -130,6 +130,7 @@
     "friends": "Friends",
     "friendRequests": "Friend requests",
     "findUsers": "Find users",
+    "findUsersHint": "Enter a Phira ID and visit /user/:phira_id to view their profile.",
     "noFriends": "No friends yet",
     "noRequests": "No friend requests"
   },
