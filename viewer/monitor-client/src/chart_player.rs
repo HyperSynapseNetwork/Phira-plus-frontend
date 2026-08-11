@@ -234,8 +234,18 @@ impl ChartPlayer {
 
         let array_buffer = wasm_bindgen_futures::JsFuture::from(resp.array_buffer()?).await?;
         let uint8_array = js_sys::Uint8Array::new(&array_buffer);
-        let vec = uint8_array.to_vec();
+        self.load_chart_from_bytes(uint8_array.to_vec()).await
+    }
 
+    /// Load a chart from an in-memory bincode `(ChartInfo, Chart)` blob — the
+    /// same format the viewer endpoint returns. Lets the TS layer fetch/parse
+    /// the chart (Phira CDN zip → PPB viewer endpoint) and feed bytes here,
+    /// decoupling the viewer from a hard-coded `/chart/{id}` route.
+    pub async fn load_chart_bytes(&mut self, bytes: js_sys::Uint8Array) -> Result<JsValue, JsValue> {
+        self.load_chart_from_bytes(bytes.to_vec()).await
+    }
+
+    async fn load_chart_from_bytes(&mut self, vec: Vec<u8>) -> Result<JsValue, JsValue> {
         use bincode::Options;
         let (info, mut chart): (ChartInfo, Chart) = bincode::options()
             .with_varint_encoding()

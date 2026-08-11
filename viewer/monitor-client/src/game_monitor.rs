@@ -446,6 +446,20 @@ impl GameMonitor {
             scene.resume_audio_context();
         }
     }
+
+    /// Provide chart bytes (bincode `(ChartInfo, Chart)`) fetched/parsed by the
+    /// frontend, applied on the next `tick()`. Lets the TS layer control the
+    /// chart source instead of the internal `{api_base}/chart/{id}` fetch.
+    pub fn feed_chart_bytes(&mut self, bytes: js_sys::Uint8Array) -> Result<(), JsValue> {
+        use bincode::Options;
+        let vec = bytes.to_vec();
+        let (info, chart): (ChartInfo, Chart) = bincode::options()
+            .with_varint_encoding()
+            .deserialize(&vec)
+            .map_err(|e| JsValue::from_str(&format!("Failed to parse chart: {}", e)))?;
+        *self.pending_chart.borrow_mut() = Some((info, chart));
+        Ok(())
+    }
 }
 
 impl GameMonitor {
