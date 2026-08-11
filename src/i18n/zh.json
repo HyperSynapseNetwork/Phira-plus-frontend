@@ -108,6 +108,9 @@
     "capability_not_supported": "当前环境不支持该能力",
     "phira_api_unavailable": "Phira 服务暂不可用",
     "phira_reauth_required": "需要重新验证 Phira 身份",
-    "long_job_accepted": "任务已受理，请稍后查看结果"
+    "long_job_accepted": "任务已受理，请稍后查看结果",
+    "network_error": "网络异常，请检查连接",
+    "unknown_error": "发生未知错误",
+    "invalid_response": "服务器返回了无效数据"
   }
 }

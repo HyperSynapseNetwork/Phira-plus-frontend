@@ -108,6 +108,9 @@
     "capability_not_supported": "This capability is not supported here",
     "phira_api_unavailable": "Phira service unavailable",
     "phira_reauth_required": "Phira identity re-authentication required",
-    "long_job_accepted": "Job accepted, please check back later"
+    "long_job_accepted": "Job accepted, please check back later",
+    "network_error": "Network error, please check your connection",
+    "unknown_error": "An unknown error occurred",
+    "invalid_response": "The server returned invalid data"
   }
 }
