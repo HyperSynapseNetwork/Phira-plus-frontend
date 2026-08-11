@@ -1,0 +1,27 @@
+# Vendored `phira-mp-common` + `phira-mp-macros` (pinned at commit
+# c59f98683674f922cc49ad9289f162f4b261bf8d) so the WASM viewer builds
+# hermetically in CI without a git dependency.
+[workspace]
+members = [
+    "phira-mp-common",
+    "phira-mp-macros",
+]
+resolver = "2"
+
+[workspace.package]
+edition = "2024"
+
+[workspace.dependencies]
+anyhow = { version = "1.0", features = ["backtrace"] }
+chrono = "0.4.43"
+tokio = { version = "1.49.0", features = [
+    "macros",
+    "rt-multi-thread",
+    "rt",
+    "net",
+    "io-util",
+    "time",
+    "sync",
+] }
+tracing = "0.1.44"
+uuid = "1.21.0"

@@ -1,0 +1,17 @@
+# Phira+ PPF — WASM Viewer workspace
+#
+# Vendored from HyperSynapseNetwork/phira-web-monitor (monitor-common +
+# monitor-client). The WASM viewer is built ONLY in CI (wasm-pack,
+# --target web) into `src/public/viewer/`; local Rust toolchain is broken.
+# Do NOT build this workspace locally.
+#
+# Live/replay binary frames reference monitor-common `LiveEvent/TouchFrame/
+# JudgeEvent` (contracts/README.md §4). Chart blobs are bincode
+# `(ChartInfo, Chart)` with varint encoding.
+
+[workspace]
+resolver = "2"
+members = [
+    "monitor-common",
+    "monitor-client",
+]

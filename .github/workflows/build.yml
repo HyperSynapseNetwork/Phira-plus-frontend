@@ -1,7 +1,13 @@
 name: build
 
-# PPF CI (design §26.3) — Phase A scope only.
-# Tauri Windows/Android pipelines are Phase D and intentionally NOT included.
+# PPF CI (design §26.3).
+# - `quality`: lint / vue-tsc / tests / Nuxt SSG build (frontend only).
+# - `wasm`   : builds the vendored Rust viewer (monitor-common + monitor-client)
+#              with wasm-pack (--target web) into `src/public/viewer/` and
+#              uploads the artifact. Runs independently so frontend CI does not
+#              block on the Rust toolchain. The artifact is consumed by release
+#              packaging (or by SSG when the viewer dir is pre-populated).
+# Tauri Windows/Android native pipelines are later (per design §17).
 on:
   push:
     branches: [main]
@@ -15,6 +21,41 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  wasm:
+    name: WASM Viewer (wasm-pack)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain (wasm32)
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Install wasm-pack
+        uses: jetli/wasm-pack-action@v0.4.0
+        with:
+          version: latest
+
+      # Builds the vendored viewer to src/public/viewer (web target, ESM).
+      # Uses an absolute --out-dir to avoid wasm-pack CWD ambiguity.
+      - name: Build viewer
+        run: wasm-pack build --target web --out-dir "$GITHUB_WORKSPACE/src/public/viewer" viewer/monitor-client
+
+      - name: Verify artifacts
+        run: |
+          test -f src/public/viewer/monitor-client_bg.wasm
+          test -f src/public/viewer/monitor-client.js
+
+      - name: Upload viewer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: viewer-wasm
+          path: src/public/viewer
+          if-no-files-found: error
+
   quality:
     name: Lint / typecheck / test / SSG build
     runs-on: ubuntu-latest
