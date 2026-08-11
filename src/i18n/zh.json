@@ -268,6 +268,63 @@
     "dataSources": "数据来源",
     "buildInfo": "构建信息"
   },
+  "viewer": {
+    "loadPreview": "加载谱面预览",
+    "loading": "加载中…",
+    "play": "播放",
+    "pause": "暂停",
+    "seek": "进度",
+    "volume": "音量",
+    "muted": "静音",
+    "fullscreen": "全屏",
+    "lowPerf": "低性能渲染",
+    "unavailable": "谱面预览当前不可用（WASM 未构建）。",
+    "error": "预览加载失败",
+    "dataSource": "数据来源：PPB Viewer 接口",
+    "noBlob": "无法获取谱面数据。",
+    "replayShare": "共享 Replay",
+    "replayPlay": "播放 Replay",
+    "replayPause": "暂停",
+    "replaySeek": "进度",
+    "replayUnavailable": "Replay 视图当前不可用。",
+    "replayNoData": "暂无 Replay 数据。",
+    "replayNoRawDownload": "不提供原始文件下载。"
+  },
+  "live": {
+    "modeLowLatency": "低延迟",
+    "modeStable": "稳定",
+    "connecting": "连接中…",
+    "live": "实时中",
+    "reconnecting": "连接中断，正在重新同步…",
+    "closed": "连接已关闭",
+    "unavailable": "Live 视图当前不可用（WASM 未构建）。",
+    "dataSource": "实时数据经 PPB Live Gateway，最终来自 PMP 高频流。"
+  },
+  "joinIntent": {
+    "title": "加入房间",
+    "confirm": "确认加入",
+    "prompt": "已创建加入意图。请启动/切换到 Phira+ 客户端并进入房间，我们将自动将你移入目标房。",
+    "waiting": "等待加入…",
+    "expired": "加入意图已过期",
+    "cancel": "取消",
+    "error": "创建加入意图失败：{message}",
+    "countdown": "剩余 {seconds} 秒"
+  },
+  "push": {
+    "title": "推送通知",
+    "supported": "浏览器支持推送通知。",
+    "unsupported": "当前浏览器不支持推送通知。",
+    "enabled": "已启用",
+    "disabled": "未启用",
+    "enable": "启用推送",
+    "disable": "关闭推送",
+    "error": "推送设置出错，请重试。",
+    "vapidMissing": "推送服务端密钥尚未配置，启用后由 PPB 提供。"
+  },
+  "replays": {
+    "title": "Replay",
+    "empty": "暂无 Replay（PPB Replay 接口就绪后显示）。"
+  },
   "error": {
     "request_id": "请求处理异常",
     "pagination": "分页参数不正确",

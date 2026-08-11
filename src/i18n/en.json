@@ -268,6 +268,63 @@
     "dataSources": "Data sources",
     "buildInfo": "Build info"
   },
+  "viewer": {
+    "loadPreview": "Load chart preview",
+    "loading": "Loading…",
+    "play": "Play",
+    "pause": "Pause",
+    "seek": "Seek",
+    "volume": "Volume",
+    "muted": "Muted",
+    "fullscreen": "Fullscreen",
+    "lowPerf": "Low-perf rendering",
+    "unavailable": "Chart preview is currently unavailable (WASM not built).",
+    "error": "Preview failed to load",
+    "dataSource": "Source: PPB viewer endpoint",
+    "noBlob": "Could not fetch chart data.",
+    "replayShare": "Shared Replay",
+    "replayPlay": "Play replay",
+    "replayPause": "Pause",
+    "replaySeek": "Seek",
+    "replayUnavailable": "Replay viewer is currently unavailable.",
+    "replayNoData": "No replay data.",
+    "replayNoRawDownload": "Raw file download is not provided."
+  },
+  "live": {
+    "modeLowLatency": "Low latency",
+    "modeStable": "Stable",
+    "connecting": "Connecting…",
+    "live": "Live",
+    "reconnecting": "Connection lost, re-syncing…",
+    "closed": "Connection closed",
+    "unavailable": "Live view is currently unavailable (WASM not built).",
+    "dataSource": "Live data flows via the PPB Live Gateway from the PMP high-frequency stream."
+  },
+  "joinIntent": {
+    "title": "Join room",
+    "confirm": "Confirm join",
+    "prompt": "Join intent created. Start or switch to the Phira+ client and enter the room — we will move you into the target room automatically.",
+    "waiting": "Waiting…",
+    "expired": "Join intent expired",
+    "cancel": "Cancel",
+    "error": "Failed to create join intent: {message}",
+    "countdown": "{seconds}s left"
+  },
+  "push": {
+    "title": "Push notifications",
+    "supported": "Your browser supports push notifications.",
+    "unsupported": "Push notifications are not supported in this browser.",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "enable": "Enable push",
+    "disable": "Disable push",
+    "error": "Push setup failed, please retry.",
+    "vapidMissing": "The push server key is not configured yet; PPB will provide it."
+  },
+  "replays": {
+    "title": "Replays",
+    "empty": "No replays yet (shown once the PPB replay API is ready)."
+  },
   "error": {
     "request_id": "Request processing error",
     "pagination": "Invalid pagination parameters",
