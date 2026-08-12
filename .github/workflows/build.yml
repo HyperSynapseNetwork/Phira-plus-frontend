@@ -157,15 +157,19 @@ jobs:
         shell: bash
         run: pnpm dlx @tauri-apps/cli@2 build --bundles nsis,msi
 
-      # Installer code-signing — runs only when the Owner provides WINDOWS_CERT
-      # (base64 of the .pfx) + WINDOWS_CERT_PASSWORD. Skips silently otherwise.
+      # Installer code-signing — gates inside the script (GitHub forbids the
+      # `secrets` context in `if:`). Runs every build; skips when WINDOWS_CERT
+      # (base64 .pfx) + WINDOWS_CERT_PASSWORD are not configured.
       - name: Sign Windows artifacts (if cert provided)
-        if: ${{ secrets.WINDOWS_CERT != '' }}
         shell: pwsh
         env:
           WINDOWS_CERT: ${{ secrets.WINDOWS_CERT }}
           WINDOWS_CERT_PASSWORD: ${{ secrets.WINDOWS_CERT_PASSWORD }}
         run: |
+          if (-not $env:WINDOWS_CERT) {
+            Write-Host "WINDOWS_CERT not set — skipping installer signing."
+            exit 0
+          }
           $ErrorActionPreference = 'Stop'
           $pfx = 'src-tauri/target/release/bundle/phiraplus.pfx'
           [IO.File]::WriteAllBytes($pfx, [Convert]::FromBase64String($env:WINDOWS_CERT))
@@ -255,12 +259,12 @@ jobs:
       - name: Init Tauri Android project
         run: pnpm dlx @tauri-apps/cli@2 android init
 
-      # Android release signing — runs only when the Owner provides the keystore
-      # secrets. Decodes the .jks into the app module and wires gradle's release
-      # signingConfig (reads ANDROID_* env at build time). Skips otherwise,
-      # leaving an unsigned APK.
+      # Android release signing — gates inside the script (GitHub forbids the
+      # `secrets` context in `if:`). Runs every build; skips when the keystore
+      # secrets are absent (unsigned APK). When present, decodes the .jks into
+      # the app module and wires gradle's release signingConfig (reads ANDROID_*
+      # env at build time).
       - name: Configure Android release signing (if keystore provided)
-        if: ${{ secrets.ANDROID_KEYSTORE != '' }}
         env:
           ANDROID_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
@@ -268,6 +272,10 @@ jobs:
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           set -e
+          if [ -z "$ANDROID_KEYSTORE" ]; then
+            echo "ANDROID_KEYSTORE not set — skipping release signing (unsigned APK)."
+            exit 0
+          fi
           mkdir -p src-tauri/gen/android/app
           echo "$ANDROID_KEYSTORE" | base64 -d > src-tauri/gen/android/app/release.keystore
           python3 - <<'PY'
