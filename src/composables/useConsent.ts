@@ -53,8 +53,20 @@ function persist(state: ConsentState): void {
 export function useConsent() {
   const state = useState<ConsentState>('ppf:consent', () => readStored() ?? { ...DEFAULT_STATE })
 
+  // On the client, override the SSR-serialized payload with the actual stored
+  // consent (a returning user's decision must not be lost across navigations).
+  if (import.meta.client) {
+    const stored = readStored()
+    if (stored)
+      state.value = stored
+  }
+
   /** True until the user has made an analytics decision. */
-  const needsDecision = computed(() => state.value.analytics === false && readStored() === null)
+  const needsDecision = computed(() => {
+    if (state.value.analytics === true)
+      return false
+    return readStored() === null
+  })
   const analyticsAllowed = computed(() => state.value.analytics === true)
 
   function grantAnalytics(): void {
