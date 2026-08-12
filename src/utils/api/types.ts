@@ -1,12 +1,31 @@
 /**
  * Typed API client types for the frozen PPB REST contract.
- * Source of truth: contracts/README.md (Contract-Freeze v0) §1-§16, §24.
+ * Source of truth: contracts/README.md (Contract-Freeze v0) §1-§20 + PPB OpenAPI.
  *
  * - Error codes are UPPER_SNAKE_CASE (Main decision P4).
  * - Client-only codes (P5) are lowercase and never part of the server contract.
- * - PPB Phase B may not be finished: consumers must treat any of these as
+ * - PPB may not be fully implemented: consumers must treat any of these as
  *   possibly-unavailable and render graceful fallbacks / empty states.
+ *
+ * CONTRACT TYPES: `./generated` is the authoritative openapi-typescript output
+ * from PPB (synced via scripts/gen-types.sh). Handwritten refinements below
+ * must not conflict with it; where they do, the generated types win. Aliases
+ * into `components['schemas']` are used for the overlapping core types.
  */
+import type { components } from './generated'
+
+/** Re-export the generated namespaces for callers that want raw paths/schemas. */
+export type {
+  components as GeneratedComponents,
+  operations as GeneratedOperations,
+  paths as GeneratedPaths,
+} from './generated'
+
+/** Generated `PaginationResponse` (items are untyped in the OpenAPI). */
+export type PaginationResponse = components['schemas']['PaginationResponse']
+
+/** Generated room-action request `{action, args?}`. */
+export type RoomActionRequest = components['schemas']['RoomActionRequest']
 
 /* ----------------------------------------------------------------------------
  * Errors (P4 / P5)
@@ -32,7 +51,11 @@ export type ClientErrorCode = 'network_error' | 'unknown_error' | 'invalid_respo
 
 export type AnyErrorCode = ApiErrorCode | ClientErrorCode
 
-/** Frozen error envelope (contract §2 / §24.5). */
+/**
+ * Frozen error envelope (contract §2 / §24.5). Compatible with the generated
+ * `ErrorEnvelope`; `request_id`/`details` are optional here because some error
+ * paths (client codes) don't carry them.
+ */
 export interface ApiErrorEnvelope {
   error: {
     code: string
@@ -187,10 +210,17 @@ export interface MeSession {
   created_at: string
 }
 
+/** Generated `MeResponse` (openapi-typescript — loose `unknown` members). */
+export type GeneratedMeResponse = components['schemas']['MeResponse']
+
 /**
  * `GET /api/v1/me` — the ONLY session probe (contract §20).
  * Returns identity, runtime-resolved permissions/capabilities and a CSRF token
  * for write operations. `user` is `null` when unauthenticated (401).
+ *
+ * This is a strict refinement of the generated `MeResponse` (the OpenAPI types
+ * `principal`/`user`/`session` as `unknown`); the field names match the
+ * generated schema.
  */
 export interface MeResponse {
   csrf_token: string
@@ -286,11 +316,12 @@ export interface RoomChatMessage {
   timestamp?: string
 }
 
-/** Chat send body (design §13.3) — client never supplies a trusted user_id. */
-export interface ChatSendBody {
-  room_id: string
-  content: string
-}
+/**
+ * Chat send body — generated `ChatSendBody { content }`. The room is carried
+ * in the path (`/api/v1/rooms/{room_id}/chat`); the client never supplies a
+ * trusted user_id (design §13.3, PPB resolves the real phira_id).
+ */
+export type ChatSendBody = components['schemas']['ChatSendBody']
 
 /** Host-allowed action request (design §13.4, contract §6 Action Manifest). */
 export interface HostActionBody {

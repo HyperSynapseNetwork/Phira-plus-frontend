@@ -74,16 +74,18 @@ export function replayWsUrl(apiBase: string, roundUuid: string, playerPhiraId?: 
 }
 
 /**
- * ReplaySource — round manifest (contract §19, P-86).
+ * ReplaySource — round manifest (contract §19, P-86 / §20).
  *
  * `GET /api/v1/replays/{round_uuid}/manifest` returns the round metadata,
- * including the `chart_id` the ReplayViewer uses to fetch the chart blob
- * (`GET /api/v1/charts/{id}/viewer`) and the identifiers for the replay WS.
- * The `identifier` is normally the round_uuid; for a share link it may be the
- * opaque share token (PPB resolves it — see §10/§19).
+ * pinned to the `(round_uuid, player_phira_id)` identity (generated
+ * `ReplayManifest` schema). The `chart_id`/`chart` refinements below are what
+ * the ReplayViewer uses to fetch the chart blob (`GET /api/v1/charts/{id}/viewer`);
+ * the identifier is normally the round_uuid, or the opaque share token for a
+ * share link (PPB resolves it — see §10/§19).
  */
 export interface ReplayManifest {
   round_uuid?: string
+  player_phira_id?: number
   chart_id?: number | null
   chart?: { id?: number } | null
   [key: string]: unknown

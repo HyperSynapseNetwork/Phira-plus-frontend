@@ -83,11 +83,11 @@ export function useRoomHistory(roomUuid: MaybeRefOrGetter<string>) {
   return { history: data, error, pending, refresh }
 }
 
-/** Send a chat message. Client never supplies a trusted user_id (design §13.3). */
-export async function sendRoomChat(body: ChatSendBody): Promise<void> {
-  await apiFetch(`/api/v1/rooms/${encodeURIComponent(body.room_id)}/chat`, {
+/** Send a chat message. Room id is in the path; PPB resolves the real phira_id (design §13.3). */
+export async function sendRoomChat(roomId: string, content: string): Promise<void> {
+  await apiFetch(`/api/v1/rooms/${encodeURIComponent(roomId)}/chat`, {
     method: 'POST',
-    body: { content: body.content },
+    body: { content } satisfies ChatSendBody,
   })
 }
 

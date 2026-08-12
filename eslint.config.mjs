@@ -25,6 +25,8 @@ export default antfu({
     // Generated WASM output + resource-pack assets (copied from the vendored
     // web-monitor repo) are not authored frontend code.
     'src/public/viewer/**',
+    // PPB OpenAPI generated contract types (synced via scripts/gen-types.sh).
+    'src/utils/api/generated.ts',
   ],
 }, {
   // `pnpm/yaml-enforce-settings` demands `trustPolicy: no-downgrade`, which is

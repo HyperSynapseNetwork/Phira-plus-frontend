@@ -59,7 +59,7 @@ async function submit(): Promise<void> {
   sending.value = true
   sendError.value = ''
   try {
-    await sendRoomChat({ room_id: props.roomUuid, content })
+    await sendRoomChat(props.roomUuid, content)
     draft.value = ''
     await refresh()
   }
