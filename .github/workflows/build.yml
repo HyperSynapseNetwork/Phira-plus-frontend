@@ -106,3 +106,140 @@ jobs:
           test -f .output/public/sitemap_index.xml
           grep -q "Skip to content" .output/public/index.html
           grep -q "Phira+" .output/public/index.html
+
+  # Gate 7 — Tauri 2 native shell (design §17 / §26.3).
+  # Windows (nsis+msi) and Android (apk). The frontend is the Nuxt SSG output
+  # (.output/public) + the CI-built WASM viewer. Signing (updater) uses CI
+  # secrets when present and is skipped otherwise; FCM (google-services.json)
+  # is skipped until the Owner supplies it. No lockstep release — versions are
+  # per-repo (tauri.conf.json + package.json).
+  tauri-windows:
+    name: Tauri Windows (nsis/msi)
+    runs-on: windows-latest
+    timeout-minutes: 40
+    needs: [quality, wasm]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download WASM viewer
+        uses: actions/download-artifact@v4
+        with:
+          name: viewer-wasm
+          path: src/public/viewer
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.8.0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install + build frontend (Nuxt SSG)
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm build
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build Tauri (nsis + msi)
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        shell: bash
+        run: pnpm dlx @tauri-apps/cli@2 build --bundles nsis,msi
+
+      - name: Compute SHA256SUMS
+        shell: bash
+        run: |
+          cd src-tauri/target/release/bundle
+          find . -type f \( -name "*.exe" -o -name "*.msi" \) -print0 | xargs -0 sha256sum > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: tauri-windows
+          path: |
+            src-tauri/target/release/bundle/**/*.exe
+            src-tauri/target/release/bundle/**/*.msi
+            src-tauri/target/release/bundle/SHA256SUMS.txt
+
+  tauri-android:
+    name: Tauri Android (apk)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    needs: [quality, wasm]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download WASM viewer
+        uses: actions/download-artifact@v4
+        with:
+          name: viewer-wasm
+          path: src/public/viewer
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.8.0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install + build frontend (Nuxt SSG)
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm build
+
+      - name: Install Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Rust toolchain (Android targets)
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: >-
+            aarch64-linux-android,armv7-linux-androideabi,
+            i686-linux-android,x86_64-linux-android
+
+      - name: Note FCM availability
+        run: |
+          if [ -f google-services.json ]; then
+            echo "google-services.json present — FCM will be integrated."
+          else
+            echo "google-services.json MISSING — FCM integration skipped (pending Owner credentials)."
+          fi
+
+      - name: Init + build Tauri Android (apk)
+        run: |
+          pnpm dlx @tauri-apps/cli@2 android init
+          pnpm dlx @tauri-apps/cli@2 android build --target apk
+
+      - name: Compute SHA256SUMS
+        run: |
+          cd src-tauri/gen/android
+          find . -name "*.apk" -print0 | xargs -0 sha256sum > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: tauri-android
+          path: |
+            src-tauri/gen/android/**/*.apk
+            src-tauri/gen/android/SHA256SUMS.txt
