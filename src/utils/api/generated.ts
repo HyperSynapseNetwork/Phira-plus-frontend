@@ -22,6 +22,76 @@ export interface components {
             action: string;
             args?: unknown;
         };
+        /**
+         * @description Admin user list/detail wire item (§22: `ppb_user_id` UUID, `phira_id`,
+         *     `username`/`avatar` naming aligned with Panel).
+         */
+        AdminUserItem: {
+            avatar: string;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            last_seen_at?: string | null;
+            /** Format: int64 */
+            phira_id: number;
+            /** Format: uuid */
+            ppb_user_id: string;
+            status: string;
+            /** Format: date-time */
+            updated_at: string;
+            username: string;
+        };
+        /** @description Wire shape of one inbox notification (contract §8). */
+        AppNotificationWire: {
+            actions: unknown[];
+            actor: unknown;
+            body?: unknown;
+            /** Format: date-time */
+            created_at: string;
+            dedup_key: string;
+            deep_link: string;
+            expires_at?: unknown;
+            /** Format: uuid */
+            id: string;
+            input?: unknown;
+            priority: string;
+            /** Format: date-time */
+            read_at?: string | null;
+            target: unknown;
+            title: string;
+            type: string;
+        };
+        AuditEvent: {
+            action: string;
+            /** Format: uuid */
+            actor_session_id?: string | null;
+            /** Format: uuid */
+            actor_user_id?: string | null;
+            command_id: string;
+            error_code: string;
+            /** Format: uuid */
+            id: string;
+            ip: string;
+            /** Format: date-time */
+            occurred_at: string;
+            parameters_redacted: unknown;
+            principal_type: string;
+            request_id: string;
+            resource_id: string;
+            resource_type: string;
+            result: string;
+            user_agent: string;
+        };
+        /** @description Paginated audit list response (§22 `{items, total, page, pageNum}`). */
+        AuditListResponse: {
+            items: components["schemas"]["AuditEvent"][];
+            /** Format: int64 */
+            page: number;
+            /** Format: int64 */
+            pageNum: number;
+            /** Format: int64 */
+            total: number;
+        };
         BroadcastBody: {
             content: string;
             room_id?: string | null;
@@ -35,9 +105,57 @@ export interface components {
         ChatSendBody: {
             content: string;
         };
-        ConfigContentBody: {
+        /**
+         * @description A PMP config field descriptor (Panel renders grouped forms). Schema-freeze
+         *     (§22): descriptor carries type/widget/min/max/risk/permission/reload
+         *     semantics/sensitive/default.
+         */
+        ConfigFieldDescriptor: {
+            default?: unknown;
+            description: string;
+            label: string;
+            /** Format: double */
+            max?: number | null;
+            /** Format: double */
+            min?: number | null;
+            /** Format: int32 */
+            order: number;
+            path: string;
+            permission: string;
+            /** @description hot | restart | rebuild */
+            reload_semantics: string;
+            risk: string;
+            sensitive: boolean;
+            /** @description Wire type: `string | number | boolean`. */
+            type: string;
+            widget: string;
+        };
+        /** @description A named group of related config fields (Panel renders per group). */
+        ConfigFieldGroup: {
+            fields: components["schemas"]["ConfigFieldDescriptor"][];
+            key: string;
+            label: string;
+        };
+        ConfigSnapshot: {
             content: string;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: uuid */
+            created_by?: string | null;
+            /** Format: uuid */
+            id: string;
+            note: string;
+            /** Format: date-time */
+            restored_at?: string | null;
+            scope: string;
+        };
+        /**
+         * @description Form-value edit body (§22 model A): Panel submits `{path: value}` and PPB
+         *     validates/generates YAML/saves.
+         */
+        ConfigValuesBody: {
             note?: string;
+            values: unknown;
         };
         CreateCouponBody: {
             action_type: string;
@@ -81,8 +199,72 @@ export interface components {
         ExecuteCommandBody: {
             command: string;
         };
+        Group: {
+            /** Format: date-time */
+            created_at: string;
+            description: string;
+            /** Format: uuid */
+            id: string;
+            is_default: boolean;
+            name: string;
+            protected: boolean;
+            system_kind?: string | null;
+            /** Format: date-time */
+            updated_at: string;
+        };
+        /** @description Typed group list item (§22: group fields + member_count + permissions). */
+        GroupListItem: {
+            /** Format: date-time */
+            created_at: string;
+            description: string;
+            /** Format: uuid */
+            id: string;
+            is_default: boolean;
+            /** Format: int64 */
+            member_count: number;
+            name: string;
+            permissions: string[];
+            protected: boolean;
+            system_kind?: string | null;
+            /** Format: date-time */
+            updated_at: string;
+        };
+        /** @description Paginated group list response (§22: `{items, total, page, pageNum}`). */
+        GroupListResponse: {
+            items: components["schemas"]["GroupListItem"][];
+            /** Format: int64 */
+            page: number;
+            /** Format: int64 */
+            pageNum: number;
+            /** Format: int64 */
+            total: number;
+        };
+        /** @description A group member with the PPB account display fields. */
+        GroupMember: {
+            /** Format: int64 */
+            phira_id: number;
+            /** Format: uuid */
+            user_id: string;
+            username: string;
+        };
         InputBody: {
             text: string;
+        };
+        Job: {
+            /** Format: date-time */
+            created_at: string;
+            error: string;
+            /** Format: date-time */
+            finished_at?: string | null;
+            /** Format: uuid */
+            id: string;
+            /** Format: float */
+            progress?: number | null;
+            stage: string;
+            /** Format: date-time */
+            started_at?: string | null;
+            state: string;
+            type: string;
         };
         JoinIntentBody: {
             room_id: string;
@@ -102,6 +284,18 @@ export interface components {
             principal: unknown;
             session: unknown;
             user?: unknown;
+        };
+        /** @description Inbox response (§22 `{items, total, page, pageNum, unread}`). */
+        NotificationInboxResponse: {
+            items: components["schemas"]["AppNotificationWire"][];
+            /** Format: int64 */
+            page: number;
+            /** Format: int64 */
+            pageNum: number;
+            /** Format: int64 */
+            total: number;
+            /** Format: int64 */
+            unread: number;
         };
         /** @description Standard paginated response `{items, total, page, pageNum}`. */
         PaginationResponse: {
@@ -124,6 +318,16 @@ export interface components {
             args?: unknown[];
             method?: string;
             name: string;
+        };
+        /** @description Typed PMP connectivity summary (server status). */
+        PmpStatus: {
+            connected: boolean;
+            session_id?: string | null;
+            version?: string | null;
+        };
+        /** @description Preferences list response (§22). */
+        PreferencesListResponse: {
+            preferences: components["schemas"]["UserPreference"][];
         };
         PushEndpointBody: {
             channel: string;
@@ -221,6 +425,13 @@ export interface components {
             action: string;
             args?: unknown;
         };
+        /** @description Typed server status response (§22). */
+        ServerStatusResponse: {
+            db_configured: boolean;
+            metrics: unknown;
+            pmp: components["schemas"]["PmpStatus"];
+            ppb_version: string;
+        };
         /** @description Encrypted subscription wire shape (before encryption at rest). */
         SubscriptionWire: {
             auth: string;
@@ -238,6 +449,33 @@ export interface components {
         UserActionBody: {
             action: string;
             args?: unknown;
+        };
+        /** @description User detail response (§22 `{account, groups, player}`). */
+        UserDetailResponse: {
+            account: components["schemas"]["AdminUserItem"];
+            groups: string[];
+            /** @description Best-effort PMP player info (dynamic payload; null when PMP offline). */
+            player?: unknown;
+        };
+        /** @description Paginated user list response (§22 `{items, total, page, pageNum}`). */
+        UserListResponse: {
+            items: components["schemas"]["AdminUserItem"][];
+            /** Format: int64 */
+            page: number;
+            /** Format: int64 */
+            pageNum: number;
+            /** Format: int64 */
+            total: number;
+        };
+        UserPreference: {
+            data: unknown;
+            namespace: string;
+            /** Format: int64 */
+            revision: number;
+            /** Format: date-time */
+            updated_at: string;
+            /** Format: uuid */
+            user_id: string;
         };
     };
     responses: never;

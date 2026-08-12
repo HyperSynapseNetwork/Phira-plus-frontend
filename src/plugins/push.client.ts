@@ -13,9 +13,9 @@ import { apiFetch } from '~/utils/api/client'
  * - The VAPID public key is owned by PPB (NOT PPF) and arrives via runtime
  *   config `public.pushVapidPublicKey` (`NUXT_PUBLIC_PUSH_VAPID_PUBLIC_KEY`).
  *   Until PPB configures it, `subscribe()` reports `push.vapidMissing`.
- * - Server sync uses the PROPOSED `POST /api/v1/me/push-endpoints` endpoint —
- *   it is NOT part of the frozen contract and fails gracefully (4xx / network
- *   → `push.syncFailed`, returns `false`).
+ * - Server sync uses `POST /api/v1/me/push-endpoints` (contract §19 / frozen
+ *   `PushEndpointBody { channel, device_id, platform?, subscription }`).
+ *   Failures degrade gracefully (4xx / network → `push.syncFailed`, false).
  *
  * Errors stored in state are i18n KEYS under `push.*` so the UI can localize
  * them (`$t(pushError)`).
@@ -37,6 +37,28 @@ function arrayBufferToBase64Url(buffer: ArrayBuffer): string {
   for (let i = 0; i < bytes.byteLength; i++)
     binary += String.fromCharCode(bytes[i]!)
   return window.btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+}
+
+const DEVICE_ID_KEY = 'ppf:device-id'
+
+/**
+ * Stable per-device identifier for push registration. PPB keys the push
+ * endpoint on `(user_id, device_id)` (ON CONFLICT upsert), so this must be
+ * persistent across visits. Falls back to a per-session id when storage or
+ * `crypto.randomUUID` is unavailable (the endpoint re-registers next visit).
+ */
+function getDeviceId(): string {
+  try {
+    const existing = localStorage.getItem(DEVICE_ID_KEY)
+    if (existing)
+      return existing
+    const id = crypto.randomUUID()
+    localStorage.setItem(DEVICE_ID_KEY, id)
+    return id
+  }
+  catch {
+    return `web-${Date.now()}-${Math.random().toString(36).slice(2)}`
+  }
 }
 
 export default defineNuxtPlugin(() => {
@@ -159,14 +181,17 @@ export default defineNuxtPlugin(() => {
     }
 
     try {
-      // PROPOSED endpoint — not in the frozen contract; PPB may 4xx/404 until
-      // it lands. Failures are reported but never thrown.
+      // Frozen contract §19 / generated `PushEndpointBody`: `{ channel,
+      // device_id, platform?, subscription: { endpoint, p256dh, auth } }`.
+      // Failures are reported but never thrown.
       await apiFetch('/api/v1/me/push-endpoints', {
         method: 'POST',
         body: {
-          endpoint: sub.endpoint,
-          expiration_time: sub.expirationTime,
-          keys: {
+          channel: 'web_push',
+          device_id: getDeviceId(),
+          platform: 'web',
+          subscription: {
+            endpoint: sub.endpoint,
             p256dh: arrayBufferToBase64Url(p256dh),
             auth: arrayBufferToBase64Url(auth),
           },
