@@ -8,7 +8,6 @@
 import { useSession } from '~/composables/useSession'
 
 const { locale, setLocale } = useI18n()
-const route = useRoute()
 const { authenticated, profile, pending: sessionPending } = useSession()
 
 const localeLinks = computed<{ code: 'zh' | 'en', label: string }[]>(() => [
@@ -24,7 +23,10 @@ const mainLinks = computed(() => [
 ])
 
 const avatarText = computed(() => profile.value?.username?.charAt(0).toUpperCase() || '')
-const loginHref = computed(() => `/login?return_to=${encodeURIComponent(route.path)}`)
+// Link to the bare /login route. A `return_to` query string would be crawled by
+// the SSG link crawler and fail on Windows (invalid cache path with `?`/`%`),
+// so the header does not append it; the login page defaults to returning home.
+const loginTo = '/login'
 </script>
 
 <template>
@@ -117,7 +119,7 @@ const loginHref = computed(() => `/login?return_to=${encodeURIComponent(route.pa
         </template>
         <NuxtLink
           v-else
-          :to="loginHref"
+          :to="loginTo"
           class="glass-focusable rounded-md px-3 py-1.5 text-sm font-medium text-accent hover:bg-accent/10"
           :aria-disabled="sessionPending || undefined"
         >

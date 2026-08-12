@@ -43,8 +43,9 @@
 
   "bundle": {
     "active": true,
-    // Windows (nsis + msi) and Android (apk) per design §17.1.
-    "targets": ["nsis", "msi", "apk"],
+    // Desktop targets only. Android APK is produced by `tauri android build`
+    // (mobile targets are not valid in the desktop bundle schema).
+    "targets": ["nsis", "msi"],
     "category": "Game",
     "shortDescription": "Phira+ companion",
     "longDescription": "Phira+ — Phira 公共伴生站 (rooms, charts, community, replays).",
