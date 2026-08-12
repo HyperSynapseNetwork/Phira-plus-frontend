@@ -3,7 +3,7 @@ import type { ChartPlayer } from './loader'
 import { onUnmounted, toValue } from 'vue'
 import { getApiBase } from '~/utils/api/client'
 import { loadWasm } from './loader'
-import { fetchReplayBlob, loadResourcePack } from './sources'
+import { fetchChartBlob, fetchReplayManifest, loadResourcePack, replayWsUrl } from './sources'
 
 export type ReplayStatus = 'idle' | 'loading' | 'ready' | 'error' | 'unavailable'
 
@@ -20,13 +20,18 @@ export interface UseReplayViewerReturn {
 }
 
 /**
- * `useReplayViewer()` — ChartPlayer-based Replay viewer (design §12.2 / §12.5).
+ * `useReplayViewer()` — ChartPlayer-based Replay viewer (design §12.2 / §12.5,
+ * contract §19 / P-86).
  *
- * The replay WS stream (`/ws/v1/replays/{round_uuid}`) is a Phase-D+
- * capability that may be unready, so this pass renders the chart from the
- * PPB viewer blob via `ChartPlayer.load_chart_bytes` and exposes
- * play/pause/seek — the presentational viewer still renders the chart when the
- * blob is available. No raw replay file download is offered (contract §12.2).
+ * Per P-86 the Replay viewer no longer fetches a `/replays/{round}/viewer`
+ * blob. Instead it:
+ *   1. `GET /api/v1/replays/{identifier}/manifest` → round `chart_id`
+ *   2. `GET /api/v1/charts/{id}/viewer` → bincode `(ChartInfo, Chart)` blob
+ *      → `ChartPlayer.load_chart_bytes`
+ *   3. opens `WSS /ws/v1/replays/{round_uuid}` and parses the touches/judges
+ *      JSON envelope (P-81) — best-effort in this pass.
+ * `identifier` is the round_uuid, or the opaque share token (PPB resolves it).
+ * No raw replay file download is offered (contract §12.2).
  */
 export function useReplayViewer(
   roundUuid: MaybeRefOrGetter<string>,
@@ -45,6 +50,7 @@ export function useReplayViewer(
   let playing = false
   let disposed = false
   let lastRenderAt = 0
+  let replayWs: WebSocket | null = null
 
   function renderFrame(ts: number): void {
     if (disposed)
@@ -79,11 +85,35 @@ export function useReplayViewer(
     player.resize(Math.max(1, canvas.clientWidth), Math.max(1, canvas.clientHeight))
   }
 
+  function connectReplayStream(identifier: string): void {
+    if (!import.meta.client || replayWs)
+      return
+    try {
+      const ws = new WebSocket(replayWsUrl(getApiBase(), identifier))
+      replayWs = ws
+      ws.addEventListener('message', (event) => {
+        try {
+          const data = JSON.parse(String(event.data)) as { type?: string }
+          // JSON envelope (P-81): touches/judges/round_switch/resync/heartbeat.
+          // This pass only asserts liveness — full per-player visuals await the
+          // binary frame feed. No throw.
+          void data
+        }
+        catch {
+          // Ignore non-JSON frames.
+        }
+      })
+    }
+    catch {
+      replayWs = null
+    }
+  }
+
   async function load(): Promise<void> {
     if (status.value === 'loading')
       return
-    const uuid = String(toValue(roundUuid))
-    if (!uuid)
+    const identifier = String(toValue(roundUuid))
+    if (!identifier)
       return
     status.value = 'loading'
     error.value = null
@@ -107,7 +137,16 @@ export function useReplayViewer(
       resourcePack ??= await loadResourcePack()
       await player.load_resource_pack(resourcePack)
 
-      const blob = await fetchReplayBlob(getApiBase(), uuid)
+      // P-86: manifest → chart_id → chart blob (no replay viewer blob).
+      const manifest = await fetchReplayManifest(getApiBase(), identifier)
+      const chartId = manifest?.chart_id ?? manifest?.chart?.id
+      if (!chartId) {
+        status.value = 'error'
+        error.value = 'viewer.replayNoData'
+        return
+      }
+
+      const blob = await fetchChartBlob(getApiBase(), chartId)
       if (!blob) {
         status.value = 'error'
         error.value = 'viewer.replayNoData'
@@ -121,6 +160,9 @@ export function useReplayViewer(
       resizeObserver?.disconnect()
       resizeObserver = new ResizeObserver(() => syncSize())
       resizeObserver.observe(canvas)
+
+      // Best-effort replay stream (touches/judges JSON, P-81/P-86).
+      connectReplayStream(identifier)
     }
     catch {
       status.value = 'error'
@@ -162,6 +204,10 @@ export function useReplayViewer(
     stopLoop()
     resizeObserver?.disconnect()
     resizeObserver = null
+    if (replayWs) {
+      replayWs.close()
+      replayWs = null
+    }
     if (player)
       void player.pause()
     player = null

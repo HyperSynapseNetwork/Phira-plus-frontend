@@ -68,18 +68,27 @@ export function replayWsUrl(apiBase: string, roundUuid: string): string {
 }
 
 /**
- * ReplaySource — raw bincode replay blob for the Replay viewer.
+ * ReplaySource — round manifest (contract §19, P-86).
  *
- * PROPOSED endpoint (not frozen): `GET {apiBase}/api/v1/replays/{round_uuid}/viewer`.
- * Per contract §12.2 there is no raw replay file download — the viewer stream
- * is the only data channel.
+ * `GET /api/v1/replays/{round_uuid}/manifest` returns the round metadata,
+ * including the `chart_id` the ReplayViewer uses to fetch the chart blob
+ * (`GET /api/v1/charts/{id}/viewer`) and the identifiers for the replay WS.
+ * The `identifier` is normally the round_uuid; for a share link it may be the
+ * opaque share token (PPB resolves it — see §10/§19).
  */
-export async function fetchReplayBlob(apiBase: string, roundUuid: string): Promise<Uint8Array | null> {
+export interface ReplayManifest {
+  round_uuid?: string
+  chart_id?: number | null
+  chart?: { id?: number } | null
+  [key: string]: unknown
+}
+
+export async function fetchReplayManifest(apiBase: string, identifier: string): Promise<ReplayManifest | null> {
   try {
-    const res = await fetch(`${apiBase}/api/v1/replays/${encodeURIComponent(roundUuid)}/viewer`)
+    const res = await fetch(`${apiBase}/api/v1/replays/${encodeURIComponent(identifier)}/manifest`)
     if (!res.ok)
       return null
-    return new Uint8Array(await res.arrayBuffer())
+    return await res.json() as ReplayManifest
   }
   catch {
     return null

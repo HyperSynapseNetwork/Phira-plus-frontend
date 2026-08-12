@@ -92,9 +92,10 @@ function hostName(): string {
       <RoomContextContent v-else :room-uuid="roomUuid" />
     </section>
 
-    <!-- JoinIntent: confirm-join → PPB intent → prompt → force_move (design §14.6) -->
+    <!-- JoinIntent: confirm-join → PPB intent → prompt → force_move (design §14.6, P-86).
+         Join-intents are keyed by ROOM ID (P-82/P-86), not the shareable uuid. -->
     <section v-if="room" class="content-surface p-6">
-      <JoinIntentPanel :room-uuid="roomUuid" />
+      <JoinIntentPanel :room-id="room.id || roomUuid" />
     </section>
   </div>
 </template>

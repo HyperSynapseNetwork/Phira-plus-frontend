@@ -11,18 +11,18 @@ import { apiFetch } from '~/utils/api/client'
  *   3. PPB watches PMP `user.online` and calls `room.force_move` → user lands in room
  *   4. expired / cancelled → PPB cleans the intent up
  *
- * NOTE (contract proposal): these are proposed REST mappings of the frozen
- * `/api/v1/rooms/*` namespace (contracts README §18). PPB may adjust them;
- * every call here catches failures and never throws to the UI, so an unready
- * PPB degrades to a graceful `error`/`expired` state.
- *   POST /api/v1/rooms/{room_uuid}/join-intent                    → create
- *   POST /api/v1/rooms/{room_uuid}/join-intent/{intent_id}/cancel → cancel
+ * NOTE (contract §19 / P-86): PPB implements the join-intent lifecycle under
+ * `/api/v1/me/join-intents`. PPF uses these paths (NOT `/rooms/{uuid}/...`):
+ *   POST   /api/v1/me/join-intents         { room_id }        → create
+ *   DELETE /api/v1/me/join-intents/{id}                        → cancel
+ * Every call catches failures and never throws to the UI, so an unready PPB
+ * degrades to a graceful `error`/`expired` state.
  */
 
 /** Short-lived join intent created by PPB (local interface, not a frozen type). */
 export interface JoinIntent {
-  intent_id: string
-  room_uuid: string
+  id: string
+  room_id: string
   expires_at: string
   prompt?: string
 }
@@ -79,12 +79,14 @@ export function useJoinIntent() {
     countdown.value = 0
   }
 
-  async function requestJoin(roomUuid: string): Promise<JoinIntentResult> {
+  async function requestJoin(roomId: string): Promise<JoinIntentResult> {
     status.value = 'requesting'
     errorMessage.value = null
     try {
-      const res = await apiFetch<JoinIntent>(`/api/v1/rooms/${encodeURIComponent(roomUuid)}/join-intent`, {
+      // Contract §19 / P-86: POST /api/v1/me/join-intents { room_id }
+      const res = await apiFetch<JoinIntent>('/api/v1/me/join-intents', {
         method: 'POST',
+        body: { room_id: roomId },
         credentials: 'include',
       })
       intent.value = res
@@ -101,15 +103,15 @@ export function useJoinIntent() {
   }
 
   async function cancelJoin(intentId?: string): Promise<void> {
-    const id = intentId ?? intent.value?.intent_id
-    const roomUuid = intent.value?.room_uuid
-    if (!id || !roomUuid) {
+    const id = intentId ?? intent.value?.id
+    if (!id) {
       reset()
       return
     }
     try {
-      await apiFetch(`/api/v1/rooms/${encodeURIComponent(roomUuid)}/join-intent/${encodeURIComponent(id)}/cancel`, {
-        method: 'POST',
+      // Contract §19 / P-86: DELETE /api/v1/me/join-intents/{id}
+      await apiFetch(`/api/v1/me/join-intents/${encodeURIComponent(id)}`, {
+        method: 'DELETE',
         credentials: 'include',
       })
     }

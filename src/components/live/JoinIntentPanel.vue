@@ -12,12 +12,12 @@ import { useJoinIntent } from '~/viewer/useJoinIntent'
  * never throw, and the panel just shows the `error`/`expired` state.
  */
 
-const props = defineProps<{ roomUuid: string }>()
+const props = defineProps<{ roomId: string }>()
 
 const { intent, status, errorMessage, countdown, requestJoin, cancelJoin } = useJoinIntent()
 
 async function onConfirm(): Promise<void> {
-  await requestJoin(props.roomUuid)
+  await requestJoin(props.roomId)
 }
 
 async function onCancel(): Promise<void> {
