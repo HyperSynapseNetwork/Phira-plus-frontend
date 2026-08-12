@@ -31,5 +31,8 @@ trackPageViews()
 
     <!-- Cookie / analytics consent (design §23.3) -->
     <ConsentBanner />
+
+    <!-- Elevated reauth prompt (contract §20 / P11) -->
+    <ReauthDialog />
   </div>
 </template>

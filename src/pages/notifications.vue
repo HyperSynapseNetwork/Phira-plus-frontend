@@ -13,6 +13,7 @@ import { isApiError } from '~/composables/useApi'
  * useSession; unauthenticated users see the empty inbox + login hint.
  */
 import { dismissNotification, markNotificationRead, runNotificationAction, sendNotificationInput, useNotifications } from '~/composables/useNotifications'
+import { useReauth } from '~/composables/useReauth'
 import { useSession } from '~/composables/useSession'
 
 useHead({ title: '通知' })
@@ -21,6 +22,7 @@ const { t } = useI18n()
 
 const { inbox, error, pending, refresh } = useNotifications()
 const { authenticated } = useSession()
+const { withReauth } = useReauth()
 
 const unread = computed(() => inbox.value.unread)
 const items = computed(() => inbox.value.items)
@@ -77,7 +79,8 @@ async function onAction(n: AppNotification, actionId: string): Promise<void> {
   actionBusy.value[`${n.id}:${actionId}`] = true
   lastActionResult.value = null
   try {
-    await runNotificationAction(n.id, actionId)
+    // Elevated reauth is required for notification actions (contract §20/P11).
+    await withReauth(token => runNotificationAction(n.id, actionId, token))
     await refresh()
     lastActionResult.value = { kind: 'success', message: t('notifications.actionSuccess') }
   }
@@ -96,7 +99,8 @@ async function onSubmitReply(n: AppNotification): Promise<void> {
   actionBusy.value[`${n.id}:input`] = true
   lastActionResult.value = null
   try {
-    await sendNotificationInput(n.id, text)
+    // Elevated reauth is required for notification input (contract §20/P11).
+    await withReauth(token => sendNotificationInput(n.id, text, token))
     replyOpen.value[n.id] = ''
     await refresh()
     lastActionResult.value = { kind: 'success', message: t('notifications.replySent') }

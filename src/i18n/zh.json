@@ -264,6 +264,15 @@
   "context": {
     "empty": "「{title}」内容占位（Context Window 骨架）"
   },
+  "reauth": {
+    "title": "重新验证 Phira 身份",
+    "body": "此操作需要重新验证你的 Phira 身份。",
+    "passwordLabel": "Phira 密码",
+    "passwordPlaceholder": "输入密码",
+    "confirm": "验证",
+    "failed": "验证失败，请重试。",
+    "hint": "密码仅用于本次验证，不会存储。"
+  },
   "preferences": {
     "title": "显示偏好",
     "theme": "主题",

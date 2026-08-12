@@ -14,12 +14,8 @@
  */
 import type { components } from './generated'
 
-/** Re-export the generated namespaces for callers that want raw paths/schemas. */
-export type {
-  components as GeneratedComponents,
-  operations as GeneratedOperations,
-  paths as GeneratedPaths,
-} from './generated'
+/** Re-export the generated `components` namespace (schemas). */
+export type { components as GeneratedComponents } from './generated'
 
 /** Generated `PaginationResponse` (items are untyped in the OpenAPI). */
 export type PaginationResponse = components['schemas']['PaginationResponse']

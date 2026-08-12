@@ -264,6 +264,15 @@
   "context": {
     "empty": "Placeholder for “{title}” (Context Window skeleton)"
   },
+  "reauth": {
+    "title": "Re-authenticate Phira",
+    "body": "This action requires you to re-authenticate your Phira identity.",
+    "passwordLabel": "Phira password",
+    "passwordPlaceholder": "Enter password",
+    "confirm": "Verify",
+    "failed": "Verification failed, please retry.",
+    "hint": "Your password is only used for this verification and is not stored."
+  },
   "preferences": {
     "title": "Display preferences",
     "theme": "Theme",

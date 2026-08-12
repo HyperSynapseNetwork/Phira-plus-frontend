@@ -3,15 +3,18 @@ import { apiFetch, getApiBase } from '~/utils/api/client'
 
 /**
  * Community / Friends / Users (design §16.6, contract §1 `/api/v1/users/*`,
- * `/api/v1/friends/*`).
+ * `/api/v1/friends/*`). PPB-implemented endpoints (see `generated.ts`):
+ *   GET  /api/v1/users/{phira_id}              → public user profile
+ *   GET  /api/v1/users/{phira_id}/stats        → public stats
+ *   GET  /api/v1/friends                       → friend list (paginated)
+ *   GET  /api/v1/friends/requests              → friend requests (paginated)
+ *   POST /api/v1/friends/requests              → send friend request { phira_id }
+ *   POST /api/v1/friends/requests/{id}/accept | /reject
+ *   POST /api/v1/friends/{phira_id}/remove     → remove friend
+ *   POST /api/v1/users/{phira_id}/block        → block user
  *
- * Proposed REST mappings:
- *   GET  /api/v1/users/{phira_id}        → public user profile
- *   GET  /api/v1/friends/requests        → friend requests (paginated)
- *   GET  /api/v1/friends                 → friend list (paginated)
- *   POST /api/v1/friends/requests        → send friend request { phira_id }
- *   POST /api/v1/friends/{phira_id}/accept | /reject
- *   POST /api/v1/users/{phira_id}/block  → block user
+ * Friends are a peer relationship only — no chat in this namespace (design
+ * §16.6). All friend mutations are CSRF-protected via `apiFetch`.
  */
 
 function emptyList<T>(): Paginated<T> {
