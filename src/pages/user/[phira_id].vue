@@ -11,12 +11,30 @@ import { sendFriendRequest } from '~/composables/useCommunity'
  */
 
 const { t } = useI18n()
-useHead({ title: computed(() => t('nav.community')) })
 
 const route = useRoute()
 const phiraId = computed(() => String(route.params.phira_id))
 
 const { user, pending, refresh } = useUserProfile(phiraId)
+
+usePageSeo(() => ({
+  title: user.value?.username ?? t('nav.community'),
+  description: user.value?.bio ?? t('community.empty'),
+  image: user.value?.avatar ?? null,
+  type: 'profile',
+  // Respect privacy: private profiles are not indexed in detail.
+  noindex: user.value?.profile_visibility === 'private',
+  jsonLd: user.value && user.value.profile_visibility !== 'private'
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'Person',
+        'name': user.value.username,
+        'identifier': String(user.value.phira_id),
+        'image': user.value.avatar ?? undefined,
+        'description': user.value.bio ?? undefined,
+      }
+    : undefined,
+}))
 
 const showLoading = computed(() => pending.value)
 const showError = computed(() => !pending.value && !user.value)

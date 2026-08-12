@@ -239,7 +239,23 @@
   },
   "terms": {
     "title": "用户协议与隐私",
-    "intro": "本页面为占位内容，正式协议正文待定（OWNER LATER）。"
+    "intro": "本页面为占位内容，正式协议正文待定（OWNER LATER）。",
+    "thirdParty": {
+      "title": "第三方资源与数据来源",
+      "intro": "本站部分功能依赖第三方服务，使用前请知悉：",
+      "authGateway": "登录通过 Phira 认证网关（api-phira.htadiy.com）完成；你的 Phira 凭据由服务端代为验证，不会出现在浏览器中。",
+      "chartCdn": "谱面封面与预览数据可能来自 Phira 官方 CDN / PPB Viewer 接口；请求失败时显示占位图。",
+      "externalLinks": "页脚指向 docs.phira.htadiy.com 与 GitHub 仓库；外部链接会在新窗口打开。",
+      "probes": "首页服务器状态与外部节点延迟来自 PPB public 接口；仅展示接口给出的来源与延迟，不推断 IP。"
+    },
+    "analytics": {
+      "title": "Cookie 与统计分析",
+      "body": "必要 Cookie（会话、语言、本地偏好）始终启用。分析统计默认关闭，仅在您明确同意后启用；我们不会向分析服务发送你的凭据、JWT 或房间聊天内容，也不使用侵入式指纹。"
+    },
+    "contact": {
+      "title": "联系与社区",
+      "body": "如需反馈或支持，请访问 GitHub 仓库（HyperSynapseNetwork/Phira-plus-frontend）或通过社区渠道联系我们。"
+    }
   },
   "context": {
     "empty": "「{title}」内容占位（Context Window 骨架）"
@@ -269,6 +285,13 @@
     "community": "社区",
     "dataSources": "数据来源",
     "buildInfo": "构建信息"
+  },
+  "consent": {
+    "title": "Cookie 与隐私",
+    "body": "必要的存储（登录、语言、偏好）始终启用。分析统计仅在您同意后进行，且不会收集凭据或聊天内容。",
+    "accept": "接受分析统计",
+    "decline": "仅必要项",
+    "privacyLink": "隐私政策"
   },
   "viewer": {
     "loadPreview": "加载谱面预览",

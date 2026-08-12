@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="Phira+">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#06131f"/>
+      <stop offset="1" stop-color="#0a1f33"/>
+    </linearGradient>
+    <radialGradient id="glow1" cx="0.15" cy="0.1" r="0.8">
+      <stop offset="0" stop-color="#00F7FF" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#00F7FF" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="0.9" cy="0.95" r="0.9">
+      <stop offset="0" stop-color="#7c3aed" stop-opacity="0.30"/>
+      <stop offset="1" stop-color="#7c3aed" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#glow1)"/>
+  <rect width="1200" height="630" fill="url(#glow2)"/>
+  <g fill="#00F7FF">
+    <circle cx="96" cy="300" r="14" opacity="0.9"/>
+    <circle cx="150" cy="300" r="8" opacity="0.6"/>
+    <circle cx="196" cy="300" r="20" opacity="1"/>
+    <circle cx="262" cy="300" r="9" opacity="0.7"/>
+    <circle cx="318" cy="300" r="5" opacity="0.5"/>
+    <path d="M340 300 h360" stroke="#00F7FF" stroke-width="6" opacity="0.5" fill="none"/>
+  </g>
+  <text x="1200" y="470" text-anchor="end" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="86" font-weight="700" fill="#f1f5f9">Phira+</text>
+  <text x="1200" y="535" text-anchor="end" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="34" fill="#94a3b8">房间 · 谱面 · 社区 · Replay</text>
+</svg>

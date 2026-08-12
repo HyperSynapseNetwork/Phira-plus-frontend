@@ -239,7 +239,23 @@
   },
   "terms": {
     "title": "Terms & Privacy",
-    "intro": "This page is a placeholder. Final terms text is pending (OWNER LATER)."
+    "intro": "This page is a placeholder. Final terms text is pending (OWNER LATER).",
+    "thirdParty": {
+      "title": "Third-party resources & data sources",
+      "intro": "Parts of this site depend on third-party services. Please note:",
+      "authGateway": "Sign-in is handled by the Phira auth gateway (api-phira.htadiy.com); your Phira credentials are verified server-side and never appear in your browser.",
+      "chartCdn": "Chart covers and preview data may come from the Phira CDN / the PPB viewer endpoint; a placeholder is shown when a request fails.",
+      "externalLinks": "The footer links to docs.phira.htadiy.com and the GitHub repository; external links open in a new window.",
+      "probes": "Homepage server status and external-node latency come from PPB public endpoints; only the source and latency reported by the API are shown — IP addresses are never inferred."
+    },
+    "analytics": {
+      "title": "Cookies & analytics",
+      "body": "Necessary cookies (session, language, local preferences) are always enabled. Analytics are off by default and only activate after your explicit consent; we never send your credentials, JWTs, or room chat content to analytics providers, and we do not use intrusive fingerprinting."
+    },
+    "contact": {
+      "title": "Contact & community",
+      "body": "For feedback or support, open an issue on the GitHub repository (HyperSynapseNetwork/Phira-plus-frontend) or reach us through community channels."
+    }
   },
   "context": {
     "empty": "Placeholder for “{title}” (Context Window skeleton)"
@@ -269,6 +285,13 @@
     "community": "Community",
     "dataSources": "Data sources",
     "buildInfo": "Build info"
+  },
+  "consent": {
+    "title": "Cookies & privacy",
+    "body": "Necessary storage (session, language, preferences) is always enabled. Analytics only run after your consent and never collect credentials or chat content.",
+    "accept": "Accept analytics",
+    "decline": "Necessary only",
+    "privacyLink": "Privacy policy"
   },
   "viewer": {
     "loadPreview": "Load chart preview",

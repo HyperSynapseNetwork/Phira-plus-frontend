@@ -14,11 +14,22 @@ const { t } = useI18n()
 
 const roomUuid = computed(() => String(route.params.room_id))
 
-useHead(() => ({
-  title: t('nav.rooms'),
-}))
-
 const { room, error, pending, refresh } = useRoom(roomUuid)
+
+usePageSeo(() => ({
+  title: room.value?.name ?? t('nav.rooms'),
+  description: room.value
+    ? `${t('room.statePlaying')} · ${t('rooms.players', { count: room.value.player_count, max: room.value.max_players })}`
+    : t('rooms.empty'),
+  jsonLd: room.value
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'WebPage',
+        'name': room.value.name ?? room.value.room_uuid,
+        // Live room info is dynamic; only non-sensitive public metadata is indexed.
+      }
+    : undefined,
+}))
 
 function stateLabel(state: RoomState): string {
   if (state === 'SelectChart')
@@ -79,6 +90,11 @@ function hostName(): string {
       </p>
 
       <RoomContextContent v-else :room-uuid="roomUuid" />
+    </section>
+
+    <!-- JoinIntent: confirm-join → PPB intent → prompt → force_move (design §14.6) -->
+    <section v-if="room" class="content-surface p-6">
+      <JoinIntentPanel :room-uuid="roomUuid" />
     </section>
   </div>
 </template>

@@ -13,7 +13,11 @@ const token = computed(() => {
   return Array.isArray(v) ? v[0] : v
 })
 
-useHead({ title: () => t('viewer.replayShare') })
+usePageSeo(() => ({
+  title: t('viewer.replayShare'),
+  description: t('viewer.replayNoRawDownload'),
+  type: 'website',
+}))
 </script>
 
 <template>

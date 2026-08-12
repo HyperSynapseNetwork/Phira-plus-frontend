@@ -2,13 +2,16 @@
 /**
  * User agreement / privacy (design §16.1, §23.3).
  * Standalone route — intentionally NOT part of the main navigation.
+ * Discloses third-party resources, consent-gated analytics, and the fact that
+ * credentials / room chat are never sent to analytics.
  */
-useHead({
-  title: '用户协议',
-  meta: [
-    { name: 'robots', content: 'index,follow' },
-  ],
-})
+const { t } = useI18n()
+
+usePageSeo(() => ({
+  title: t('terms.title'),
+  description: t('terms.intro'),
+  type: 'website',
+}))
 </script>
 
 <template>
@@ -28,11 +31,30 @@ useHead({
         </ul>
 
         <h2 class="pt-2 text-base font-semibold text-slate-100">
-          {{ $t('common.serverStatus') }}
+          {{ $t('terms.thirdParty.title') }}
         </h2>
         <p>
-          <!-- §23.3: disclose third-party background, probes, external static services. -->
-          —
+          {{ $t('terms.thirdParty.intro') }}
+        </p>
+        <ul class="list-disc space-y-1 pl-5">
+          <li>{{ $t('terms.thirdParty.authGateway') }}</li>
+          <li>{{ $t('terms.thirdParty.chartCdn') }}</li>
+          <li>{{ $t('terms.thirdParty.externalLinks') }}</li>
+          <li>{{ $t('terms.thirdParty.probes') }}</li>
+        </ul>
+
+        <h2 class="pt-2 text-base font-semibold text-slate-100">
+          {{ $t('terms.analytics.title') }}
+        </h2>
+        <p>
+          {{ $t('terms.analytics.body') }}
+        </p>
+
+        <h2 class="pt-2 text-base font-semibold text-slate-100">
+          {{ $t('terms.contact.title') }}
+        </h2>
+        <p>
+          {{ $t('terms.contact.body') }}
         </p>
       </div>
     </section>

@@ -14,9 +14,27 @@ import { useChartList } from '~/composables/useCharts'
 import { useAnnouncements, useNodes, usePublicMeta, useServerSummary } from '~/composables/usePublicContent'
 import { useRoomList } from '~/composables/useRooms'
 
-useHead({
-  title: '首页',
-})
+const { t } = useI18n()
+
+usePageSeo(() => ({
+  title: t('nav.home'),
+  description: t('home.heroSubtitle'),
+  jsonLd: [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      'name': 'Phira+',
+      'alternateName': 'Phira+ 公共伴生站',
+      'url': 'https://phira.htadiy.com/',
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
+      'name': 'Phira+',
+      'url': 'https://phira.htadiy.com/',
+    },
+  ],
+}))
 
 const { data: meta, pending: metaPending, error: metaError, refresh: refreshMeta } = usePublicMeta()
 const { data: summary, error: summaryError, refresh: refreshSummary } = useServerSummary()

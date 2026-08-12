@@ -12,8 +12,6 @@ import { useChart, useChartRecords } from '~/composables/useCharts'
 const route = useRoute()
 const { t } = useI18n()
 
-useHead({ title: () => t('nav.charts') })
-
 const rawId = computed(() => {
   const v = route.params.id
   const n = Number(Array.isArray(v) ? v[0] : v)
@@ -24,6 +22,25 @@ const chartIdValid = computed(() => Number.isFinite(rawId.value))
 
 const { chart, error, pending, refresh } = useChart(chartId)
 const { records, error: recordsError, pending: recordsPending, refresh: refreshRecords } = useChartRecords(chartId)
+
+usePageSeo(() => ({
+  title: chart.value?.name ?? t('nav.charts'),
+  description: chart.value
+    ? [chart.value.artist, chart.value.charter, chart.value.level].filter(Boolean).join(' · ')
+    : t('charts.empty'),
+  image: chart.value?.cover_url ?? null,
+  type: 'music.song',
+  jsonLd: chart.value
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'MusicRecording',
+        'name': chart.value.name,
+        'byArtist': chart.value.artist ? { '@type': 'Person', 'name': chart.value.artist } : undefined,
+        // Phira chart metadata is the source; no PII is exposed here.
+        'description': [chart.value.artist, chart.value.charter].filter(Boolean).join(' · '),
+      }
+    : undefined,
+}))
 
 const ranking = computed<ChartRecord[]>(() => {
   if (records.value.length)
@@ -100,15 +117,12 @@ function fmtDate(value?: string): string {
       <section class="content-surface p-6">
         <div class="flex flex-col gap-5 md:flex-row">
           <div class="w-full shrink-0 overflow-hidden rounded-lg bg-white/5 ring-1 ring-white/10 md:w-52">
-            <img
-              v-if="chart.cover_url"
+            <CoverImage
               :src="chart.cover_url"
               :alt="chart.name"
+              aspect="square"
               class="aspect-square h-auto w-full object-cover"
-            >
-            <div v-else class="grid aspect-square w-full place-items-center text-5xl text-slate-600">
-              ♪
-            </div>
+            />
           </div>
 
           <div class="min-w-0 flex-1">
