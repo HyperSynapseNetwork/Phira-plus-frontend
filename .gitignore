@@ -34,3 +34,7 @@ coverage/
 # Temporary
 .tmp/
 tmp/
+
+# CI-generated WASM viewer output (built by the "wasm" job, never commit)
+src/public/viewer/monitor_client*
+src/public/viewer/package.json
