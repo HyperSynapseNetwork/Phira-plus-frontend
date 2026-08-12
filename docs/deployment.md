@@ -60,14 +60,57 @@ pnpm generate    # 或 pnpm build → .output/public
 
 ## CI（design §26.3）
 
-[`.github/workflows/build.yml`](../.github/workflows/build.yml) 两个独立 job：
+[`.github/workflows/build.yml`](../.github/workflows/build.yml) 4 个 job：
 
 | Job | 内容 |
 |---|---|
 | `quality` | frozen-lockfile 安装 → ESLint → vue-tsc → Vitest → Nuxt SSG 构建 → 链接/静态产物 sanity（index/robots/sitemap + 关键文本） |
 | `wasm` | `wasm-pack --target web` 构建 vendor 查看器到 `src/public/viewer/`，校验 `.wasm` + `.js` 存在，上传 `viewer-wasm` artifact（独立运行，不让前端 CI 被 Rust 工具链阻塞） |
+| `tauri-windows` | 下载 `viewer-wasm` → `pnpm build` → `tauri icon` 生成图标 → `tauri build --bundles nsis,msi`；有 `WINDOWS_CERT` secret 时用 signtool 签 exe/msi；上传 exe/msi + SHA256SUMS |
+| `tauri-android` | 同上构建前端 + `tauri android init` → `tauri android build --apk`；有 `ANDROID_KEYSTORE` secret 时解 keystore 并配置 gradle release signing；上传 apk + SHA256SUMS |
 
-Tauri Windows/Android 原生流水线为后续工作（design §17），不在当前 CI。
+两个 Tauri job 均 `needs: [quality, wasm]`，**签名步骤在对应 secrets 缺失时自动跳过**（不阻塞 CI）。
+
+## 发布与签名（Gate 7）
+
+发布签名密钥**由 Owner 保管**（Play Store / Windows 商店不可丢失）。CI 只读 GitHub Actions Secrets，缺失即跳过签名。
+
+需要配置的 secrets（仓库 → Settings → Secrets and variables → Actions）：
+
+| Secret | 用途 | 必填 |
+|---|---|---|
+| `ANDROID_KEYSTORE` | Android release 签名（`.jks` 的 base64） | 上架必填 |
+| `ANDROID_KEYSTORE_PASSWORD` | keystore 密码 | 上架必填 |
+| `ANDROID_KEY_ALIAS` | keystore alias | 上架必填 |
+| `ANDROID_KEY_PASSWORD` | key 密码 | 上架必填 |
+| `WINDOWS_CERT` | Windows 安装包代码签名（`.pfx` 的 base64） | 可选 |
+| `WINDOWS_CERT_PASSWORD` | pfx 密码 | 可选 |
+| `TAURI_SIGNING_PRIVATE_KEY` / `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` | Tauri updater 签名（暂无 updater 插件，可选） | 可选 |
+
+生成 keystore 示例：
+
+```bash
+keytool -genkeypair -v -keystore phiraplus.keystore -alias phiraplus \
+  -keyalg RSA -keysize 2048 -validity 10000 \
+  -storepass "$(openssl rand -base64 18)" -keypass "$(openssl rand -base64 18)"
+base64 -w0 phiraplus.keystore > phiraplus.keystore.b64
+```
+
+配置命令（需 repo admin token，`gh secret set` 要求 secrets 权限）：
+
+```sh
+gh secret set ANDROID_KEYSTORE < phiraplus.keystore.b64
+gh secret set ANDROID_KEYSTORE_PASSWORD --body "store-password"
+gh secret set ANDROID_KEY_ALIAS --body "phiraplus"
+gh secret set ANDROID_KEY_PASSWORD --body "key-password"
+# 可选 Windows 安装包签名
+gh secret set WINDOWS_CERT < cert.pfx.b64
+gh secret set WINDOWS_CERT_PASSWORD --body "pfx-password"
+```
+
+> [!WARNING]
+> **备份 keystore**：`ANDROID_KEYSTORE` 一旦写入 GitHub Secret 便不可读取；请把 `phiraplus.keystore` 原文件 + 密码备份到安全位置，丢失即无法再对同一包名签名更新。
+> **包名/签名发布后不可更改**：上架前确认 `tauri.conf.json` 的 `identifier`（当前 `com.htadiy.phiraplus`）与签名密钥。
 
 ## 生产注意
 
