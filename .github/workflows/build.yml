@@ -147,6 +147,9 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Generate app icons (from source png)
+        run: pnpm dlx @tauri-apps/cli@2 icon src-tauri/icons/icon.png --output src-tauri/icons
+
       - name: Build Tauri (nsis + msi)
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
@@ -224,6 +227,9 @@ jobs:
           else
             echo "google-services.json MISSING — FCM integration skipped (pending Owner credentials)."
           fi
+
+      - name: Generate app icons (from source png)
+        run: pnpm dlx @tauri-apps/cli@2 icon src-tauri/icons/icon.png --output src-tauri/icons
 
       - name: Init + build Tauri Android (apk)
         run: |
