@@ -60,11 +60,17 @@ export function liveWsUrl(apiBase: string, roomId: string): string {
 
 /**
  * ReplaySource — WebSocket URL for a replay stream.
- * Contract P-82: Replay WS uses the ROUND UUID → `WSS /ws/v1/replays/{round_uuid}`.
+ * Contract P-82/§20: Replay WS uses the ROUND UUID and is pinned to
+ * `(round_uuid, player_phira_id)`. `playerPhiraId` defaults to the caller's own
+ * phira_id (server-side) when omitted; the server pins it after auth, so the
+ * client cannot read another player's frames with a spoofed id.
  */
-export function replayWsUrl(apiBase: string, roundUuid: string): string {
+export function replayWsUrl(apiBase: string, roundUuid: string, playerPhiraId?: number | string): string {
   const wsBase = apiBase.replace(/^https:/, 'wss:').replace(/^http:/, 'ws:').replace(/\/$/, '')
-  return `${wsBase}/ws/v1/replays/${encodeURIComponent(roundUuid)}`
+  const base = `${wsBase}/ws/v1/replays/${encodeURIComponent(roundUuid)}`
+  return playerPhiraId == null
+    ? base
+    : `${base}?player_id=${encodeURIComponent(String(playerPhiraId))}`
 }
 
 /**
@@ -83,9 +89,14 @@ export interface ReplayManifest {
   [key: string]: unknown
 }
 
-export async function fetchReplayManifest(apiBase: string, identifier: string): Promise<ReplayManifest | null> {
+export async function fetchReplayManifest(
+  apiBase: string,
+  identifier: string,
+  playerPhiraId?: number | string,
+): Promise<ReplayManifest | null> {
   try {
-    const res = await fetch(`${apiBase}/api/v1/replays/${encodeURIComponent(identifier)}/manifest`)
+    const query = playerPhiraId == null ? '' : `?player_id=${encodeURIComponent(String(playerPhiraId))}`
+    const res = await fetch(`${apiBase}/api/v1/replays/${encodeURIComponent(identifier)}/manifest${query}`)
     if (!res.ok)
       return null
     return await res.json() as ReplayManifest

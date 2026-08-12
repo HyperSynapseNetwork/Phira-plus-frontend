@@ -180,7 +180,31 @@ export interface SessionInfo {
   ip?: string
 }
 
-/** `GET /api/v1/me/profile` result when authenticated. */
+/** `GET /api/v1/me` session metadata (contract §20). */
+export interface MeSession {
+  sid: string
+  client_type: 'ppf' | 'panel' | 'windows' | 'android'
+  created_at: string
+}
+
+/**
+ * `GET /api/v1/me` — the ONLY session probe (contract §20).
+ * Returns identity, runtime-resolved permissions/capabilities and a CSRF token
+ * for write operations. `user` is `null` when unauthenticated (401).
+ */
+export interface MeResponse {
+  csrf_token: string
+  principal: {
+    principal_type: 'user' | 'root'
+    user_id?: string
+  } | null
+  user: MeProfile | null
+  permissions: string[]
+  capabilities: string[]
+  session: MeSession | null
+}
+
+/** `GET /api/v1/me/profile` result (legacy alias; profile info only). */
 export interface SessionState {
   authenticated: boolean
   profile?: MeProfile
