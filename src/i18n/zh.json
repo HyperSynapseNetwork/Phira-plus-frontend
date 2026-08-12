@@ -132,7 +132,9 @@
     "findUsers": "查找用户",
     "findUsersHint": "输入 Phira ID 后访问 /user/:phira_id 查看用户主页。",
     "noFriends": "暂无好友",
-    "noRequests": "暂无好友请求"
+    "noRequests": "暂无好友请求",
+    "removeFriend": "移除好友",
+    "blockUser": "屏蔽"
   },
   "downloads": {
     "empty": "下载信息由 PPB public content 配置。",
@@ -348,7 +350,12 @@
     "expired": "加入意图已过期",
     "cancel": "取消",
     "error": "创建加入意图失败：{message}",
-    "countdown": "剩余 {seconds} 秒"
+    "countdown": "剩余 {seconds} 秒",
+    "userOnline": "用户已在线，正在移入…",
+    "moving": "正在移入目标房…",
+    "completed": "已加入房间",
+    "failed": "移入失败：{message}",
+    "forceMoveFailed": "强制移入失败"
   },
   "push": {
     "title": "推送通知",

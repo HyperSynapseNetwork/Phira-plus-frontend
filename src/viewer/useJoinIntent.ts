@@ -2,21 +2,26 @@ import { isApiError } from '~/composables/useApi'
 import { apiFetch } from '~/utils/api/client'
 
 /**
- * JoinIntent UX (design §14.6, contracts README §8 / §11).
+ * JoinIntent UX (design §14.6, contract §19 / P-86, Gate 4).
  *
  * The "进入房间" action does NOT assume Phira has a usable official deep link.
+ * State machine:
+ *   requesting → waiting (intent created, waiting for user.online)
+ *             → user_online → moving → completed
+ *             → failed | expired | error
+ *
  * Flow:
- *   1. user confirms join → PPB creates a short-lived `JoinIntent(user, room, expires_at)`
+ *   1. user confirms join → `POST /api/v1/me/join-intents { room_id }`
  *   2. PPF/Tauri prompts the user to launch / switch to the Phira+ client
- *   3. PPB watches PMP `user.online` and calls `room.force_move` → user lands in room
+ *   3. PPB watches PMP `user.online` and calls `room.force_move` → user lands
  *   4. expired / cancelled → PPB cleans the intent up
  *
- * NOTE (contract §19 / P-86): PPB implements the join-intent lifecycle under
- * `/api/v1/me/join-intents`. PPF uses these paths (NOT `/rooms/{uuid}/...`):
- *   POST   /api/v1/me/join-intents         { room_id }        → create
- *   DELETE /api/v1/me/join-intents/{id}                        → cancel
- * Every call catches failures and never throws to the UI, so an unready PPB
- * degrades to a graceful `error`/`expired` state.
+ * We poll `GET /api/v1/me/join-intents/{id}` (PROPOSED) for the server-side
+ * transition to `user_online` / `moving` / `completed` / `failed` / `expired`.
+ * Creating a new intent SUPERSEDES any active one (server-side); the client
+ * resets its local state first. A `force_move` failure is surfaced (never
+ * silently swallowed). Every call catches failures so an unready PPB degrades
+ * gracefully.
  */
 
 /** Short-lived join intent created by PPB (local interface, not a frozen type). */
@@ -27,35 +32,59 @@ export interface JoinIntent {
   prompt?: string
 }
 
+/** Server-reported intent status (proposed `/api/v1/me/join-intents/{id}`). */
+export interface JoinIntentStatusResponse {
+  id: string
+  status?: 'pending' | 'user_online' | 'moving' | 'completed' | 'failed' | 'expired'
+  error?: string
+  room_id?: string
+}
+
 export interface JoinIntentResult {
   ok: boolean
   intent?: JoinIntent
   error?: string
 }
 
-export type JoinIntentStatus = 'idle' | 'requesting' | 'waiting' | 'expired' | 'error'
+export type JoinIntentStatus
+  = | 'idle'
+    | 'requesting'
+    | 'waiting'
+    | 'user_online'
+    | 'moving'
+    | 'completed'
+    | 'failed'
+    | 'expired'
+    | 'error'
+
+const POLL_MS = 2000
 
 export function useJoinIntent() {
   const intent = ref<JoinIntent | null>(null)
   const status = ref<JoinIntentStatus>('idle')
   const errorMessage = ref<string | null>(null)
-  /** Seconds until `expires_at`, ticking every second while `waiting`. */
+  /** Seconds until `expires_at`, ticking every second while active. */
   const countdown = ref(0)
 
-  let timer: ReturnType<typeof setInterval> | null = null
+  let countdownTimer: ReturnType<typeof setInterval> | null = null
+  let pollTimer: ReturnType<typeof setInterval> | null = null
 
-  function stopTimer(): void {
-    if (timer) {
-      clearInterval(timer)
-      timer = null
+  function stopTimers(): void {
+    if (countdownTimer) {
+      clearInterval(countdownTimer)
+      countdownTimer = null
+    }
+    if (pollTimer) {
+      clearInterval(pollTimer)
+      pollTimer = null
     }
   }
 
   function startCountdown(expiresAt: string): void {
-    stopTimer()
+    if (countdownTimer)
+      clearInterval(countdownTimer)
     const end = new Date(expiresAt).getTime()
     if (Number.isNaN(end)) {
-      // No reliable expiry — stay `waiting`; PPB cleans up on its own TTL.
       countdown.value = 0
       return
     }
@@ -64,15 +93,55 @@ export function useJoinIntent() {
       countdown.value = remaining
       if (remaining <= 0) {
         status.value = 'expired'
-        stopTimer()
+        stopTimers()
       }
     }
     tick()
-    timer = setInterval(tick, 1000)
+    countdownTimer = setInterval(tick, 1000)
+  }
+
+  const TERMINAL: JoinIntentStatus[] = ['completed', 'failed', 'expired']
+
+  async function pollStatus(): Promise<void> {
+    const id = intent.value?.id
+    if (!id || TERMINAL.includes(status.value))
+      return
+    try {
+      const res = await apiFetch<JoinIntentStatusResponse>(`/api/v1/me/join-intents/${encodeURIComponent(id)}`)
+      const s = res.status
+      if (s === 'user_online') {
+        status.value = 'user_online'
+      }
+      else if (s === 'moving') {
+        status.value = 'moving'
+      }
+      else if (s === 'completed') {
+        status.value = 'completed'
+        stopTimers()
+      }
+      else if (s === 'failed') {
+        status.value = 'failed'
+        // force_move failure is surfaced, not silently swallowed.
+        errorMessage.value = res.error || 'joinIntent.forceMoveFailed'
+        stopTimers()
+      }
+      else if (s === 'expired') {
+        status.value = 'expired'
+        stopTimers()
+      }
+    }
+    catch {
+      // Poll is best-effort; the countdown TTL still expires the intent locally.
+    }
+  }
+
+  function startPolling(): void {
+    stopTimers()
+    pollTimer = setInterval(() => void pollStatus(), POLL_MS)
   }
 
   function reset(): void {
-    stopTimer()
+    stopTimers()
     intent.value = null
     status.value = 'idle'
     errorMessage.value = null
@@ -80,6 +149,9 @@ export function useJoinIntent() {
   }
 
   async function requestJoin(roomId: string): Promise<JoinIntentResult> {
+    // Supersede any active intent (PPB also replaces it server-side).
+    if (intent.value?.id)
+      await cancelJoin(intent.value.id)
     status.value = 'requesting'
     errorMessage.value = null
     try {
@@ -92,6 +164,7 @@ export function useJoinIntent() {
       intent.value = res
       status.value = 'waiting'
       startCountdown(res.expires_at)
+      startPolling()
       return { ok: true, intent: res }
     }
     catch (err) {
@@ -104,8 +177,10 @@ export function useJoinIntent() {
 
   async function cancelJoin(intentId?: string): Promise<void> {
     const id = intentId ?? intent.value?.id
+    stopTimers()
     if (!id) {
-      reset()
+      intent.value = null
+      status.value = 'idle'
       return
     }
     try {
@@ -119,11 +194,14 @@ export function useJoinIntent() {
       // Best-effort cancel — local state resets regardless (PPB also TTL-expires).
     }
     finally {
-      reset()
+      intent.value = null
+      status.value = 'idle'
+      errorMessage.value = null
+      countdown.value = 0
     }
   }
 
-  onScopeDispose(stopTimer)
+  onScopeDispose(stopTimers)
 
   return { intent, status, errorMessage, countdown, requestJoin, cancelJoin, reset }
 }

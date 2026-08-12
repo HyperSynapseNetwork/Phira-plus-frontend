@@ -46,6 +46,11 @@ export async function respondFriendRequest(requestId: string, action: 'accept' |
   await apiFetch(`/api/v1/friends/requests/${encodeURIComponent(requestId)}/${action}`, { method: 'POST' })
 }
 
+/** Remove a friend (full friends lifecycle — Gate 4). */
+export async function removeFriend(phiraId: number | string): Promise<void> {
+  await apiFetch(`/api/v1/friends/${encodeURIComponent(String(phiraId))}/remove`, { method: 'POST' })
+}
+
 export async function blockUser(phiraId: number | string): Promise<void> {
   await apiFetch(`/api/v1/users/${encodeURIComponent(String(phiraId))}/block`, { method: 'POST' })
 }

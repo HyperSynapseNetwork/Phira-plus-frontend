@@ -132,7 +132,9 @@
     "findUsers": "Find users",
     "findUsersHint": "Enter a Phira ID and visit /user/:phira_id to view their profile.",
     "noFriends": "No friends yet",
-    "noRequests": "No friend requests"
+    "noRequests": "No friend requests",
+    "removeFriend": "Remove friend",
+    "blockUser": "Block"
   },
   "downloads": {
     "empty": "Download info is configured via PPB public content.",
@@ -348,7 +350,12 @@
     "expired": "Join intent expired",
     "cancel": "Cancel",
     "error": "Failed to create join intent: {message}",
-    "countdown": "{seconds}s left"
+    "countdown": "{seconds}s left",
+    "userOnline": "User is online, moving…",
+    "moving": "Moving to the target room…",
+    "completed": "Joined the room",
+    "failed": "Move failed: {message}",
+    "forceMoveFailed": "Force-move failed"
   },
   "push": {
     "title": "Push notifications",

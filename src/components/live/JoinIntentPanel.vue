@@ -49,17 +49,31 @@ async function onCancel(): Promise<void> {
     </template>
 
     <!-- Waiting: prompt to connect the client, show countdown + cancel -->
-    <template v-else-if="status === 'waiting'">
+    <template v-else-if="status === 'waiting' || status === 'user_online' || status === 'moving'">
       <p class="mb-1 text-sm text-slate-200">
         {{ intent?.prompt || $t('joinIntent.prompt') }}
       </p>
       <p class="mb-3 text-xs text-slate-400">
-        {{ $t('joinIntent.countdown', { seconds: countdown }) }}
+        {{
+          status === 'user_online'
+            ? $t('joinIntent.userOnline')
+            : status === 'moving'
+              ? $t('joinIntent.moving')
+              : $t('joinIntent.countdown', { seconds: countdown })
+        }}
       </p>
       <BaseButton variant="ghost" size="sm" @click="onCancel">
         {{ $t('joinIntent.cancel') }}
       </BaseButton>
     </template>
+
+    <p v-else-if="status === 'completed'" class="text-sm text-emerald-400">
+      {{ $t('joinIntent.completed') }}
+    </p>
+
+    <p v-else-if="status === 'failed'" class="text-sm text-rose-400" role="alert">
+      {{ $t('joinIntent.failed', { message: errorMessage ?? '—' }) }}
+    </p>
 
     <p v-else-if="status === 'expired'" class="text-sm text-amber-400">
       {{ $t('joinIntent.expired') }}

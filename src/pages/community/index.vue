@@ -18,6 +18,26 @@ const { data: requestData, refresh: refreshRequests } = useFriendRequests()
 async function refreshCommunity(): Promise<void> {
   await Promise.allSettled([refreshFriends(), refreshRequests()])
 }
+
+async function onRemoveFriend(phiraId: number): Promise<void> {
+  try {
+    await removeFriend(phiraId)
+  }
+  catch {
+    // PPB may be unready — keep the list unchanged.
+  }
+  await refreshFriends()
+}
+
+async function onBlockUser(phiraId: number): Promise<void> {
+  try {
+    await blockUser(phiraId)
+  }
+  catch {
+    // Best-effort.
+  }
+  await refreshFriends()
+}
 </script>
 
 <template>
@@ -38,7 +58,7 @@ async function refreshCommunity(): Promise<void> {
         </span>
       </div>
       <div class="mt-4">
-        <FriendCards :friends="friendData.items" />
+        <FriendCards :friends="friendData.items" @remove="onRemoveFriend" @block="onBlockUser" />
       </div>
     </section>
 

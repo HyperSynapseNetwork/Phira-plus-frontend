@@ -38,6 +38,26 @@ async function refreshCommunity(): Promise<void> {
   await Promise.allSettled([refreshFriends(), refreshRequests()])
 }
 
+async function onRemoveFriend(phiraId: number): Promise<void> {
+  try {
+    await removeFriend(phiraId)
+  }
+  catch {
+    // PPB may be unready — keep the list unchanged rather than crash.
+  }
+  await refreshFriends()
+}
+
+async function onBlockUser(phiraId: number): Promise<void> {
+  try {
+    await blockUser(phiraId)
+  }
+  catch {
+    // Best-effort.
+  }
+  await refreshFriends()
+}
+
 const profileVisibilityKey: Record<'public' | 'friends' | 'private', string> = {
   public: 'myphira.visibilityPublic',
   friends: 'myphira.visibilityFriends',
@@ -230,7 +250,7 @@ function identityLabel(identity: { provider: string, provider_name?: string }): 
             </span>
           </div>
           <div class="mt-4">
-            <FriendCards :friends="friendData.items" />
+            <FriendCards :friends="friendData.items" @remove="onRemoveFriend" @block="onBlockUser" />
           </div>
         </section>
 
