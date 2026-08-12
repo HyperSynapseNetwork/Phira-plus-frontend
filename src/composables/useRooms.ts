@@ -109,11 +109,14 @@ export async function sendHostAction(body: HostActionBody): Promise<void> {
   })
 }
 
-/** Proposed host-action ids (design §13.4 / contract §6). UI-only; server re-checks. */
+/**
+ * Proposed host-action ids (design §13.4 / contract §6). UI-only; server re-checks.
+ * NOTE (contract §22): `room.unlock` is removed — lock/unlock is `room.lock`
+ * with `{ locked: bool }` (`locked:false` = unlock).
+ */
 export const HOST_ACTIONS = [
   'room.set_chart',
   'room.lock',
-  'room.unlock',
   'room.kick',
   'room.start',
   'room.cancel_start',

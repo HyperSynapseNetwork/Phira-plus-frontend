@@ -33,6 +33,7 @@ interface HostAction {
   label: string
   disabled?: boolean
   danger?: boolean
+  args?: Record<string, unknown>
 }
 
 const actions = computed<HostAction[]>(() => {
@@ -40,9 +41,12 @@ const actions = computed<HostAction[]>(() => {
   if (!r || !isHost.value)
     return []
   const list: HostAction[] = []
-  list.push(r.locked
-    ? { action: 'room.unlock', label: 'room.unlock' }
-    : { action: 'room.lock', label: 'room.lock' })
+  // contract §22: lock/unlock is a single `room.lock` action with `{ locked }`.
+  list.push({
+    action: 'room.lock',
+    label: r.locked ? 'room.unlock' : 'room.lock',
+    args: { locked: !r.locked },
+  })
   list.push(r.state === 'Playing'
     ? { action: 'room.cancel_start', label: 'room.cancelStart', danger: true }
     : { action: 'room.start', label: 'room.start' })
@@ -51,14 +55,14 @@ const actions = computed<HostAction[]>(() => {
   return list
 })
 
-async function run(action: string): Promise<void> {
+async function run(a: HostAction): Promise<void> {
   const r = props.room
   if (!r || busy.value)
     return
   busy.value = true
   actionError.value = ''
   try {
-    await sendHostAction({ action, room_id: r.room_uuid })
+    await sendHostAction({ action: a.action, room_id: r.room_uuid, args: a.args ?? {} })
     emit('acted')
   }
   catch (err) {
@@ -83,7 +87,7 @@ async function run(action: string): Promise<void> {
         :variant="a.danger ? 'danger' : 'default'"
         size="sm"
         :disabled="busy || a.disabled"
-        @click="run(a.action)"
+        @click="run(a)"
       >
         {{ $t(a.label) }}
       </BaseButton>
