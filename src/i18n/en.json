@@ -52,6 +52,8 @@
     "tabHistory": "History",
     "livePlaceholder": "Live view ships in a later release.",
     "historyPlaceholder": "Room history ships in a later release.",
+    "historyEmpty": "No past rounds yet.",
+    "historyNoChart": "Unknown chart",
     "chart": "Chart",
     "locked": "Locked",
     "cycle": "Cycle",

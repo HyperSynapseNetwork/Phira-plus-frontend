@@ -267,6 +267,16 @@ export interface RoomListParams extends PaginationParams {
   only_live?: boolean
 }
 
+/** Room round history entry (proposed `GET /api/v1/rooms/{uuid}/history`). */
+export interface RoomHistoryEntry {
+  round_uuid: string
+  chart_id?: number
+  chart_name?: string
+  started_at?: string
+  ended_at?: string
+  players?: { phira_id: number, username?: string, score?: number }[]
+}
+
 /** PPF chat message (design §13.2). `user_id === 0` => system message. */
 export interface RoomChatMessage {
   user_id: number

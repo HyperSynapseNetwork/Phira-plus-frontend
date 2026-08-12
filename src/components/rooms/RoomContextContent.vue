@@ -305,9 +305,8 @@ function serverOnlineClass(r: Room): string {
           v-else
           id="tab-panel-history"
           role="tabpanel"
-          class="rounded-md border border-dashed border-white/10 p-6 text-center text-sm text-slate-400"
         >
-          {{ $t('room.historyPlaceholder') }}
+          <RoomHistoryPanel :room-uuid="roomUuid" />
         </div>
       </div>
     </div>

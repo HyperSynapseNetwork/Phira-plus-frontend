@@ -18,8 +18,6 @@ const props = defineProps<{
 const { chart, error, pending, refresh } = useChart(props.chartId)
 const { records, error: recordsError, pending: recordsPending, refresh: refreshRecords } = useChartRecords(props.chartId)
 
-const showPreview = ref(false)
-
 const ranking = computed<ChartRecord[]>(() => {
   if (records.value.length)
     return records.value
@@ -171,20 +169,8 @@ function fmtAccuracy(acc?: number): string {
         </ol>
       </div>
 
-      <!-- Chart Preview placeholder (lazy; real viewer ships in Phase D) -->
-      <div>
-        <BaseButton v-if="!showPreview" size="sm" variant="ghost" @click="showPreview = true">
-          {{ $t('chart.previewLoad') }}
-        </BaseButton>
-        <div
-          v-else
-          class="flex aspect-video items-center justify-center rounded-lg border border-dashed border-white/10 bg-white/[0.03] px-4"
-        >
-          <p class="text-center text-xs text-slate-400">
-            {{ $t('chart.previewPlaceholder') }}
-          </p>
-        </div>
-      </div>
+      <!-- Chart Preview — WASM ChartPlayer (design §12.7, Gate 4) -->
+      <ChartPlayerCanvas :chart-id="chart.id" />
 
       <!-- Full page link -->
       <div class="flex justify-end border-t border-white/5 pt-3">

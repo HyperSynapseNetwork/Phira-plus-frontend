@@ -1,4 +1,4 @@
-import type { ChatSendBody, HostActionBody, Paginated, Room, RoomChatMessage, RoomListParams } from '~/utils/api/types'
+import type { ChatSendBody, HostActionBody, Paginated, Room, RoomChatMessage, RoomHistoryEntry, RoomListParams } from '~/utils/api/types'
 import { apiFetch, getApiBase } from '~/utils/api/client'
 import { withQuery } from './useApi'
 
@@ -63,6 +63,24 @@ export function useRoomChat(roomUuid: MaybeRefOrGetter<string>) {
     default: () => [],
   })
   return { messages: data, error, pending, refresh }
+}
+
+/**
+ * Round history for a room (Gate 4 — real PMP `room.history`, proxied by PPB).
+ * PROPOSED endpoint: `GET /api/v1/rooms/{uuid}/history`. Degrades to an empty
+ * list while PPB is unready.
+ */
+export function useRoomHistory(roomUuid: MaybeRefOrGetter<string>) {
+  const path = computed(() => `/api/v1/rooms/${encodeURIComponent(toValue(roomUuid))}/history`)
+  const { data, error, pending, refresh } = useFetch<RoomHistoryEntry[]>(path, {
+    baseURL: getApiBase(),
+    credentials: 'include',
+    retry: 0,
+    server: false,
+    lazy: true,
+    default: () => [],
+  })
+  return { history: data, error, pending, refresh }
 }
 
 /** Send a chat message. Client never supplies a trusted user_id (design §13.3). */

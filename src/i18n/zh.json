@@ -52,6 +52,8 @@
     "tabHistory": "历史",
     "livePlaceholder": "Live 视图将在后续版本提供。",
     "historyPlaceholder": "房间历史将在后续版本提供。",
+    "historyEmpty": "暂无历史对局。",
+    "historyNoChart": "未知谱面",
     "chart": "谱面",
     "locked": "锁定",
     "cycle": "循环",
