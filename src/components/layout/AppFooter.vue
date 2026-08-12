@@ -6,7 +6,10 @@
 
 const { locale, setLocale, t } = useI18n()
 
-const version = '0.1.0' // TODO(Phase E): sync with package metadata + CI bump
+const { count: visitCount } = useVisitCount()
+
+// Sync with package metadata at build time (design §16.10 / §26.3).
+const version = useRuntimeConfig().public.appVersion as string ?? '0.1.0'
 
 const socialLinks = computed(() => [
   { href: 'https://docs.phira.htadiy.com', label: t('footer.docs'), external: true },
@@ -52,7 +55,7 @@ const socialLinks = computed(() => [
       <div class="flex items-center gap-3 text-xs text-slate-500">
         <span>{{ $t('footer.buildInfo') }}: v{{ version }}</span>
         <span class="hidden h-3 w-px bg-white/15 sm:block" />
-        <span>{{ $t('common.visitCount') }}: —</span>
+        <span>{{ $t('common.visitCount') }}: {{ visitCount ?? '—' }}</span>
         <div class="flex items-center gap-1" aria-label="Language">
           <button
             type="button"

@@ -57,12 +57,19 @@ export function useChartPlayer(
   let resizeObserver: ResizeObserver | null = null
   let playing = false
   let disposed = false
+  let lastRenderAt = 0
 
-  function renderFrame(): void {
+  function renderFrame(ts: number): void {
     if (disposed)
       return
-    if (playing && player)
-      player.render()
+    // Low-performance mode: cap at ~30fps (design §22.8) in addition to the
+    // 0.5 render scale applied in `syncSize()`.
+    if (playing && player) {
+      if (!lowPerf.value || ts - lastRenderAt >= 33) {
+        lastRenderAt = ts
+        player.render()
+      }
+    }
     rafId = requestAnimationFrame(renderFrame)
   }
 

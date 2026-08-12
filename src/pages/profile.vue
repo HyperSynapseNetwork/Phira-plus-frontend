@@ -293,6 +293,10 @@ function identityLabel(identity: { provider: string, provider_name?: string }): 
         </section>
 
         <section class="content-surface p-6">
+          <PushSettingsPanel />
+        </section>
+
+        <section class="content-surface p-6">
           <PreferencesPanel />
         </section>
 
