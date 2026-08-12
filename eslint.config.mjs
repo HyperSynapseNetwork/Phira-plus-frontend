@@ -27,6 +27,8 @@ export default antfu({
     'src/public/viewer/**',
     // PPB OpenAPI generated contract types (synced via scripts/gen-types.sh).
     'src/utils/api/generated.ts',
+    // Standalone Node tooling scripts (not part of the frontend lint surface).
+    'scripts/**',
   ],
 }, {
   // `pnpm/yaml-enforce-settings` demands `trustPolicy: no-downgrade`, which is

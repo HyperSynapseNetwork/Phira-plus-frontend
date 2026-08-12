@@ -3,16 +3,16 @@ import { apiFetch, getApiBase } from '~/utils/api/client'
 import { withQuery } from './useApi'
 
 /**
- * Rooms (`/api/v1/rooms/*`, contract §1 / design §16.3 / §13).
+ * Rooms (`/api/v1/rooms/*`, contract §1 / design §16.3 / §13). PPB-implemented:
+ *   GET  /api/v1/rooms                 → room list (paginated)
+ *   GET  /api/v1/rooms/{room_id}       → room detail
+ *   POST /api/v1/rooms/{room_id}/chat  → send chat { content }
+ *   GET  /api/v1/rooms/{room_id}/history → round history
+ *   POST /api/v1/rooms/{room_id}/actions → host action { action, args }
  *
- * NOTE (contract proposal): the specific sub-routes below are proposed REST
- * mappings of the frozen `/api/v1/rooms/*` namespace:
- *   GET  /api/v1/rooms                      → room list (paginated)
- *   GET  /api/v1/rooms/{room_uuid}          → room detail
- *   GET  /api/v1/rooms/{room_uuid}/chat     → chat history
- *   POST /api/v1/rooms/{room_uuid}/chat     → send chat { content }
- *   POST /api/v1/rooms/{room_uuid}/actions  → host action { action, args }
- * PPB may adjust; callers treat failures as graceful empty states.
+ * NOTE: PPB OpenAPI registers only `POST /rooms/{room_id}/chat` (send); chat
+ * HISTORY is not REST-exposed — live messages arrive via the room WS
+ * (`WSS /ws/v1/rooms/{room_id}/live`, contract §4/§12). See `useRoomChat`.
  */
 
 function emptyRooms(): Paginated<Room> {
@@ -51,18 +51,28 @@ export function useRoom(roomUuid: MaybeRefOrGetter<string>) {
   return { room: data, error, pending, refresh }
 }
 
-/** Chat history for a room. */
-export function useRoomChat(roomUuid: MaybeRefOrGetter<string>) {
-  const path = computed(() => `/api/v1/rooms/${encodeURIComponent(toValue(roomUuid))}/chat`)
-  const { data, error, pending, refresh } = useFetch<RoomChatMessage[]>(path, {
-    baseURL: getApiBase(),
-    credentials: 'include',
-    retry: 0,
-    server: false,
-    lazy: true,
-    default: () => [],
-  })
-  return { messages: data, error, pending, refresh }
+/**
+ * Room chat — SEND via REST, RECEIVE via the live WS.
+ *
+ * PPB OpenAPI registers only `POST /rooms/{room_id}/chat`; there is no REST
+ * history endpoint. Live messages arrive over the room WS (`/ws/v1/rooms/{id}/live`,
+ * contract §4/§12) — the Live tab consumes those. This returns an empty list so
+ * the chat panel renders a live/empty state instead of calling an unregistered
+ * GET. (A future WS-driven chat history can populate this list reactively.)
+ */
+export function useRoomChat(_roomUuid: MaybeRefOrGetter<string>): {
+  messages: Ref<RoomChatMessage[]>
+  error: Ref<unknown>
+  pending: Ref<boolean>
+  refresh: () => Promise<void>
+} {
+  const messages = ref<RoomChatMessage[]>([])
+  const error = ref<unknown>(null)
+  const pending = ref(false)
+  async function refresh(): Promise<void> {
+    // No-op — chat history is live via the room WS, not REST.
+  }
+  return { messages, error, pending, refresh }
 }
 
 /**

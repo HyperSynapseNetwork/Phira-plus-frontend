@@ -96,6 +96,12 @@ jobs:
       - name: Unit / component tests
         run: pnpm test
 
+      # Contract-consistency gate (design CONTRACT_CONSISTENCY_TEST.md, Gate 0):
+      # every /api/v1 and /ws/v1 call in src/ must be registered in PPB's
+      # OpenAPI (fetched from the PPB repo). CI fails on any unregistered call.
+      - name: Contract consistency (calls vs PPB OpenAPI)
+        run: node scripts/check-contract-consistency.mjs
+
       - name: Nuxt SSG build
         run: pnpm build
 
