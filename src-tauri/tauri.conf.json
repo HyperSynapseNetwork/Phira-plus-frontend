@@ -1,30 +1,14 @@
-// Phira+ — Tauri 2 app config (Phase D scaffold, design §17 / §14.7).
-//
-// CONFIG/STUB ONLY: validated by review, never compiled locally. Comments are
-// allowed (Tauri parses this file as JSON5).
-//
-// Missing Owner inputs (gates packaging / remote push):
-//   - Windows code-signing certificate + WNS package identity (SID/secret)
-//   - Android signing keystore + Google Services JSON (FCM)
-//   - Bundle icons (see icons/README.md)
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Phira+",
   "version": "0.1.0",
   "identifier": "com.htadiy.phiraplus",
-
-  // build: the Nuxt SSG output is `.output/public` (NOT the default `../dist`).
-  // beforeDevCommand / beforeBuildCommand are empty — we never build the
-  // frontend inside Tauri; it is pre-built by the Nuxt SSG pipeline (CI-only).
-  // devUrl matches `pnpm dev` so `cargo tauri dev` can point at the running
-  // Nuxt dev server once the Owner fixes the native toolchain.
   "build": {
     "frontendDist": "../.output/public",
     "beforeDevCommand": "",
     "beforeBuildCommand": "",
     "devUrl": "http://localhost:3000"
   },
-
   "app": {
     "windows": [
       {
@@ -35,51 +19,30 @@
       }
     ],
     "security": {
-      // CSP is intentionally null — it is enforced by the reverse proxy
-      // (design §23.4). Revisit when native IPC commands are enabled.
       "csp": null
     }
   },
-
   "bundle": {
     "active": true,
-    // Desktop targets only. Android APK is produced by `tauri android build`
-    // (mobile targets are not valid in the desktop bundle schema).
     "targets": ["nsis", "msi"],
     "category": "Game",
     "shortDescription": "Phira+ companion",
     "longDescription": "Phira+ — Phira 公共伴生站 (rooms, charts, community, replays).",
-    // Icons are OWNER-provided — do NOT commit binary icon assets to this
-    // scaffold (see icons/README.md for the required set).
     "icon": ["icons/icon.ico", "icons/icon.png"],
-    // Windows signing + WNS package identity:
-    //   bundle.windows.windows.certificateThumbprint — code-signing cert
-    //   bundle.windows.windows.identityName / publisher — WNS package identity
-    //   (required for full-exit remote push, design §14.7).
     "windows": {
       "nsis": {
         "installMode": "perMachine"
       }
     },
-    // Android signing + FCM:
-    //   bundle.android.storeFile / storePassword / keyAlias / keyPassword —
-    //   signing keystore (Owner).
-    //   google-services.json — FCM sender config for remote push (Owner).
-    //   minSdkVersion tuned to the lowest supported Android version.
     "android": {
       "minSdkVersion": 24
     }
   },
-
   "plugins": {
     "notification": {},
     "store": {},
     "deep-link": {
-      // Windows: `phiraplus://` deep links (design §17.2). The frontend listens
-      // for the `ppf-deeplink` event emitted by the native adapter.
       "desktop": { "schemes": ["phiraplus"] },
-      // Android: intent filters are declared by the plugin's Android setup
-      // (mobile scheme list is empty here — the manifest merge supplies them).
       "mobile": []
     }
   }

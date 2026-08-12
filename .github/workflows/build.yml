@@ -228,7 +228,7 @@ jobs:
       - name: Init + build Tauri Android (apk)
         run: |
           pnpm dlx @tauri-apps/cli@2 android init
-          pnpm dlx @tauri-apps/cli@2 android build --target apk
+          pnpm dlx @tauri-apps/cli@2 android build --apk
 
       - name: Compute SHA256SUMS
         run: |
