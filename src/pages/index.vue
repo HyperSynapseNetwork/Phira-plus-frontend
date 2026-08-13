@@ -67,13 +67,13 @@ function fmtLatency(ms?: number | null): string {
 
 <template>
   <div class="space-y-8">
-    <!-- Hero / brand entry -->
-    <section class="content-surface p-6 md:p-10">
+    <!-- Hero / brand entry（§11 场景首页：几乎完全 Atmosphere，不用 Card 包） -->
+    <section class="flex min-h-[64vh] items-center">
       <div class="max-w-2xl">
         <p class="mb-3 text-sm font-medium uppercase tracking-widest text-accent">
           {{ $t('app.tagline') }}
         </p>
-        <h1 class="text-3xl font-bold leading-tight text-slate-50 md:text-5xl">
+        <h1 class="text-4xl font-bold leading-tight text-slate-50 md:text-6xl">
           {{ $t('home.heroTitle') }}
         </h1>
         <p class="mt-4 text-base text-slate-300 md:text-lg">
@@ -87,31 +87,15 @@ function fmtLatency(ms?: number | null): string {
             {{ $t('home.ctaCharts') }}
           </BaseButton>
         </div>
+        <p class="mt-8 text-sm text-slate-400">
+          <span class="inline-flex items-center gap-2 font-medium" :class="serverOnline ? 'text-emerald-400' : 'text-slate-500'">
+            <span class="h-1.5 w-1.5 rounded-full" :class="serverOnline ? 'bg-emerald-400' : 'bg-slate-500'" />
+            {{ serverOnline ? $t('common.online') : $t('common.offline') }}
+          </span>
+          <span v-if="summary.online_users != null"> · {{ summary.online_users }} {{ $t('home.onlineUsers') }}</span>
+          <span v-if="summary.rooms != null"> · {{ summary.rooms }} {{ $t('home.roomCount') }}</span>
+        </p>
       </div>
-    </section>
-
-    <!-- Server availability + summary -->
-    <section class="grid gap-4 md:grid-cols-3">
-      <GlassSurface class="flex items-center justify-between">
-        <span class="text-sm text-slate-300">{{ $t('common.serverStatus') }}</span>
-        <span
-          class="inline-flex items-center gap-2 text-sm font-semibold"
-          :class="serverOnline ? 'text-emerald-400' : 'text-slate-500'"
-        >
-          <span class="h-2 w-2 rounded-full" :class="serverOnline ? 'bg-emerald-400' : 'bg-slate-500'" />
-          {{ serverOnline ? $t('common.online') : $t('common.offline') }}
-        </span>
-      </GlassSurface>
-
-      <GlassSurface class="flex items-center justify-between">
-        <span class="text-sm text-slate-300">{{ $t('home.onlineUsers') }}</span>
-        <span class="text-sm font-semibold text-slate-100">{{ summary.online_users ?? '—' }}</span>
-      </GlassSurface>
-
-      <GlassSurface class="flex items-center justify-between">
-        <span class="text-sm text-slate-300">{{ $t('home.roomCount') }}</span>
-        <span class="text-sm font-semibold text-slate-100">{{ summary.rooms ?? '—' }}</span>
-      </GlassSurface>
     </section>
 
     <!-- API version + external nodes -->
