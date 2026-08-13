@@ -4,7 +4,7 @@ import { withQuery } from './useApi'
 
 /**
  * Charts / Records (design §16.4). Phira API data is proxied by PPB;
- * `source` distinguishes Phira (official API) vs Phira+ (PPB aggregated).
+ * `source` distinguishes Phira (official API) vs HSN Phira+ (PPB aggregated).
  *
  * Proposed REST mappings of the frozen `/api/v1/charts/*`, `/api/v1/records/*`:
  *   GET /api/v1/charts                → chart list (paginated)

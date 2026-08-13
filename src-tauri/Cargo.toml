@@ -1,4 +1,4 @@
-# Phira+ — Tauri 2 app shell (Phase D scaffold, design §17)
+# HSN Phira+ — Tauri 2 app shell (Phase D scaffold, design §17)
 #
 # CONFIG/STUB ONLY. Nothing here compiles locally — the native toolchain is
 # broken and packaging is CI-only (see README.md). This crate is standalone
@@ -9,8 +9,8 @@
 [package]
 name = "phira-plus"
 version = "0.1.0"
-description = "Phira+ — Phira 公共伴生站 (Tauri 2 Windows + Android shell)"
-authors = ["Phira+"]
+description = "HSN Phira+ — Tauri 2 Windows + Android shell"
+authors = ["HSN Phira+"]
 edition = "2021"
 rust-version = "1.77.2"
 

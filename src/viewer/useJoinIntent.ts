@@ -12,7 +12,7 @@ import { apiFetch } from '~/utils/api/client'
  *
  * Flow:
  *   1. user confirms join → `POST /api/v1/me/join-intents { room_id }`
- *   2. PPF/Tauri prompts the user to launch / switch to the Phira+ client
+ *   2. PPF/Tauri prompts the user to launch / switch to the HSN Phira+ client
  *   3. PPB watches PMP `user.online` and calls `room.force_move` → user lands
  *   4. expired / cancelled → PPB cleans the intent up
  *

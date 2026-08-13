@@ -1,5 +1,5 @@
 /**
- * Phira+ PPF — in-app / Web Push channel service worker (design §14.7).
+ * HSN Phira+ PPF — in-app / Web Push channel service worker (design §14.7).
  *
  * This is the BROWSER push channel only (in-app / Web Push). Remote push that
  * must survive a full app exit on Windows / Android is handled by the Tauri 2
@@ -25,7 +25,7 @@ globalThis.addEventListener('push', (event) => {
     data = {}
   }
 
-  const title = data.title || 'Phira+'
+  const title = data.title || 'HSN Phira+'
   const options = {
     body: data.body || '',
     icon: data.icon || undefined,

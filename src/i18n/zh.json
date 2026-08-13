@@ -1,7 +1,7 @@
 {
   "app": {
-    "name": "Phira+",
-    "tagline": "Phira 公共伴生站"
+    "name": "HSN Phira+",
+    "tagline": "HSN Phira+ 官网"
   },
   "nav": {
     "home": "首页",
@@ -103,7 +103,7 @@
   },
   "chart": {
     "sourcePhira": "数据来源：Phira 官方",
-    "sourcePhiraPlus": "数据来源：Phira+ 聚合",
+    "sourcePhiraPlus": "数据来源：HSN Phira+ 聚合",
     "openFullPage": "打开完整页面",
     "notFound": "谱面不存在或 id 无效。",
     "preview": "谱面预览",
@@ -213,7 +213,7 @@
   },
   "home": {
     "heroTitle": "连接 Phira 的每一个瞬间",
-    "heroSubtitle": "房间、谱面、社区与 Replay —— Phira+ 伴生站",
+    "heroSubtitle": "房间、谱面、社区与 Replay —— HSN Phira+",
     "ctaRooms": "浏览房间",
     "ctaCharts": "浏览谱面",
     "announcements": "公告",
@@ -234,7 +234,7 @@
     "serverSessions": "会话数"
   },
   "login": {
-    "title": "登录 Phira+",
+    "title": "登录 HSN Phira+",
     "subtitle": "通过 Phira 账户登录。你的 Phira 凭证由服务端代为验证，不会出现在浏览器中。",
     "gatewayCta": "前往 Phira 认证网关登录",
     "gatewayHint": "你将被带往 api-phira.htadiy.com 完成登录，随后返回本站。",
@@ -356,7 +356,7 @@
   "joinIntent": {
     "title": "加入房间",
     "confirm": "确认加入",
-    "prompt": "已创建加入意图。请启动/切换到 Phira+ 客户端并进入房间，我们将自动将你移入目标房。",
+    "prompt": "已创建加入意图。请启动/切换到 HSN Phira+ 客户端并进入房间，我们将自动将你移入目标房。",
     "waiting": "等待加入…",
     "expired": "加入意图已过期",
     "cancel": "取消",

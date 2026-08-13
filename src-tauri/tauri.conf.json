@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Phira+",
+  "productName": "HSN Phira+",
   "version": "0.1.0",
   "identifier": "com.htadiy.phiraplus",
   "build": {
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "Phira+",
+        "title": "HSN Phira+",
         "width": 1280,
         "height": 800,
         "fullscreen": false
@@ -26,8 +26,8 @@
     "active": true,
     "targets": ["nsis", "msi"],
     "category": "Game",
-    "shortDescription": "Phira+ companion",
-    "longDescription": "Phira+ — Phira 公共伴生站 (rooms, charts, community, replays).",
+    "shortDescription": "HSN Phira+ official site",
+    "longDescription": "HSN Phira+ — rooms, charts, community, replays.",
     "icon": ["icons/icon.ico", "icons/icon.png"],
     "windows": {
       "nsis": {

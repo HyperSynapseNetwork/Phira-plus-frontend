@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "private": true,
   "packageManager": "pnpm@11.8.0",
-  "description": "Phira+ PPF — Nuxt 3 SSG public companion site (Phase A scaffold)",
+  "description": "HSN Phira+ PPF — Nuxt 3 SSG official site (Phase A scaffold)",
   "engines": {
     "node": ">=22.0.0",
     "pnpm": ">=11.0.0"

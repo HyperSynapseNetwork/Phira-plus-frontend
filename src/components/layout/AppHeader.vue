@@ -32,19 +32,16 @@ const loginTo = '/login'
 <template>
   <header class="glass sticky top-0 z-40 border-b border-white/10">
     <div class="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 md:px-6">
-      <!-- Logo -->
-      <NuxtLink to="/" class="flex shrink-0 items-center gap-2" aria-label="Phira+ Home">
-        <span class="grid h-8 w-8 place-items-center rounded-lg bg-accent/15 text-accent">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5">
-            <path d="M6 3v12" />
-            <circle cx="18" cy="6" r="3" />
-            <circle cx="6" cy="18" r="3" />
-            <path d="M18 9a9 9 0 0 1-9 9" />
-          </svg>
-        </span>
-        <span class="text-lg font-bold tracking-tight text-slate-50">
-          {{ $t('app.name') }}
-        </span>
+      <!-- Logo (reused from the previous generation) -->
+      <NuxtLink to="/" class="flex shrink-0 items-center gap-2" aria-label="HSN Phira+ Home">
+        <img
+          src="/logo.png"
+          alt="HSN Phira+"
+          width="120"
+          height="31"
+          class="h-7 w-auto"
+          loading="eager"
+        >
       </NuxtLink>
 
       <!-- Desktop main nav -->

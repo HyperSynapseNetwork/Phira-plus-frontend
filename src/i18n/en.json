@@ -1,7 +1,7 @@
 {
   "app": {
-    "name": "Phira+",
-    "tagline": "Phira public companion site"
+    "name": "HSN Phira+",
+    "tagline": "HSN Phira+ official site"
   },
   "nav": {
     "home": "Home",
@@ -103,7 +103,7 @@
   },
   "chart": {
     "sourcePhira": "Source: Phira official",
-    "sourcePhiraPlus": "Source: Phira+ aggregated",
+    "sourcePhiraPlus": "Source: HSN Phira+ aggregated",
     "openFullPage": "Open full page",
     "notFound": "Chart not found or invalid id.",
     "preview": "Chart preview",
@@ -213,7 +213,7 @@
   },
   "home": {
     "heroTitle": "Connect every moment of Phira",
-    "heroSubtitle": "Rooms, charts, community and replays — the Phira+ companion site",
+    "heroSubtitle": "Rooms, charts, community and replays — HSN Phira+",
     "ctaRooms": "Browse rooms",
     "ctaCharts": "Browse charts",
     "announcements": "Announcements",
@@ -234,7 +234,7 @@
     "serverSessions": "Sessions"
   },
   "login": {
-    "title": "Sign in to Phira+",
+    "title": "Sign in to HSN Phira+",
     "subtitle": "Sign in with your Phira account. Your Phira credentials are verified server-side and never appear in your browser.",
     "gatewayCta": "Continue to the Phira auth gateway",
     "gatewayHint": "You will be taken to api-phira.htadiy.com to finish signing in, then returned here.",
@@ -356,7 +356,7 @@
   "joinIntent": {
     "title": "Join room",
     "confirm": "Confirm join",
-    "prompt": "Join intent created. Start or switch to the Phira+ client and enter the room — we will move you into the target room automatically.",
+    "prompt": "Join intent created. Start or switch to the HSN Phira+ client and enter the room — we will move you into the target room automatically.",
     "waiting": "Waiting…",
     "expired": "Join intent expired",
     "cancel": "Cancel",

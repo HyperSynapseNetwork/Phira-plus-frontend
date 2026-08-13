@@ -8,10 +8,17 @@ import { usePreferencesStore } from '~/stores/preferences'
  *   - `background`: atmosphere | mesh | particles | none
  *   - `backgroundIntensity`: opacity of glow/mesh layers
  *   - `lowPerformance` / OS hints: static + no glow/particles
+ * The base image is the previous-generation default background (reused from
+ * HSNPhira-frontend-remake app.config.json); the CSS gradient acts as a
+ * fallback while it (lazily) loads.
  */
 const prefs = usePreferencesStore()
 const lowPerf = useLowPerformance()
 
+/** Previous-generation default background (HSNPhira-frontend-remake). */
+const PREV_GEN_BACKGROUND_URL = 'https://webstatic.cn-nb1.rains3.com/5712%C3%973360.jpeg'
+
+const showDefaultImage = computed(() => prefs.prefs.background !== 'none' && !lowPerf.enabled.value)
 const showMesh = computed(() => prefs.prefs.background === 'mesh' && !lowPerf.enabled.value)
 const showParticles = computed(() => prefs.prefs.background === 'particles' && prefs.prefs.particles && !lowPerf.enabled.value)
 const glowOpacity = computed(() =>
@@ -25,6 +32,15 @@ const glowOpacity = computed(() =>
     aria-hidden="true"
     :data-background="prefs.prefs.background"
   >
+    <img
+      v-if="showDefaultImage"
+      class="atmosphere__image"
+      :src="PREV_GEN_BACKGROUND_URL"
+      alt=""
+      loading="lazy"
+      decoding="async"
+      referrerpolicy="no-referrer"
+    >
     <div
       v-if="showMesh"
       class="atmosphere__mesh"

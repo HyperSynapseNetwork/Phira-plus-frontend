@@ -2,7 +2,7 @@
 /**
  * Chart detail page `/chart/:id` (design §16.4).
  *
- * Shows Phira metadata, a data-source badge (Phira vs Phira+), a lazy WASM
+ * Shows Phira metadata, a data-source badge (Phira vs HSN Phira+), a lazy WASM
  * Chart Preview, the global record ranking and the current user's best. All
  * data is client-only with graceful fallbacks — PPB Phase B may be unready.
  */

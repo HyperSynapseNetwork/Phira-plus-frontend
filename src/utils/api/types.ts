@@ -372,7 +372,7 @@ export interface ChartRecord {
 export interface ChartDetail extends Chart {
   records?: ChartRecord[]
   my_best?: ChartRecord | null
-  /** Data provenance label: Phira (official API) vs Phira+ (PPB aggregated). */
+  /** Data provenance label: Phira (official API) vs HSN Phira+ (PPB aggregated). */
   source: 'phira' | 'phira_plus'
 }
 

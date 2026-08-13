@@ -23,14 +23,14 @@ usePageSeo(() => ({
     {
       '@context': 'https://schema.org',
       '@type': 'WebSite',
-      'name': 'Phira+',
-      'alternateName': 'Phira+ 公共伴生站',
+      'name': 'HSN Phira+',
+      'alternateName': 'HSN Phira+ 官网',
       'url': 'https://phira.htadiy.com/',
     },
     {
       '@context': 'https://schema.org',
       '@type': 'Organization',
-      'name': 'Phira+',
+      'name': 'HSN Phira+',
       'url': 'https://phira.htadiy.com/',
     },
   ],

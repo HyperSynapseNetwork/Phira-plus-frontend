@@ -24,7 +24,7 @@ usePageSeo(() => ({
         <p>{{ $t('terms.intro') }}</p>
 
         <h2 class="pt-2 text-base font-semibold text-slate-100">
-          Phira+
+          HSN Phira+
         </h2>
         <ul class="list-disc space-y-1 pl-5">
           <li>{{ $t('login.agreement', { terms: $t('nav.terms') }) }}</li>

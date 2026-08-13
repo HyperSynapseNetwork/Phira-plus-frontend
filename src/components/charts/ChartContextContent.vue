@@ -3,7 +3,7 @@
  * Chart Context Window content (design §16.4).
  *
  * Compact chart detail rendered inside the overlay: Phira metadata, a
- * data-source badge (Phira vs Phira+), my-best summary, top-5 global ranking
+ * data-source badge (Phira vs HSN Phira+), my-best summary, top-5 global ranking
  * and a lazy Chart Preview placeholder. All data is client-only with graceful
  * fallbacks — PPB Phase B may be unready, so every section degrades to a
  * neutral empty state.

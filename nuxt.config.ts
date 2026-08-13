@@ -3,7 +3,7 @@ import tailwindcss from '@tailwindcss/vite'
 import { defineNuxtConfig } from 'nuxt/config'
 
 /**
- * Phira+ PPF — Nuxt 3 SSG public site (Phase A scaffold)
+ * HSN Phira+ PPF — Nuxt 3 SSG official site (Phase A scaffold)
  *
  * Reference: DESIGN/PP-B-F-P_V3_总体设计规范.md §3.2, §16, §22, §23, §26.3
  * Frozen cross-repo contract: contracts/README.md (Contract-Freeze v0)
@@ -104,10 +104,14 @@ export default defineNuxtConfig({
       },
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-        { name: 'theme-color', content: '#00F7FF' },
+        { name: 'theme-color', content: '#0a0a0a' },
       ],
       link: [
-        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+        // Web icon reused from the previous generation (HSNPhira-frontend-remake).
+        { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/favicon-16x16.png' },
+        { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32x32.png' },
+        { rel: 'icon', type: 'image/png', sizes: '192x192', href: '/pwa-192x192.png' },
+        { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' },
       ],
     },
   },
@@ -142,12 +146,12 @@ export default defineNuxtConfig({
    */
   site: {
     url: 'https://phira.htadiy.com',
-    name: 'Phira+',
-    description: 'Phira+ 公共伴生站 — 房间、谱面、社区与 Replay（PPF）',
+    name: 'HSN Phira+',
+    description: 'HSN Phira+ 官网 — 房间、谱面、社区与 Replay（PPF）',
     defaultLocale: 'zh',
     identity: {
       type: 'Organization',
-      name: 'Phira+',
+      name: 'HSN Phira+',
       url: 'https://phira.htadiy.com/',
     },
     searchVerification: {

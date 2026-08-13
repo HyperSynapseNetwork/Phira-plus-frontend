@@ -1,8 +1,8 @@
 <div align="center">
 
-# Phira+ Frontend（PPF）
+# HSN Phira+ Frontend（PPF）
 
-**Phira+（Phira+ V3）三件套之一** · Nuxt 3 SSG 公开伴生站 · WASM 谱面/房间查看器 · Tauri 2 桌面/移动壳（Phase D）
+**HSN Phira+（Phira+ V3）三件套之一** · Nuxt 3 SSG 官网 · WASM 谱面/房间查看器 · Tauri 2 桌面/移动壳（Phase D）
 
 <br/>
 
@@ -16,7 +16,7 @@
 </div>
 
 > [!IMPORTANT]
-> **Phira+ 三件套之一**：`ppb`（Phira-plus-Backend，后端）· `ppf`（本仓库，公开伴生站）· `panel`（Phira-plus-panel，管理控制台）。
+> **HSN Phira+ 三件套之一**：`ppb`（Phira-plus-Backend，后端）· `ppf`（本仓库，官网）· `panel`（Phira-plus-panel，管理控制台）。
 > **跨仓冻结契约见 [`contracts/README.md`](../contracts/README.md)（Contract-Freeze v0）** —— 先改契约，再实现；禁止三边猜字段。
 > 本仓库采用 **Apache License, Version 2.0**，详见 [LICENSE](LICENSE)。
 
@@ -25,7 +25,7 @@
 
 ## 简介
 
-**PPF（Phira+ Frontend）** 是 Phira+ 的公开伴生站，面向玩家呈现房间、谱面、社区与 Replay（player presentation / companion UX / viewer）。一句话数据所有权：**PPF 只做展示层，一切身份、策略与数据来自 PPB API；Phira token 永不进入前端。**
+**PPF（HSN Phira+ Frontend）** 是 HSN Phira+ 的官网，面向玩家呈现房间、谱面、社区与 Replay（player presentation / viewer）。一句话数据所有权：**PPF 只做展示层，一切身份、策略与数据来自 PPB API；Phira token 永不进入前端。**
 
 ### 核心特性
 
@@ -97,5 +97,5 @@ pnpm preview
 
 ## 许可证
 
-Phira+ Frontend 采用 **Apache License, Version 2.0** — 详见 [LICENSE](LICENSE)。`viewer/` 内 vendor 的 Rust 代码源自 [phira-web-monitor](https://github.com/HyperSynapseNetwork/phira-web-monitor) 与 [phira-mp](https://github.com/TeamFlos/phira-mp)，同为 Apache-2.0。
+HSN Phira+ Frontend 采用 **Apache License, Version 2.0** — 详见 [LICENSE](LICENSE)。`viewer/` 内 vendor 的 Rust 代码源自 [phira-web-monitor](https://github.com/HyperSynapseNetwork/phira-web-monitor) 与 [phira-mp](https://github.com/TeamFlos/phira-mp)，同为 Apache-2.0。
 

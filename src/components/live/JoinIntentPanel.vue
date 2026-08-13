@@ -5,7 +5,7 @@ import { useJoinIntent } from '~/viewer/useJoinIntent'
  * JoinIntent panel (design §14.6, contracts README §8 / §11).
  *
  * Entry point for the "进入房间" flow: user confirms → PPB creates a short-lived
- * JoinIntent → PPF prompts the user to launch/switch to the Phira+ client →
+ * JoinIntent → PPF prompts the user to launch/switch to the HSN Phira+ client →
  * PPB watches PMP `user.online` and `room.force_move`s the user into the room.
  *
  * Always degrades gracefully when PPB is unready: `requestJoin`/`cancelJoin`

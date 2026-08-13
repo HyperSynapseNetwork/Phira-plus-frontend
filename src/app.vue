@@ -10,8 +10,8 @@ const site = useSiteConfig()
 const socialImage = computed(() => `${site.url.replace(/\/$/, '')}/social-card.svg`)
 
 useSeoMeta({
-  titleTemplate: title => title ? `${title} · Phira+` : 'Phira+',
-  ogSiteName: 'Phira+',
+  titleTemplate: title => title ? `${title} · HSN Phira+` : 'HSN Phira+',
+  ogSiteName: 'HSN Phira+',
   ogType: 'website',
   twitterCard: 'summary_large_image',
 })
