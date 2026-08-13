@@ -45,7 +45,7 @@ const glowOpacity = computed(() =>
     <div
       v-if="hasCustom"
       class="atmosphere__custom"
-      :style="{ background: prefs.prefs.backgroundCustom }"
+      :style="{ background: prefs.prefs.backgroundCustom ?? '' }"
     />
     <div
       v-if="showMesh"

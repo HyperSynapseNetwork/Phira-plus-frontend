@@ -33,9 +33,10 @@ export function isValidHexColor(value: unknown): value is string {
 
 export function hexToRgb(hex: string): Rgb | null {
   const m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(hex.trim())
-  if (!m)
+  const raw = m?.[1]
+  if (!raw)
     return null
-  let h = m[1]
+  let h = raw
   if (h.length === 3)
     h = h.split('').map(c => c + c).join('')
   const n = Number.parseInt(h, 16)
