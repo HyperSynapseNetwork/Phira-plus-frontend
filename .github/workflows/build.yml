@@ -317,6 +317,53 @@ jobs:
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: pnpm dlx @tauri-apps/cli@2 android build --apk
 
+      # Tauri's `android build --apk` emits a *universal* (fat, all-ABI) APK
+      # that is unsigned by design (`app-universal-release-unsigned.apk`): the
+      # release signingConfig only signs per-ABI APKs, and the universal merge
+      # strips signatures. Sign it here with apksigner so the published artifact
+      # is installable. Skips (leaves the APK unsigned) when the keystore
+      # secrets are absent.
+      - name: Sign universal APK (apksigner)
+        env:
+          ANDROID_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [ -z "${ANDROID_KEYSTORE:-}" ]; then
+            echo "ANDROID_KEYSTORE not set — leaving APK unsigned (dev artifact)."
+            exit 0
+          fi
+          APK_DIR="src-tauri/gen/android/app/build/outputs/apk/universal/release"
+          UNSIGNED="$(find "$APK_DIR" -maxdepth 1 -name '*-unsigned.apk' | head -n1)"
+          if [ -z "$UNSIGNED" ]; then
+            echo "No unsigned universal APK found — nothing to sign."
+            exit 0
+          fi
+          SIGNED="${UNSIGNED%-unsigned.apk}.apk"
+          BT="$(ls -d "$ANDROID_HOME"/build-tools/* 2>/dev/null | sort -V | tail -n1)"
+          if [ -z "$BT" ] || [ ! -x "$BT/apksigner" ] || [ ! -x "$BT/zipalign" ]; then
+            echo "ERROR: apksigner/zipalign not found under $ANDROID_HOME/build-tools"
+            exit 1
+          fi
+          KEYSTORE="src-tauri/gen/android/app/release.keystore"
+          if [ ! -f "$KEYSTORE" ]; then
+            mkdir -p "$(dirname "$KEYSTORE")"
+            echo "$ANDROID_KEYSTORE" | base64 -d > "$KEYSTORE"
+          fi
+          echo "zipalign + apksigner: $UNSIGNED -> $SIGNED (build-tools: $BT)"
+          "$BT/zipalign" -f -p 4 "$UNSIGNED" "$SIGNED"
+          "$BT/apksigner" sign \
+            --ks "$KEYSTORE" \
+            --ks-pass "pass:${ANDROID_KEYSTORE_PASSWORD}" \
+            --ks-key-alias "${ANDROID_KEY_ALIAS}" \
+            --key-pass "pass:${ANDROID_KEY_PASSWORD}" \
+            "$SIGNED"
+          "$BT/apksigner" verify "$SIGNED"
+          rm -f "$UNSIGNED"
+          echo "Signed OK: $SIGNED"
+
       - name: Compute SHA256SUMS
         run: |
           cd src-tauri/gen/android
