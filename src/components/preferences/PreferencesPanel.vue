@@ -135,6 +135,28 @@ function resetAll(): void {
       </div>
 
       <div class="mt-3 flex flex-wrap items-center gap-2">
+        <span class="text-sm text-slate-300">{{ $t('preferences.backgroundQuality') }}</span>
+        <div class="flex overflow-hidden rounded-md border border-white/10">
+          <button
+            type="button"
+            class="px-3 py-1.5 text-sm transition-colors"
+            :class="prefs.backgroundQuality === 'auto' ? 'bg-accent/15 text-slate-50' : 'bg-white/5 text-slate-300'"
+            @click="update({ backgroundQuality: 'auto' })"
+          >
+            {{ $t('preferences.qualityAuto') }}
+          </button>
+          <button
+            type="button"
+            class="px-3 py-1.5 text-sm transition-colors"
+            :class="prefs.backgroundQuality === 'original' ? 'bg-accent/15 text-slate-50' : 'bg-white/5 text-slate-300'"
+            @click="update({ backgroundQuality: 'original' })"
+          >
+            {{ $t('preferences.qualityOriginal') }}
+          </button>
+        </div>
+      </div>
+
+      <div class="mt-3 flex flex-wrap items-center gap-2">
         <label class="flex items-center gap-2 text-sm text-slate-300">
           <span>{{ $t('preferences.customBackground') }}</span>
           <input
