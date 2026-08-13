@@ -15,8 +15,14 @@ import { usePreferencesStore } from '~/stores/preferences'
 const prefs = usePreferencesStore()
 const lowPerf = useLowPerformance()
 
-/** Previous-generation default background (HSNPhira-frontend-remake). */
-const PREV_GEN_BACKGROUND_URL = 'https://webstatic.cn-nb1.rains3.com/5712%C3%973360.jpeg'
+/** 背景多档资源（CDN）：LQIP 首帧占位 → 640/1280/1920 自适应 → 原图仅「原图」画质下用。 */
+const BG_LQIP = 'https://cn-nb1.rains3.com/webstatic/img/bg-lqip.jpg'
+const BG_640 = 'https://cn-nb1.rains3.com/webstatic/img/bg-640.webp'
+const BG_1280 = 'https://cn-nb1.rains3.com/webstatic/img/bg-1280.webp'
+const BG_1920 = 'https://cn-nb1.rains3.com/webstatic/img/bg-1920.webp'
+const BG_ORIGINAL = 'https://webstatic.cn-nb1.rains3.com/5712%C3%973360.jpeg'
+
+const useOriginal = computed(() => prefs.prefs.backgroundQuality === 'original')
 
 const hasCustom = computed(() => Boolean(prefs.prefs.backgroundCustom))
 const showDefaultImage = computed(() => !hasCustom.value && prefs.prefs.background !== 'none' && !lowPerf.enabled.value)
@@ -36,10 +42,13 @@ const glowOpacity = computed(() =>
     <img
       v-if="showDefaultImage"
       class="atmosphere__image"
-      :src="PREV_GEN_BACKGROUND_URL"
+      :src="useOriginal ? BG_ORIGINAL : BG_LQIP"
+      :srcset="useOriginal ? undefined : `${BG_640} 640w, ${BG_1280} 1280w, ${BG_1920} 1920w`"
+      sizes="100vw"
       alt=""
       loading="lazy"
       decoding="async"
+      fetchpriority="low"
       referrerpolicy="no-referrer"
     >
     <div

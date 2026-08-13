@@ -13,6 +13,7 @@
 export type ThemeMode = 'system' | 'light' | 'dark'
 export type AccentKey = 'cyan' | 'blue' | 'violet' | 'green' | 'amber'
 export type BackgroundKey = 'atmosphere' | 'mesh' | 'particles' | 'none'
+export type BackgroundQuality = 'auto' | 'original'
 export type LocaleCode = 'zh' | 'en'
 
 export interface GuestPreferences {
@@ -27,6 +28,8 @@ export interface GuestPreferences {
   /** Custom solid background color (hex, e.g. `#0a0a0a`); overrides `background` visually. Local-only — never synced to PPB. */
   backgroundCustom: string | null
   backgroundIntensity: number // 0..1
+  /** 背景画质：auto（srcset 自适应）/ original（前代 15MB 原图）。 */
+  backgroundQuality: BackgroundQuality
   particles: boolean
   /** device local */
   lowPerformance: boolean
@@ -35,7 +38,7 @@ export interface GuestPreferences {
 /** Shape persisted to localStorage (mirrors PPB namespaces for later merge). */
 export interface StoredGuestPreferences {
   common: Pick<GuestPreferences, 'theme' | 'accent' | 'language' | 'reducedMotion' | 'reducedTransparency'>
-  ppf: Pick<GuestPreferences, 'background' | 'backgroundCustom' | 'backgroundIntensity' | 'particles'>
+  ppf: Pick<GuestPreferences, 'background' | 'backgroundCustom' | 'backgroundIntensity' | 'backgroundQuality' | 'particles'>
   device: Pick<GuestPreferences, 'lowPerformance'>
 }
 
@@ -48,6 +51,7 @@ export const DEFAULT_GUEST_PREFERENCES: GuestPreferences = {
   background: 'atmosphere',
   backgroundCustom: null,
   backgroundIntensity: 0.8,
+  backgroundQuality: 'auto',
   particles: false,
   lowPerformance: false,
 }
@@ -63,6 +67,10 @@ export function isAccentKey(value: string): value is AccentKey {
 
 export function isBackgroundKey(value: string): value is BackgroundKey {
   return (BACKGROUND_KEYS as string[]).includes(value)
+}
+
+export function isBackgroundQuality(value: string): value is BackgroundQuality {
+  return value === 'auto' || value === 'original'
 }
 
 export function isThemeMode(value: string): value is ThemeMode {
@@ -90,6 +98,7 @@ export const PREFERENCE_KEYS: PreferenceKey[] = [
   'background',
   'backgroundCustom',
   'backgroundIntensity',
+  'backgroundQuality',
   'particles',
   'lowPerformance',
 ]
@@ -130,6 +139,9 @@ export function normalizeGuestPreferences(input: unknown): GuestPreferences {
     backgroundIntensity: typeof raw.backgroundIntensity === 'number'
       ? Math.min(1, Math.max(0, raw.backgroundIntensity))
       : DEFAULT_GUEST_PREFERENCES.backgroundIntensity,
+    backgroundQuality: isBackgroundQuality(String(raw.backgroundQuality))
+      ? String(raw.backgroundQuality) as BackgroundQuality
+      : DEFAULT_GUEST_PREFERENCES.backgroundQuality,
     particles: typeof raw.particles === 'boolean' ? raw.particles : DEFAULT_GUEST_PREFERENCES.particles,
     lowPerformance: typeof raw.lowPerformance === 'boolean' ? raw.lowPerformance : DEFAULT_GUEST_PREFERENCES.lowPerformance,
   }
@@ -149,6 +161,7 @@ export function toStoredPreferences(prefs: GuestPreferences): StoredGuestPrefere
       background: prefs.background,
       backgroundCustom: prefs.backgroundCustom,
       backgroundIntensity: prefs.backgroundIntensity,
+      backgroundQuality: prefs.backgroundQuality,
       particles: prefs.particles,
     },
     device: {
