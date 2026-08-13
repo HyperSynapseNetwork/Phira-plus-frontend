@@ -81,6 +81,11 @@ body {
   opacity: 0.8;
 }
 
+.atmosphere__custom {
+  position: absolute;
+  inset: 0;
+}
+
 .atmosphere__mesh {
   position: absolute;
   inset: 0;

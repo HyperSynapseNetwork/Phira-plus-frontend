@@ -9,7 +9,7 @@ import type { AccentKey, BackgroundKey } from '~/types/preferences'
 import { usePreferences } from '~/composables/usePreferences'
 import { usePreferencesSync } from '~/composables/usePreferencesSync'
 
-const { prefs, update } = usePreferences()
+const { prefs, update, reset, isLocked } = usePreferences()
 const { t } = useI18n()
 const { authenticated, syncing, saving, syncError, lastSavedAt, saveAll } = usePreferencesSync()
 
@@ -40,6 +40,28 @@ const backgroundOptions: { value: BackgroundKey, label: string }[] = [
   { value: 'particles', label: 'Particles' },
   { value: 'none', label: 'None' },
 ]
+
+// Custom background color (round 7). Bound through `update` so the lock layer
+// and persistence stay consistent; empty input clears the custom color.
+const customColor = computed({
+  get: () => prefs.backgroundCustom ?? '#0a0a0a',
+  set: (value: string) => update({ backgroundCustom: value.trim() || null }),
+})
+
+const hasCustomBackground = computed(() => Boolean(prefs.backgroundCustom))
+
+function clearCustomBackground(): void {
+  update({ backgroundCustom: null })
+}
+
+/** One-click back to the default/original background (prev-gen image + atmosphere). */
+function resetBackground(): void {
+  update({ background: 'atmosphere', backgroundCustom: null })
+}
+
+function resetAll(): void {
+  reset()
+}
 </script>
 
 <template>
@@ -67,13 +89,26 @@ const backgroundOptions: { value: BackgroundKey, label: string }[] = [
 
     <!-- Accent -->
     <div>
-      <span class="text-sm text-slate-300">{{ $t('preferences.accent') }}</span>
+      <span class="flex items-center gap-1.5 text-sm text-slate-300">
+        {{ $t('preferences.accent') }}
+        <span
+          v-if="isLocked('accent')"
+          class="inline-flex items-center gap-1 rounded bg-white/10 px-1.5 py-0.5 text-[11px] text-slate-400"
+          :title="$t('preferences.locked')"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-3 w-3">
+            <rect x="3" y="11" width="18" height="11" rx="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+          </svg>
+        </span>
+      </span>
       <div class="mt-2 flex flex-wrap gap-2">
         <button
           v-for="opt in accentOptions"
           :key="opt.value"
           type="button"
-          class="glass-focusable flex items-center gap-2 rounded-md px-3 py-2 text-sm"
+          :disabled="isLocked('accent')"
+          class="glass-focusable flex items-center gap-2 rounded-md px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
           :class="prefs.accent === opt.value ? 'bg-accent/15 text-slate-50 ring-1 ring-accent/50' : 'bg-white/5 text-slate-300'"
           @click="update({ accent: opt.value })"
         >
@@ -98,6 +133,35 @@ const backgroundOptions: { value: BackgroundKey, label: string }[] = [
           {{ opt.label }}
         </button>
       </div>
+
+      <div class="mt-3 flex flex-wrap items-center gap-2">
+        <label class="flex items-center gap-2 text-sm text-slate-300">
+          <span>{{ $t('preferences.customBackground') }}</span>
+          <input
+            v-model="customColor"
+            type="color"
+            class="h-8 w-10 cursor-pointer rounded border border-white/10 bg-transparent"
+          >
+        </label>
+        <button
+          v-if="hasCustomBackground"
+          type="button"
+          class="glass-focusable rounded-md bg-white/5 px-3 py-2 text-sm text-slate-300"
+          @click="clearCustomBackground"
+        >
+          {{ $t('preferences.clearCustomBackground') }}
+        </button>
+        <button
+          type="button"
+          class="glass-focusable rounded-md bg-white/5 px-3 py-2 text-sm text-slate-300"
+          @click="resetBackground"
+        >
+          {{ $t('preferences.resetBackground') }}
+        </button>
+      </div>
+      <p class="mt-2 text-xs text-slate-500">
+        {{ $t('preferences.customBackgroundHint') }}
+      </p>
     </div>
 
     <!-- Toggles -->
@@ -114,6 +178,13 @@ const backgroundOptions: { value: BackgroundKey, label: string }[] = [
         <span class="text-sm text-slate-300">{{ $t('preferences.lowPerformance') }}</span>
         <input v-model="prefs.lowPerformance" type="checkbox" class="h-4 w-4 accent-[var(--color-accent)]">
       </label>
+    </div>
+
+    <!-- Reset -->
+    <div class="border-t border-white/10 pt-4">
+      <BaseButton variant="ghost" size="sm" @click="resetAll">
+        {{ $t('preferences.resetAll') }}
+      </BaseButton>
     </div>
 
     <!-- Account sync (only when signed in) -->

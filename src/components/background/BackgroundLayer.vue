@@ -18,11 +18,12 @@ const lowPerf = useLowPerformance()
 /** Previous-generation default background (HSNPhira-frontend-remake). */
 const PREV_GEN_BACKGROUND_URL = 'https://webstatic.cn-nb1.rains3.com/5712%C3%973360.jpeg'
 
-const showDefaultImage = computed(() => prefs.prefs.background !== 'none' && !lowPerf.enabled.value)
-const showMesh = computed(() => prefs.prefs.background === 'mesh' && !lowPerf.enabled.value)
-const showParticles = computed(() => prefs.prefs.background === 'particles' && prefs.prefs.particles && !lowPerf.enabled.value)
+const hasCustom = computed(() => Boolean(prefs.prefs.backgroundCustom))
+const showDefaultImage = computed(() => !hasCustom.value && prefs.prefs.background !== 'none' && !lowPerf.enabled.value)
+const showMesh = computed(() => !hasCustom.value && prefs.prefs.background === 'mesh' && !lowPerf.enabled.value)
+const showParticles = computed(() => !hasCustom.value && prefs.prefs.background === 'particles' && prefs.prefs.particles && !lowPerf.enabled.value)
 const glowOpacity = computed(() =>
-  prefs.prefs.background === 'none' ? 0 : prefs.prefs.backgroundIntensity * 0.5,
+  hasCustom.value || prefs.prefs.background === 'none' ? 0 : prefs.prefs.backgroundIntensity * 0.5,
 )
 </script>
 
@@ -41,6 +42,11 @@ const glowOpacity = computed(() =>
       decoding="async"
       referrerpolicy="no-referrer"
     >
+    <div
+      v-if="hasCustom"
+      class="atmosphere__custom"
+      :style="{ background: prefs.prefs.backgroundCustom }"
+    />
     <div
       v-if="showMesh"
       class="atmosphere__mesh"

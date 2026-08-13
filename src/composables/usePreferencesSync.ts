@@ -33,7 +33,7 @@ export function usePreferencesSync() {
       if (!authenticated.value)
         return
       const merged = mergeAccountIntoGuest(store.prefs, common.prefs.value?.data ?? null, ppf.prefs.value?.data ?? null)
-      store.update(merged)
+      store.applyAccount(merged)
     },
     { immediate: true },
   )

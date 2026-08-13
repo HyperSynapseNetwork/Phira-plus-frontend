@@ -66,5 +66,35 @@ describe('guest preferences (design §21.3)', () => {
       store.reset()
       expect(store.prefs).toEqual(DEFAULT_GUEST_PREFERENCES)
     })
+
+    it('drops updates to brand-locked fields (round 7)', () => {
+      setActivePinia(createPinia())
+      const store = usePreferencesStore()
+      store.update({ accent: 'blue' })
+      expect(store.prefs.accent).toBe('cyan') // HSN brand default, locked
+      store.update({ theme: 'dark' })
+      expect(store.prefs.theme).toBe('dark')
+    })
+
+    it('applyAccount bypasses the front-end lock (account authoritative)', () => {
+      setActivePinia(createPinia())
+      const store = usePreferencesStore()
+      store.applyAccount({ ...DEFAULT_GUEST_PREFERENCES, accent: 'blue' })
+      expect(store.prefs.accent).toBe('blue')
+    })
+  })
+
+  describe('custom background (round 7)', () => {
+    it('normalizes backgroundCustom to a valid hex or null', () => {
+      expect(normalizeGuestPreferences({ backgroundCustom: '#fff' }).backgroundCustom).toBe('#fff')
+      expect(normalizeGuestPreferences({ backgroundCustom: '#123456' }).backgroundCustom).toBe('#123456')
+      expect(normalizeGuestPreferences({ backgroundCustom: 'nope' }).backgroundCustom).toBeNull()
+      expect(normalizeGuestPreferences({ backgroundCustom: 42 }).backgroundCustom).toBeNull()
+    })
+
+    it('round-trips backgroundCustom through the stored shape', () => {
+      const prefs = { ...DEFAULT_GUEST_PREFERENCES, backgroundCustom: '#123456' }
+      expect(fromStoredPreferences(toStoredPreferences(prefs))).toEqual(prefs)
+    })
   })
 })

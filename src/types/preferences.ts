@@ -24,6 +24,8 @@ export interface GuestPreferences {
   reducedTransparency: boolean
   /** ppf namespace */
   background: BackgroundKey
+  /** Custom solid background color (hex, e.g. `#0a0a0a`); overrides `background` visually. Local-only — never synced to PPB. */
+  backgroundCustom: string | null
   backgroundIntensity: number // 0..1
   particles: boolean
   /** device local */
@@ -33,7 +35,7 @@ export interface GuestPreferences {
 /** Shape persisted to localStorage (mirrors PPB namespaces for later merge). */
 export interface StoredGuestPreferences {
   common: Pick<GuestPreferences, 'theme' | 'accent' | 'language' | 'reducedMotion' | 'reducedTransparency'>
-  ppf: Pick<GuestPreferences, 'background' | 'backgroundIntensity' | 'particles'>
+  ppf: Pick<GuestPreferences, 'background' | 'backgroundCustom' | 'backgroundIntensity' | 'particles'>
   device: Pick<GuestPreferences, 'lowPerformance'>
 }
 
@@ -44,6 +46,7 @@ export const DEFAULT_GUEST_PREFERENCES: GuestPreferences = {
   reducedMotion: false,
   reducedTransparency: false,
   background: 'atmosphere',
+  backgroundCustom: null,
   backgroundIntensity: 0.8,
   particles: false,
   lowPerformance: false,
@@ -70,6 +73,37 @@ export function isLocaleCode(value: string): value is LocaleCode {
   return value === 'zh' || value === 'en'
 }
 
+/** 3- or 6-digit hex color (`#fff` / `#0a0a0a`) — mirrors `src/utils/color.ts`. */
+export function isHexColor(value: unknown): value is string {
+  return typeof value === 'string' && /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(value.trim())
+}
+
+/** Every preference key, used to sanitize the persisted lock list. */
+export type PreferenceKey = keyof GuestPreferences
+
+export const PREFERENCE_KEYS: PreferenceKey[] = [
+  'theme',
+  'accent',
+  'language',
+  'reducedMotion',
+  'reducedTransparency',
+  'background',
+  'backgroundCustom',
+  'backgroundIntensity',
+  'particles',
+  'lowPerformance',
+]
+
+/**
+ * Fields locked by default to their HSN brand value (front-end-local lock,
+ * Owner round 7). Locked fields render read-only + disabled and are dropped
+ * from `update()`; the account-merge path (`applyAccount`) still applies
+ * because account prefs are server-authoritative (see `usePreferencesSync`).
+ */
+export const DEFAULT_LOCKED_FIELDS: PreferenceKey[] = ['accent']
+
+export const LOCKED_STORAGE_KEY = 'ppf:guest-preferences:locked'
+
 /**
  * Sanitize an unknown stored value into a fully-valid GuestPreferences.
  * Pure + defensive: any malformed field falls back to defaults.
@@ -90,6 +124,9 @@ export function normalizeGuestPreferences(input: unknown): GuestPreferences {
     background: isBackgroundKey(String(raw.background))
       ? String(raw.background) as BackgroundKey
       : DEFAULT_GUEST_PREFERENCES.background,
+    backgroundCustom: isHexColor(raw.backgroundCustom)
+      ? raw.backgroundCustom
+      : DEFAULT_GUEST_PREFERENCES.backgroundCustom,
     backgroundIntensity: typeof raw.backgroundIntensity === 'number'
       ? Math.min(1, Math.max(0, raw.backgroundIntensity))
       : DEFAULT_GUEST_PREFERENCES.backgroundIntensity,
@@ -110,6 +147,7 @@ export function toStoredPreferences(prefs: GuestPreferences): StoredGuestPrefere
     },
     ppf: {
       background: prefs.background,
+      backgroundCustom: prefs.backgroundCustom,
       backgroundIntensity: prefs.backgroundIntensity,
       particles: prefs.particles,
     },
