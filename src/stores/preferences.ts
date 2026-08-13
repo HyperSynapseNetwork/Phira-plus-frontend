@@ -1,6 +1,6 @@
 import type { GuestPreferences, PreferenceKey } from '~/types/preferences'
-import { ref } from 'vue'
 import { defineStore } from 'pinia'
+import { ref } from 'vue'
 import {
   DEFAULT_GUEST_PREFERENCES,
   DEFAULT_LOCKED_FIELDS,

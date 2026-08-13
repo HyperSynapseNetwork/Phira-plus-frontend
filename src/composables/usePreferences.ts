@@ -1,6 +1,6 @@
 import type { GuestPreferences, ThemeMode } from '~/types/preferences'
 import { usePreferredDark } from '@vueuse/core'
-import { ACCENT_HEX, deriveColorsFromBackground, hexToRgba, hexToRgb, relativeLuminance } from '~/utils/color'
+import { ACCENT_HEX, deriveColorsFromBackground, hexToRgb, hexToRgba, relativeLuminance } from '~/utils/color'
 
 export type ResolvedTheme = 'light' | 'dark'
 

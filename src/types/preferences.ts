@@ -75,7 +75,7 @@ export function isLocaleCode(value: string): value is LocaleCode {
 
 /** 3- or 6-digit hex color (`#fff` / `#0a0a0a`) — mirrors `src/utils/color.ts`. */
 export function isHexColor(value: unknown): value is string {
-  return typeof value === 'string' && /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(value.trim())
+  return typeof value === 'string' && /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(value.trim())
 }
 
 /** Every preference key, used to sanitize the persisted lock list. */

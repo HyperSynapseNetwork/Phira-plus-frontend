@@ -28,11 +28,11 @@ export interface Rgb {
 
 /** Accepts 3- or 6-digit hex colors (`#fff` / `#0a0a0a`). */
 export function isValidHexColor(value: unknown): value is string {
-  return typeof value === 'string' && /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(value.trim())
+  return typeof value === 'string' && /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(value.trim())
 }
 
 export function hexToRgb(hex: string): Rgb | null {
-  const m = /^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.exec(hex.trim())
+  const m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(hex.trim())
   if (!m)
     return null
   let h = m[1]
@@ -74,7 +74,7 @@ export function contrastRatio(a: Rgb, b: Rgb): number {
   return (hi + 0.05) / (lo + 0.05)
 }
 
-function rgbToHsl({ r, g, b }: Rgb): { h: number; s: number; l: number } {
+function rgbToHsl({ r, g, b }: Rgb): { h: number, s: number, l: number } {
   const rn = r / 255
   const gn = g / 255
   const bn = b / 255
