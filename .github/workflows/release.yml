@@ -1,0 +1,144 @@
+name: Release
+
+# PPF tag release (design §26.3). Mirrors PMP's release.yml.
+# - Triggered by a `v*` tag (created by bump-version.yml).
+# - quality-gate reuses build.yml's `quality` job steps verbatim
+#   (lint / vue-tsc / test / contract-consistency / Nuxt SSG build).
+# - Packages the SSG static output (.output/public) into a tar.gz and publishes
+#   it as a GitHub Release with SHA256SUMS + SLSA build provenance.
+# - Tauri Windows/Android installers remain CI artifacts in build.yml and are
+#   deliberately NOT a release dependency: the SSG static output is the required
+#   artifact, Tauri stays optional / build.yml-only.
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  version:
+    name: Verify version / tag
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+      version: ${{ steps.tag.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify tag matches version
+        id: tag
+        run: |
+          set -euo pipefail
+          FULL_VERSION=$(grep -o '"version": *"[^"]*"' package.json | head -n1 | sed 's/.*"\([^"]*\)"/\1/')
+          TAURI_VERSION=$(grep -o '"version": *"[^"]*"' src-tauri/tauri.conf.json | head -n1 | sed 's/.*"\([^"]*\)"/\1/')
+          if [ "$FULL_VERSION" != "$TAURI_VERSION" ]; then
+            echo "version mismatch: package.json=$FULL_VERSION tauri.conf.json=$TAURI_VERSION" >&2
+            exit 1
+          fi
+          if [[ "${GITHUB_REF_TYPE:-}" == "tag" && "${GITHUB_REF_NAME}" != "v$FULL_VERSION" ]]; then
+            echo "release tag ${GITHUB_REF_NAME} does not match version v$FULL_VERSION" >&2
+            exit 1
+          fi
+          echo "tag=v$FULL_VERSION" >> "$GITHUB_OUTPUT"
+          echo "version=$FULL_VERSION" >> "$GITHUB_OUTPUT"
+
+  quality-gate:
+    name: Quality gate (lint / typecheck / test / SSG)
+    needs: version
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.8.0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: ESLint
+        run: pnpm lint
+
+      - name: vue-tsc
+        run: pnpm vue-tsc
+
+      - name: Unit / component tests
+        run: pnpm test
+
+      # Contract-consistency gate (same as build.yml `quality`, Gate 0).
+      - name: Contract consistency (calls vs PPB OpenAPI)
+        run: node scripts/check-contract-consistency.mjs
+
+      - name: Nuxt SSG build
+        run: pnpm build
+
+      - name: Link / static sanity
+        run: |
+          test -f .output/public/index.html
+          test -f .output/public/robots.txt
+          test -f .output/public/sitemap_index.xml
+          grep -q "Skip to content" .output/public/index.html
+          grep -q "Phira+" .output/public/index.html
+
+      - name: Upload SSG static output
+        uses: actions/upload-artifact@v4
+        with:
+          name: ssg-static
+          path: .output/public
+          if-no-files-found: error
+
+  release:
+    name: Package + publish GitHub Release
+    needs: [version, quality-gate]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - name: Download SSG static output
+        uses: actions/download-artifact@v4
+        with:
+          name: ssg-static
+          path: .output/public
+
+      - name: Package SSG (tar.gz) + SHA256SUMS
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          tar -czf "phira-plus-ssg-v${VERSION}.tar.gz" -C .output/public .
+          sha256sum "phira-plus-ssg-v${VERSION}.tar.gz" > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Generate build provenance
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-path: phira-plus-ssg-v*.tar.gz
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.version.outputs.tag }}
+          name: v${{ needs.version.outputs.version }}
+          generate_release_notes: true
+          files: |
+            phira-plus-ssg-v*.tar.gz
+            SHA256SUMS.txt

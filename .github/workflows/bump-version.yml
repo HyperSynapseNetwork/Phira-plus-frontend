@@ -1,0 +1,82 @@
+name: Bump Version
+
+# PPF manual version bump (design §26.3). Mirrors PMP's bump-version.yml.
+# - Manual workflow_dispatch only; versions are per-repo (package.json +
+#   tauri.conf.json) and released deliberately.
+# - major / minor choice. Patch (C) = commit count since the last `v*.*.*`
+#   tag (same A.B.C semantics as PMP).
+# - Syncs `version` in package.json + src-tauri/tauri.conf.json, then tags
+#   `vA.B.C` and pushes with --follow-tags (which triggers release.yml).
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: 升级类型 | major=A+1.0.C | minor=A.B+1.C（默认）
+        type: choice
+        options:
+          - minor  # → A.B+1.C
+          - major  # → A+1.0.C
+        default: "minor"
+
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Compute new version
+        id: version
+        run: |
+          set -euo pipefail
+          FULL_VERSION=$(grep -o '"version": *"[^"]*"' package.json | head -n1 | sed 's/.*"\([^"]*\)"/\1/')
+          MAJOR=$(echo "$FULL_VERSION" | cut -d. -f1)
+          MINOR=$(echo "$FULL_VERSION" | cut -d. -f2)
+
+          if [[ "${{ github.event.inputs.bump }}" == "major" ]]; then
+            MAJOR=$((MAJOR + 1))
+            MINOR=0
+          else
+            MINOR=$((MINOR + 1))
+          fi
+
+          # C = commit count since the last v*.*.* tag (PMP A.B.C convention).
+          LAST_TAG=$(git describe --tags --abbrev=0 --match 'v*.*.*' 2>/dev/null || true)
+          if [ -n "$LAST_TAG" ]; then
+            PATCH=$(git rev-list --count "$LAST_TAG"..HEAD)
+          else
+            PATCH=$(git rev-list --count HEAD)
+          fi
+
+          NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+          echo "version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$NEW_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Sync version (package.json + tauri.conf.json)
+        run: |
+          set -euo pipefail
+          NEW_VERSION="${{ steps.version.outputs.version }}"
+          for f in package.json src-tauri/tauri.conf.json; do
+            sed -i "s/\"version\": *\"[^\"]*\"/\"version\": \"$NEW_VERSION\"/" "$f"
+          done
+          grep -q "\"version\": \"$NEW_VERSION\"" package.json
+          grep -q "\"version\": \"$NEW_VERSION\"" src-tauri/tauri.conf.json
+          echo "version synced to $NEW_VERSION"
+
+      - name: Commit and tag
+        run: |
+          set -euo pipefail
+          TAG="${{ steps.version.outputs.tag }}"
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add package.json src-tauri/tauri.conf.json
+          git commit -m "chore: bump version to $TAG"
+          git pull --rebase origin main
+          git tag -a "$TAG" -m "Version $TAG"
+          git push --follow-tags
