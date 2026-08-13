@@ -1,5 +1,6 @@
 import type { ChatSendBody, HostActionBody, Paginated, Room, RoomChatMessage, RoomHistoryEntry, RoomListParams } from '~/utils/api/types'
 import { apiFetch, getApiBase } from '~/utils/api/client'
+import { normalizeRoom, normalizeRoomListResponse } from '~/utils/rooms'
 import { withQuery } from './useApi'
 
 /**
@@ -31,6 +32,9 @@ export function useRoomList(query: MaybeRefOrGetter<RoomListParams>) {
     server: false,
     lazy: true,
     default: emptyRooms,
+    // PPB may pass PMP `room.list` through verbatim (bare array / {rooms} /
+    // {results} with PMP field names) — normalize to `Paginated<Room>`.
+    transform: raw => normalizeRoomListResponse(raw, params.value),
   })
 
   const rooms = computed(() => data.value?.items ?? [])
@@ -47,6 +51,8 @@ export function useRoom(roomUuid: MaybeRefOrGetter<string>) {
     retry: 0,
     server: false,
     lazy: true,
+    // Detail also flows through PMP passthrough — normalize field names.
+    transform: raw => normalizeRoom(raw),
   })
   return { room: data, error, pending, refresh }
 }
