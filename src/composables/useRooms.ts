@@ -122,6 +122,4 @@ export const HOST_ACTIONS = [
   'room.cancel_start',
   'room.whitelist_add',
   'room.whitelist_remove',
-  'room.blacklist_add',
-  'room.blacklist_remove',
 ] as const
