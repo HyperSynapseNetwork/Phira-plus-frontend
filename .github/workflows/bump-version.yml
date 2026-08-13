@@ -15,9 +15,9 @@ on:
         description: 升级类型 | major=A+1.0.C | minor=A.B+1.C（默认）
         type: choice
         options:
-          - minor  # → A.B+1.C
-          - major  # → A+1.0.C
-        default: "minor"
+          - minor
+          - major
+        default: minor
 
 permissions:
   contents: write
