@@ -2,13 +2,14 @@ import { describe, expect, it } from 'vitest'
 import { CONTEXT_WINDOW_MAX_DEPTH, useContextWindow } from '~/composables/useContextWindow'
 
 describe('context window manager (design §22.4)', () => {
-  it('is depth-limited to 2', () => {
+  it('is depth-limited to 2 (rejects when full)', () => {
     const { stack, open } = useContextWindow()
     open({ title: 'A' })
     open({ title: 'B' })
-    open({ title: 'C' })
+    const third = open({ title: 'C' })
+    expect(third.ok).toBe(false)
     expect(stack.value).toHaveLength(2)
-    expect(stack.value.map(e => e.title)).toEqual(['B', 'C'])
+    expect(stack.value.map(e => e.title)).toEqual(['A', 'B'])
     expect(CONTEXT_WINDOW_MAX_DEPTH).toBe(2)
   })
 
@@ -20,14 +21,22 @@ describe('context window manager (design §22.4)', () => {
     expect(stack.value.map(e => e.title)).toEqual(['A'])
   })
 
-  it('closes by id and clears all', () => {
+  it('closes the top layer by id and clears all', () => {
     const { stack, open, close, closeAll } = useContextWindow()
-    const result = open({ title: 'A' })
-    open({ title: 'B' })
-    close(result.ok ? result.id : undefined)
-    expect(stack.value.map(e => e.title)).toEqual(['B'])
+    open({ title: 'A' })
+    const top = open({ title: 'B' })
+    close(top.ok ? top.id : undefined)
+    expect(stack.value.map(e => e.title)).toEqual(['A'])
     closeAll()
     expect(stack.value).toHaveLength(0)
+  })
+
+  it('refuses to close a non-top layer (top-only semantics)', () => {
+    const { stack, open, close } = useContextWindow()
+    const bottom = open({ title: 'A' })
+    open({ title: 'B' })
+    expect(close(bottom.ok ? bottom.id : undefined)).toBe(false)
+    expect(stack.value.map(e => e.title)).toEqual(['A', 'B'])
   })
 
   it('generates unique ids', () => {
