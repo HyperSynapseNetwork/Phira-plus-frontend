@@ -1,0 +1,7 @@
+{
+  "version":2,
+  "formalThemeOptions":["dark"],
+  "accountScoped":{"language":["zh","en"],"accent":["cyan","blue","violet","green","amber"],"reducedMotion":"boolean","reducedTransparency":"boolean","backgroundMode":"when product explicitly supports cross-device sync","backgroundIntensity":"when product explicitly supports cross-device sync"},
+  "deviceScoped":{"backgroundCustom":"local file/data URL or device-specific custom background","backgroundQuality":"rendering/performance quality","lowPerformance":"boolean","windowGeometry":"native/device only"},
+  "rule":"Namespace name does not imply account sync. Every preference declares scope and at least one consumer. Apps expose only fully implemented options."
+}

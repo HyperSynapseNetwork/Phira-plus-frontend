@@ -1,4 +1,4 @@
-import type { Identity, MeResponse } from '~/utils/api/types'
+import type { Identity, MeProfile, MeResponse } from '~/utils/api/types'
 import { apiFetch } from '~/utils/api/client'
 
 /**
@@ -28,7 +28,8 @@ export function useSession() {
   const { data, error, refresh, pending } = useApiData<MeResponse>('ppf:session', '/api/v1/me', EMPTY_ME)
 
   const authenticated = computed(() => Boolean(data.value.user) || Boolean(data.value.principal))
-  const profile = computed(() => data.value.user ?? undefined)
+  const { data: profileData, error: profileError, refresh: refreshProfile } = useApiData<Partial<MeProfile>>('ppf:my-profile', '/api/v1/me/profile', {})
+  const profile = computed<MeProfile | undefined>(() => data.value.user ? { ...data.value.user, ...profileData.value } : undefined)
   const permissions = computed(() => data.value.permissions ?? [])
   const capabilities = computed(() => data.value.capabilities ?? [])
   const session = computed(() => data.value.session ?? undefined)
@@ -37,8 +38,8 @@ export function useSession() {
   const requiresReauth = computed(() =>
     Boolean((data.value as unknown as { phira_reauth_required?: boolean }).phira_reauth_required),
   )
-  // Identities are a separate `/api/v1/me/identities` call; exposed as [] for now.
-  const identities = computed<Identity[]>(() => [])
+  const { data: identityData, refresh: refreshIdentities } = useApiData<{ identities: Identity[] }>('ppf:identities', '/api/v1/me/identities', { identities: [] })
+  const identities = computed<Identity[]>(() => identityData.value.identities)
 
   /** P13: build the PPB auth gateway URL with a relative, whitelisted return_to. */
   function loginUrl(returnTo: string): string {
@@ -47,16 +48,9 @@ export function useSession() {
   }
 
   async function logout(): Promise<void> {
-    try {
-      // POST /auth/logout carries the CSRF token via apiFetch (contract §20).
-      await apiFetch('/api/v1/auth/logout', { method: 'POST' })
-    }
-    catch {
-      // Ignore — best-effort; refresh will reflect the new state.
-    }
-    finally {
-      await refresh()
-    }
+    // A failed logout must not be presented as an authoritative guest state.
+    await apiFetch('/api/v1/auth/logout', { method: 'POST' })
+    await refresh()
   }
 
   return {
@@ -65,7 +59,10 @@ export function useSession() {
     pending,
     authenticated,
     profile,
+    profileError,
+    refreshProfile,
     identities,
+    refreshIdentities,
     permissions,
     capabilities,
     session,

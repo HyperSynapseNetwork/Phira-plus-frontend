@@ -1,0 +1,27 @@
+{
+  "version": "2.2",
+  "rules": [
+    "contract-hash",
+    "required-common-component-files",
+    "declared-app-component-files",
+    "no-undeclared-PP-public-components",
+    "PPButton-defaults",
+    "PPNotice-timing-and-promise",
+    "PPNotice-anatomy-contract",
+    "icon-registry-sync",
+    "numeric-z-index-outside-foundation",
+    "legacy-public-ui",
+    "private-notice-protocol",
+    "raw-server-error-message",
+    "user-visible-phase-scaffold-proposed",
+    "ppf-business-semantic-css-boundary",
+    "formal-native-control-outside-policy",
+    "page-local-mutation-message",
+    "PPButton-prop-contract",
+    "critical-touch-target-contract",
+    "overlay-manager-contract",
+    "reduced-transparency-token-contract",
+    "PPStatus-vs-PPBadge-semantics",
+    "hardcoded-product-copy"
+  ]
+}

@@ -12,9 +12,9 @@ import { useRoom } from '~/composables/useRooms'
 const route = useRoute()
 const { t } = useI18n()
 
-const roomUuid = computed(() => String(route.params.room_id))
+const roomId = computed(() => String(route.params.room_id))
 
-const { room, error, pending, refresh } = useRoom(roomUuid)
+const { room, error, pending, refresh } = useRoom(roomId)
 
 usePageSeo(() => ({
   title: room.value?.name ?? t('nav.rooms'),
@@ -54,7 +54,7 @@ function hostName(): string {
     <header class="flex flex-wrap items-center justify-between gap-3">
       <div class="min-w-0">
         <h1 class="truncate text-2xl font-bold text-slate-50">
-          {{ room?.name || roomUuid }}
+          {{ room?.name || roomId }}
         </h1>
         <p v-if="room" class="mt-1 text-sm text-slate-400">
           {{ $t(stateLabel(room.state)) }}
@@ -66,12 +66,12 @@ function hostName(): string {
           </template>
         </p>
       </div>
-      <BaseButton variant="ghost" size="sm" as="NuxtLink" to="/rooms">
+      <PPButton weight="quiet" size="sm" as="NuxtLink" to="/rooms">
         {{ $t('common.back') }}
-      </BaseButton>
+      </PPButton>
     </header>
 
-    <section class="content-surface p-6">
+    <PPSurface as="section" class="p-6">
       <p v-if="pending && !room" class="py-10 text-center text-sm text-slate-400">
         {{ $t('common.loading') }}
       </p>
@@ -80,22 +80,22 @@ function hostName(): string {
         <p class="mb-3 text-sm text-red-400">
           {{ $t('common.error') }}
         </p>
-        <BaseButton variant="ghost" size="sm" @click="() => refresh()">
+        <PPButton weight="quiet" size="sm" @click="() => refresh()">
           {{ $t('common.retry') }}
-        </BaseButton>
+        </PPButton>
       </div>
 
       <p v-else-if="!room" class="py-10 text-center text-sm text-slate-400">
         {{ $t('rooms.empty') }}
       </p>
 
-      <RoomContextContent v-else :room-uuid="roomUuid" />
-    </section>
+      <RoomContextContent v-else :room-id="roomId" />
+    </PPSurface>
 
     <!-- JoinIntent: confirm-join → PPB intent → prompt → force_move (design §14.6, P-86).
          Join-intents are keyed by ROOM ID (P-82/P-86), not the shareable uuid. -->
-    <section v-if="room" class="content-surface p-6">
-      <JoinIntentPanel :room-id="room.id || roomUuid" />
-    </section>
+    <PPSurface as="section" v-if="room" class="p-6">
+      <JoinIntentPanel :room-id="room.room_id" />
+    </PPSurface>
   </div>
 </template>

@@ -34,7 +34,7 @@ ppf/
 │   ├── monitor-common/          #   谱面结构、bincode (ChartInfo, Chart)、LiveEvent
 │   ├── monitor-client/          #   ChartPlayer / GameMonitor（wasm-bindgen）
 │   └── phira-mp/                #   phira-mp-common/phira-mp-macros 固定快照（commit c59f9868）
-├── src-tauri/                   # Tauri 2 壳（Phase D，配置/占位）
+├── src-tauri/                   # Tauri 2 Windows/Android 壳（Native release gates 独立验证）
 └── tests/                       # Vitest（error-envelope / preferences / use-api / context-window / viewer-sources / preferences-merge）
 ```
 

@@ -9,14 +9,14 @@ import { useRoom } from '~/composables/useRooms'
  *
  * Tabs: Overview | Players | Chat | Live | History.
  * Chat is delegated to RoomChatPanel (uses `useRoomChat`); Live is the live
- * monitor tab (design §12.6 / contract §4); History is a Phase-D placeholder.
+ * monitor tab (design §12.6 / contract §4); History consumes PMP round data.
  */
 
-const props = defineProps<{ roomUuid: string }>()
+const props = defineProps<{ roomId: string }>()
 
 const { t } = useI18n()
 
-const { room, error, pending, refresh } = useRoom(() => props.roomUuid)
+const { room, error, pending, refresh } = useRoom(() => props.roomId)
 
 /**
  * Live monitor statuses (contract §4 / design §12.6). Mirrors the Viewer
@@ -57,7 +57,7 @@ function onLiveStatus(status: LiveStatus): void {
 /**
  * LiveMonitor (Viewer agent) — resolved lazily so an absent module / WASM
  * degrades to the status strip instead of breaking the tab. Prop contract:
- * `{ roomUuid: string }`, emits `status-change(status: LiveStatus)`.
+ * `{ roomId: string }`, emits `status-change(status: LiveStatus)`.
  */
 const LiveMonitor = defineAsyncComponent({
   loader: () => import('~/components/viewer/LiveMonitor.vue'),
@@ -143,7 +143,7 @@ function serverOnlineClass(r: Room): string {
         role="tab"
         :aria-selected="activeTab === tab.id"
         :aria-controls="`tab-panel-${tab.id}`"
-        class="glass-focusable rounded-md px-3 py-1.5 text-sm font-medium transition"
+        class="min-h-10 rounded-[var(--pp-radius-control)] px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
         :class="activeTab === tab.id
           ? 'bg-accent/15 text-accent ring-1 ring-accent/30'
           : 'text-slate-400 hover:text-slate-200'"
@@ -165,9 +165,9 @@ function serverOnlineClass(r: Room): string {
         <p class="mb-3 text-sm text-red-400">
           {{ $t('common.error') }}
         </p>
-        <BaseButton variant="ghost" size="sm" @click="() => refresh()">
+        <PPButton weight="quiet" size="sm" @click="() => refresh()">
           {{ $t('common.retry') }}
-        </BaseButton>
+        </PPButton>
       </div>
 
       <!-- Empty / not found -->
@@ -261,7 +261,7 @@ function serverOnlineClass(r: Room): string {
           id="tab-panel-chat"
           role="tabpanel"
         >
-          <RoomChatPanel :room-uuid="roomUuid" />
+          <RoomChatPanel :room-id="roomId" />
         </div>
 
         <div
@@ -276,7 +276,7 @@ function serverOnlineClass(r: Room): string {
               v-for="mode in liveModes"
               :key="mode.id"
               type="button"
-              class="glass-focusable rounded-md px-3 py-1.5 text-xs font-medium transition"
+              class="min-h-10 rounded-[var(--pp-radius-control)] px-3 py-1.5 text-xs font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
               :class="liveMode === mode.id
                 ? 'bg-accent/15 text-accent ring-1 ring-accent/30'
                 : 'text-slate-400 hover:text-slate-200'"
@@ -294,7 +294,7 @@ function serverOnlineClass(r: Room): string {
 
           <!-- Live monitor (PPB Live Gateway, JSON envelope — contract P-81/P-82).
                Live WS uses the ROOM ID (not the shareable room_uuid). -->
-          <LiveMonitor :room-id="room.id || roomUuid" @status-change="onLiveStatus" />
+          <LiveMonitor :room-id="room.room_id" @status-change="onLiveStatus" />
 
           <p class="text-xs text-slate-500">
             {{ $t('live.dataSource') }}
@@ -306,7 +306,7 @@ function serverOnlineClass(r: Room): string {
           id="tab-panel-history"
           role="tabpanel"
         >
-          <RoomHistoryPanel :room-uuid="roomUuid" />
+          <RoomHistoryPanel :room-id="roomId" />
         </div>
       </div>
     </div>

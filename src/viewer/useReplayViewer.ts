@@ -3,15 +3,25 @@ import type { ChartPlayer } from './loader'
 import { onUnmounted, toValue } from 'vue'
 import { getApiBase } from '~/utils/api/client'
 import { loadWasm } from './loader'
-import { fetchChartBlob, fetchReplayManifest, loadResourcePack, replayWsUrl } from './sources'
+import { fetchChartBlob, fetchReplayFrames, fetchReplayManifest, loadResourcePack, resolveReplayShare } from './sources'
 
 export type ReplayStatus = 'idle' | 'loading' | 'ready' | 'error' | 'unavailable'
+
+export interface ReplayAnalysis {
+  touches: number
+  judges: number
+  matched: number
+  unmatched: number
+  meanOffsetMs: number | null
+  buckets: Array<{ key: string, count: number }>
+}
 
 export interface UseReplayViewerReturn {
   available: Ref<boolean>
   status: Ref<ReplayStatus>
   error: Ref<string | null>
   isPlaying: Ref<boolean>
+  analysis: Ref<ReplayAnalysis | null>
   load: () => Promise<void>
   play: () => Promise<void>
   pause: () => void
@@ -36,11 +46,14 @@ export interface UseReplayViewerReturn {
 export function useReplayViewer(
   roundUuid: MaybeRefOrGetter<string>,
   canvasRef: Ref<HTMLCanvasElement | null>,
+  playerPhiraId?: MaybeRefOrGetter<number | undefined>,
+  shareToken?: MaybeRefOrGetter<string | undefined>,
 ): UseReplayViewerReturn {
   const available = ref(false)
   const status = ref<ReplayStatus>('idle')
   const error = ref<string | null>(null)
   const isPlaying = ref(false)
+  const analysis = ref<ReplayAnalysis | null>(null)
   const lowPerf = useLowPerformance().enabled
 
   let player: ChartPlayer | null = null
@@ -50,7 +63,6 @@ export function useReplayViewer(
   let playing = false
   let disposed = false
   let lastRenderAt = 0
-  let replayWs: WebSocket | null = null
 
   function renderFrame(ts: number): void {
     if (disposed)
@@ -85,38 +97,17 @@ export function useReplayViewer(
     player.resize(Math.max(1, canvas.clientWidth), Math.max(1, canvas.clientHeight))
   }
 
-  function connectReplayStream(identifier: string): void {
-    if (!import.meta.client || replayWs)
-      return
-    try {
-      const ws = new WebSocket(replayWsUrl(getApiBase(), identifier))
-      replayWs = ws
-      ws.addEventListener('message', (event) => {
-        try {
-          const data = JSON.parse(String(event.data)) as { type?: string }
-          // JSON envelope (P-81): touches/judges/round_switch/resync/heartbeat.
-          // This pass only asserts liveness — full per-player visuals await the
-          // binary frame feed. No throw.
-          void data
-        }
-        catch {
-          // Ignore non-JSON frames.
-        }
-      })
-    }
-    catch {
-      replayWs = null
-    }
-  }
-
   async function load(): Promise<void> {
     if (status.value === 'loading')
       return
-    const identifier = String(toValue(roundUuid))
-    if (!identifier)
+    let round = String(toValue(roundUuid) ?? '')
+    let playerId = playerPhiraId === undefined ? undefined : toValue(playerPhiraId)
+    const token = shareToken === undefined ? undefined : toValue(shareToken)
+    if (!round && !token)
       return
     status.value = 'loading'
     error.value = null
+    analysis.value = null
     try {
       const api = await loadWasm()
       if (!api) {
@@ -137,8 +128,16 @@ export function useReplayViewer(
       resourcePack ??= await loadResourcePack()
       await player.load_resource_pack(resourcePack)
 
-      // P-86: manifest → chart_id → chart blob (no replay viewer blob).
-      const manifest = await fetchReplayManifest(getApiBase(), identifier)
+      if (token) {
+        const resolved = await resolveReplayShare(getApiBase(), token)
+        if (!resolved)
+          throw new Error('share unavailable')
+        round = resolved.round_uuid
+        playerId = resolved.player_phira_id
+      }
+
+      // Manifest carries the PMP-owned round→chart relationship.
+      const manifest = await fetchReplayManifest(getApiBase(), round, playerId, token)
       const chartId = manifest?.chart_id ?? manifest?.chart?.id
       if (!chartId) {
         status.value = 'error'
@@ -154,15 +153,42 @@ export function useReplayViewer(
       }
 
       await player.load_chart_bytes(blob)
+      if (playerId == null)
+        throw new Error('player identity unavailable')
+      const frames = await fetchReplayFrames(getApiBase(), round, playerId, token)
+      if (!frames)
+        throw new Error('Replay telemetry unavailable')
+
+      const offsets: number[] = []
+      let unmatched = 0
+      for (const judge of frames.judges) {
+        const expected = player.note_time(judge.line_id, judge.note_id)
+        if (typeof expected !== 'number') {
+          unmatched += 1
+          continue
+        }
+        offsets.push((judge.time - expected) * 1000)
+        player.push_replay_judge(judge.time, judge.line_id, judge.note_id, judge.judgement)
+      }
+      const bucketCounts = [0, 0, 0, 0, 0]
+      for (const offset of offsets) {
+        const index = offset < -90 ? 0 : offset < -45 ? 1 : offset <= 45 ? 2 : offset <= 90 ? 3 : 4
+        bucketCounts[index] = (bucketCounts[index] ?? 0) + 1
+      }
+      analysis.value = {
+        touches: frames.touches.length,
+        judges: frames.judges.length,
+        matched: offsets.length,
+        unmatched,
+        meanOffsetMs: offsets.length ? offsets.reduce((sum, value) => sum + value, 0) / offsets.length : null,
+        buckets: ['early_90', 'early_45', 'center', 'late_45', 'late_90'].map((key, index) => ({ key, count: bucketCounts[index] ?? 0 })),
+      }
       player.set_time(0)
       status.value = 'ready'
       syncSize()
       resizeObserver?.disconnect()
       resizeObserver = new ResizeObserver(() => syncSize())
       resizeObserver.observe(canvas)
-
-      // Best-effort replay stream (touches/judges JSON, P-81/P-86).
-      connectReplayStream(identifier)
     }
     catch {
       status.value = 'error'
@@ -204,10 +230,6 @@ export function useReplayViewer(
     stopLoop()
     resizeObserver?.disconnect()
     resizeObserver = null
-    if (replayWs) {
-      replayWs.close()
-      replayWs = null
-    }
     if (player)
       void player.pause()
     player = null
@@ -215,5 +237,5 @@ export function useReplayViewer(
 
   onUnmounted(dispose)
 
-  return { available, status, error, isPlaying, load, play, pause, seek, dispose }
+  return { available, status, error, isPlaying, analysis, load, play, pause, seek, dispose }
 }

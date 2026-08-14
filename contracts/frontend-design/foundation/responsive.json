@@ -1,0 +1,27 @@
+{
+  "version": "2.1",
+  "breakpoints": {
+    "mobile": "<640",
+    "tablet": "640-1023",
+    "desktop": "1024-1439",
+    "wide": ">=1440"
+  },
+  "patterns": {
+    "panelSidebar": {
+      "mobile": "drawer",
+      "tablet": "drawer",
+      "desktop": "persistent",
+      "wide": "persistent"
+    },
+    "contextWindow": {
+      "mobile": "sheet/fullscreen by intent",
+      "tablet": "modal-or-sheet",
+      "desktop": "modal"
+    },
+    "dataTable": {
+      "mobile": "stack-or-horizontal-scroll",
+      "desktop": "table"
+    }
+  },
+  "touchContract": "foundation/touch.json"
+}

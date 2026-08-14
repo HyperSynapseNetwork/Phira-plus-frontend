@@ -6,9 +6,9 @@
  */
 import { useRoomHistory } from '~/composables/useRooms'
 
-const props = defineProps<{ roomUuid: string }>()
+const props = defineProps<{ roomId: string }>()
 
-const { history, pending, error, refresh } = useRoomHistory(() => props.roomUuid)
+const { history, pending, error, refresh } = useRoomHistory(() => props.roomId)
 
 function fmtTime(iso?: string): string {
   if (!iso)
@@ -28,9 +28,9 @@ function fmtTime(iso?: string): string {
       <p class="mb-2 text-sm text-slate-400">
         {{ $t('common.error') }}
       </p>
-      <BaseButton variant="ghost" size="sm" @click="() => refresh()">
+      <PPButton weight="quiet" size="sm" @click="() => refresh()">
         {{ $t('common.retry') }}
-      </BaseButton>
+      </PPButton>
     </div>
 
     <p v-else-if="!history.length" class="py-4 text-center text-sm text-slate-400">
@@ -43,7 +43,7 @@ function fmtTime(iso?: string): string {
           <span class="truncate font-medium text-slate-100">
             {{ h.chart_name || $t('room.historyNoChart') }}
           </span>
-          <span class="text-xs text-slate-500">{{ fmtTime(h.started_at) }}</span>
+          <span v-if="h.started_at" class="text-xs text-slate-500">{{ fmtTime(h.started_at) }}</span>
         </div>
         <ul v-if="h.players?.length" class="mt-2 space-y-1">
           <li v-for="p in h.players" :key="p.phira_id" class="flex items-center justify-between gap-2 text-xs">

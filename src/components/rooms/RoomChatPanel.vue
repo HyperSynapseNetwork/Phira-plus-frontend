@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { RoomChatMessage } from '~/utils/api/types'
-import { isApiError } from '~/composables/useApi'
 import { sendRoomChat, useRoomChat } from '~/composables/useRooms'
 
 /**
@@ -15,17 +14,17 @@ import { sendRoomChat, useRoomChat } from '~/composables/useRooms'
  * only sends `{ room_id, content }`.
  */
 
-const props = defineProps<{ roomUuid: string }>()
+const props = defineProps<{ roomId: string }>()
 
 const { t } = useI18n()
+const notice = useNotice()
 
-const { messages, error, pending, refresh } = useRoomChat(() => props.roomUuid)
+const { messages, error, pending, refresh } = useRoomChat(() => props.roomId)
 
 const draft = ref('')
 const sending = ref(false)
-const sendError = ref('')
 
-const inputId = computed(() => `ppf-room-chat-${props.roomUuid}`)
+const inputId = computed(() => `ppf-room-chat-${props.roomId}`)
 const scrollEl = ref<HTMLElement | null>(null)
 
 /** Keep the newest message visible (latest last). */
@@ -57,15 +56,13 @@ async function submit(): Promise<void> {
     return
 
   sending.value = true
-  sendError.value = ''
   try {
-    await sendRoomChat(props.roomUuid, content)
+    await sendRoomChat(props.roomId, content)
     draft.value = ''
     await refresh()
   }
   catch (err) {
-    const message = isApiError(err) ? err.message : t('common.unknown')
-    sendError.value = t('room.sendFailed', { message })
+    notice.errorFromApi(err, { dedupKey: `room-chat:${props.roomId}:send` })
   }
   finally {
     sending.value = false
@@ -94,9 +91,9 @@ async function submit(): Promise<void> {
             <p class="mb-2 text-sm text-red-400">
               {{ $t('common.error') }}
             </p>
-            <BaseButton variant="ghost" size="sm" @click="() => refresh()">
+            <PPButton weight="quiet" size="sm" @click="() => refresh()">
               {{ $t('common.retry') }}
-            </BaseButton>
+            </PPButton>
           </div>
 
           <p v-else-if="messages.length === 0" class="py-6 text-center text-sm text-slate-400">
@@ -127,27 +124,24 @@ async function submit(): Promise<void> {
     <!-- Composer -->
     <form class="mt-3 flex items-center gap-2" @submit.prevent="submit">
       <label :for="inputId" class="sr-only">{{ $t('room.chatPlaceholder') }}</label>
-      <input
+      <PPInput
         :id="inputId"
         v-model="draft"
         type="text"
         :placeholder="$t('room.chatPlaceholder')"
         :disabled="sending"
         autocomplete="off"
-        class="glass-focusable min-w-0 flex-1 rounded-md bg-white/5 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-accent/60"
-      >
-      <BaseButton
-        variant="primary"
+        class="min-w-0 flex-1"
+      />
+      <PPButton
+        weight="primary"
         size="sm"
         type="submit"
         :disabled="sending || !draft.trim()"
       >
         {{ $t('room.chatSend') }}
-      </BaseButton>
+      </PPButton>
     </form>
 
-    <p v-if="sendError" class="mt-2 text-xs text-red-400" role="alert">
-      {{ sendError }}
-    </p>
   </div>
 </template>

@@ -1,8 +1,8 @@
-# Phira+ Tauri 2 shell (Phase D scaffold)
+# Phira+ Tauri 2 shell
 
-This directory is a **Phase D scaffold** for the Phira+ desktop/mobile app
-(design §17). It is **config/stub only** — it does not compile locally and is
-validated by review, not by running Cargo/Tauri.
+This directory contains the Phira+ Windows/Android desktop/mobile shell. Secure credential storage and production push identities remain release gates until verified on target devices.
+The current source package has no Rust/Tauri toolchain, so native compilation
+is performed by CI and remains a release gate.
 
 ## What this is
 
@@ -11,9 +11,10 @@ validated by review, not by running Cargo/Tauri.
 - The web content is the **Nuxt 3 SSG site** in this repo. `tauri.conf.json`
   points `frontendDist` at `../.output/public` (the SSG output), so the Tauri
   window simply hosts the pre-rendered site.
-- A **native adapter** (`src/native_adapter.rs`) with stub commands for secure
-  credential storage, remote push registration, local notifications, device
-  preferences, deep links and lifecycle events.
+- A **native adapter** (`src/native_adapter.rs`): local notification and device
+  preference persistence are implemented; secure credential storage and remote
+  push fail explicitly until their platform bridges/Owner credentials exist.
+- Deep links and lifecycle events are forwarded by `src/lib.rs`.
 
 ## Frontend
 
@@ -30,8 +31,7 @@ frontend is never built by Tauri.
 
 ## Running locally
 
-The local native toolchain is broken; do **not** attempt `cargo tauri dev`
-until the Owner fixes it. Once fixed:
+Install a Rust/Tauri toolchain before running locally:
 
 ```bash
 pnpm dev                 # terminal 1 — Nuxt dev server on :3000
@@ -49,7 +49,7 @@ Full-exit remote push needs platform native integration:
 | Windows  | WNS      | Package SID + client secret, code-signing certificate     |
 | Android  | FCM      | `google-services.json` (sender ID), signing keystore      |
 
-Until those are supplied, `register_remote_push` is a stub that only logs, and
+Until those are supplied, `register_remote_push` returns `NOT_CONFIGURED`, and
 the browser Web Push channel (`src/public/sw.js` + `src/plugins/push.client.ts`)
 remains the active push path.
 
@@ -63,4 +63,5 @@ Owner-provided — see `icons/README.md`.
 
 - This crate is **standalone** (no `[workspace]` in `Cargo.toml`) and lives
   outside the `viewer/` WASM workspace, so it cannot interfere with it.
-- Never run `cargo`/`tauri` locally; config is validated by review.
+- Run `cargo check` and the platform Tauri builds in an environment that has
+  the required Rust, WebView and Android/Windows SDK toolchains.

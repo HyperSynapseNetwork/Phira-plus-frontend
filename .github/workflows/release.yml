@@ -22,7 +22,35 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  NUXT_PUBLIC_API_BASE: https://api-phira.htadiy.com
+  NUXT_PUBLIC_AUTH_BASE: https://api-phira.htadiy.com
+  NUXT_PUBLIC_SITE_URL: https://phira.htadiy.com
+
 jobs:
+  wasm:
+    name: WASM Viewer
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: jetli/wasm-pack-action@v0.4.0
+        with:
+          version: latest
+      - name: Build viewer
+        run: wasm-pack build --target web --out-dir "$GITHUB_WORKSPACE/src/public/viewer" viewer/monitor-client
+      - name: Verify viewer
+        run: |
+          test -f src/public/viewer/monitor_client.js
+          test -f src/public/viewer/monitor_client_bg.wasm
+      - uses: actions/upload-artifact@v4
+        with:
+          name: viewer-wasm
+          path: src/public/viewer
+          if-no-files-found: error
+
   version:
     name: Verify version / tag
     runs-on: ubuntu-latest
@@ -52,7 +80,7 @@ jobs:
 
   quality-gate:
     name: Quality gate (lint / typecheck / test / SSG)
-    needs: version
+    needs: [version, wasm]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -73,11 +101,20 @@ jobs:
       - name: Install (frozen lockfile)
         run: pnpm install --frozen-lockfile
 
+      - name: Download WASM viewer
+        uses: actions/download-artifact@v4
+        with:
+          name: viewer-wasm
+          path: src/public/viewer
+
       - name: ESLint
         run: pnpm lint
 
       - name: vue-tsc
         run: pnpm vue-tsc
+
+      - name: Current documentation truthfulness
+        run: python3 scripts/check-current-docs.py
 
       - name: Unit / component tests
         run: pnpm test
@@ -85,6 +122,14 @@ jobs:
       # Contract-consistency gate (same as build.yml `quality`, Gate 0).
       - name: Contract consistency (calls vs PPB OpenAPI)
         run: node scripts/check-contract-consistency.mjs
+
+      - name: Frontend Design Contract gate
+        run: pnpm test:design-contract
+
+      - name: Error locale completeness gate
+        run: pnpm test:error-i18n
+      - name: Product copy / accessibility i18n gate
+        run: pnpm test:product-copy
 
       - name: Nuxt SSG build
         run: pnpm build
@@ -94,6 +139,8 @@ jobs:
           test -f .output/public/index.html
           test -f .output/public/robots.txt
           test -f .output/public/sitemap_index.xml
+          test -f .output/public/viewer/monitor_client.js
+          test -f .output/public/viewer/monitor_client_bg.wasm
           grep -q "Skip to content" .output/public/index.html
           grep -q "Phira+" .output/public/index.html
 

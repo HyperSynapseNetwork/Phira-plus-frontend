@@ -27,7 +27,15 @@
     "online": "Online",
     "offline": "Offline",
     "unknown": "Unknown",
-    "retry": "Retry"
+    "retry": "Retry",
+    "search": "Search",
+    "authRequired": "Sign in to view your replays.",
+    "accept": "Accept",
+    "reject": "Reject",
+    "save": "Save",
+    "open": "Open",
+    "copy": "Copy",
+    "moreActions": "More actions"
   },
   "rooms": {
     "searchPlaceholder": "Search rooms…",
@@ -50,8 +58,6 @@
     "tabChat": "Chat",
     "tabLive": "Live",
     "tabHistory": "History",
-    "livePlaceholder": "Live view ships in a later release.",
-    "historyPlaceholder": "Room history ships in a later release.",
     "historyEmpty": "No past rounds yet.",
     "historyNoChart": "Unknown chart",
     "chart": "Chart",
@@ -108,7 +114,6 @@
     "notFound": "Chart not found or invalid id.",
     "preview": "Chart preview",
     "previewLoad": "Load chart preview",
-    "previewPlaceholder": "Chart preview ships in a later release (Phase D).",
     "globalRanking": "Global ranking",
     "myBest": "My best",
     "noMyBest": "No score yet",
@@ -127,7 +132,7 @@
     "noRanking": "No ranking data yet"
   },
   "community": {
-    "empty": "Community placeholder: user profiles, friends, public replays.",
+    "empty": "Find players, manage friends, and browse public replays.",
     "searchPlaceholder": "Search by Phira ID…",
     "friends": "Friends",
     "friendRequests": "Friend requests",
@@ -136,7 +141,12 @@
     "noFriends": "No friends yet",
     "noRequests": "No friend requests",
     "removeFriend": "Remove friend",
-    "blockUser": "Block"
+    "blockUser": "Block",
+    "inviteRoom": "Invite to room",
+    "inviteRoomTitle": "Invite friend to room",
+    "inviteRoomHelp": "Enter the target room ID. The server will re-check the friendship and room before sending.",
+    "roomId": "Room ID",
+    "inviteSent": "Room invitation sent"
   },
   "downloads": {
     "empty": "Download info is configured via PPB public content.",
@@ -162,7 +172,8 @@
   },
   "profile": {
     "empty": "Sign in to view MyPhira, friends and preferences.",
-    "loginCta": "Sign in"
+    "loginCta": "Sign in",
+    "sessionUnavailable": "Unable to verify your session right now. Try again shortly."
   },
   "myphira": {
     "tabOverview": "Overview",
@@ -177,10 +188,9 @@
     "bestRecent": "Best / Recent",
     "bestRecentPlaceholder": "Best Pool / Recent data shows once PPB aggregation is ready.",
     "multiplayer": "Multiplayer",
-    "multiplayerPlaceholder": "Multiplayer history ships later.",
     "recentReplay": "Recent replay",
     "noReplays": "No replays yet",
-    "replayPlaceholder": "The replay list appears once the PPB replay API is ready.",
+    "replayPlaceholder": "No public replays are available.",
     "replayVisibility": "Default replay visibility is managed in settings.",
     "share": "Copy share link",
     "copied": "Copied",
@@ -189,11 +199,54 @@
     "visibilityUnlisted": "Unlisted",
     "visibilityPrivate": "Private",
     "identities": "Linked identities",
-    "githubBinding": "GitHub binding (coming soon)",
+    "githubBinding": "GitHub identity link",
     "reauthRequired": "Phira re-authentication required",
-    "sessions": "Sessions (coming soon)",
-    "privacy": "Privacy (coming soon)",
-    "signOut": "Sign out"
+    "sessions": "Sessions & devices",
+    "privacy": "Privacy & visibility",
+    "signOut": "Sign out",
+    "sessionsHint": "Review and revoke other active sessions",
+    "noSessions": "No active sessions",
+    "currentSession": "Current session",
+    "lastSeen": "Last seen",
+    "revokeSession": "Revoke session",
+    "privacyHint": "Public profile, presence and default Replay visibility",
+    "profileVisibility": "Profile visibility",
+    "showOnlineStatus": "Show online status",
+    "showRecentActivity": "Show recent activity",
+    "replayDefaultVisibility": "Default Replay visibility",
+    "visibilityInherit": "Inherit default",
+    "visibilityCustom": "Custom",
+    "manageReplay": "Manage replay",
+    "visibility": "Visibility",
+    "createShare": "Create share link",
+    "shareTokenOnce": "The share token is returned only once",
+    "revoked": "Revoked",
+    "revokeShare": "Revoke share",
+    "github": "GitHub",
+    "githubNotBound": "GitHub not linked",
+    "githubBind": "Link GitHub",
+    "githubUnbind": "Unlink",
+    "redemptionCode": "Redemption code",
+    "redemptionCodeRequired": "Enter a redemption code",
+    "redemptionCodePlaceholder": "Enter code",
+    "redemptionHint": "Redemption validates holder, limits and expiry on the server, then executes an allowlisted Action transactionally.",
+    "redemptionHintShort": "Redeem an allowed reward or account action",
+    "redeem": "Redeem",
+    "tabMultiplayer": "Multiplayer",
+    "multiplayerSummary": "Multiplayer summary",
+    "roundsTotal": "Rounds",
+    "completedRounds": "Completed",
+    "roomsVisited": "Rooms visited",
+    "playtime": "Play time",
+    "recentRounds": "Recent multiplayer rounds",
+    "room": "Room",
+    "chart": "Chart",
+    "startedAt": "Started",
+    "duration": "Duration",
+    "noRounds": "No multiplayer rounds yet",
+    "multiplayerSource": "Derived from durable PMP rounds; only confirmed history is shown.",
+    "account": "Account",
+    "pushTitle": "Push notifications"
   },
   "user": {
     "addFriend": "Add friend",
@@ -205,7 +258,7 @@
     "onlineHidden": "Hidden",
     "privateProfile": "This profile is private.",
     "publicReplays": "Public replays",
-    "publicReplaysPlaceholder": "Public replays appear once the PPB replay API is ready.",
+    "publicReplaysPlaceholder": "No public replays are available.",
     "bio": "Bio",
     "friendsCount": "{count} friends",
     "avatar": "Avatar",
@@ -231,24 +284,26 @@
     "viewAllCharts": "View all charts",
     "viewAllRooms": "View all rooms",
     "downloadsHint": "Download the Windows / Android client",
-    "serverSessions": "Sessions"
+    "serverSessions": "Sessions",
+    "serverDetails": "Server details"
   },
   "login": {
     "title": "Sign in to HSN Phira+",
-    "subtitle": "Sign in with your Phira account. Your Phira credentials are verified server-side and never appear in your browser.",
+    "subtitle": "Sign in to Phira+ with your Phira account. Your Phira email and password are submitted only to the PPB Auth Gateway for server-side verification; PPF and Panel do not receive or store your Phira password.",
     "gatewayCta": "Continue to the Phira auth gateway",
     "gatewayHint": "You will be taken to api-phira.htadiy.com to finish signing in, then returned here.",
-    "agreement": "By continuing you agree to the {terms} and the privacy policy.",
-    "backHome": "Back to home"
+    "agreement": "Account sign-in requires explicit acceptance of the currently approved Terms and Privacy versions in the authentication gateway.",
+    "backHome": "Back to home",
+    "githubCta": "Use linked GitHub through the authentication gateway"
   },
   "terms": {
     "title": "Terms & Privacy",
-    "intro": "This page is a placeholder. Final terms text is pending (OWNER LATER).",
+    "intro": "Account legal acceptance and analytics/cookie consent are separate mechanisms. Public account sign-in is enabled only after the deployment configures approved Terms/Privacy versions and document URLs.",
     "thirdParty": {
       "title": "Third-party resources & data sources",
       "intro": "Parts of this site depend on third-party services. Please note:",
-      "authGateway": "Sign-in is handled by the Phira auth gateway (api-phira.htadiy.com); your Phira credentials are verified server-side and never appear in your browser.",
-      "chartCdn": "Chart covers and preview data may come from the Phira CDN / the PPB viewer endpoint; a placeholder is shown when a request fails.",
+      "authGateway": "Phira sign-in credentials are submitted only to the PPB Auth Gateway for server-side verification; PPF and Panel do not receive or store your Phira password, and PPB does not persist the Phira password.",
+      "chartCdn": "Chart covers and preview data may come from the Phira CDN / PPB Viewer endpoint. A clearly identified fallback artwork may be used when the resource itself is missing; network or API failures must remain an error state rather than looking like normal placeholder content.",
       "externalLinks": "The footer links to docs.phira.htadiy.com and the GitHub repository; external links open in a new window.",
       "probes": "Homepage server status and external-node latency come from PPB public endpoints; only the source and latency reported by the API are shown — IP addresses are never inferred."
     },
@@ -259,10 +314,13 @@
     "contact": {
       "title": "Contact & community",
       "body": "For feedback or support, open an issue on the GitHub repository (HyperSynapseNetwork/Phira-plus-frontend) or reach us through community channels."
-    }
+    },
+    "approval": "Public account sign-in is enabled only after the deployment has approved, versioned legal documents configured. This page explains data handling and third-party dependencies; the binding documents are the configured versions linked by the authentication gateway."
   },
   "context": {
-    "empty": "Placeholder for “{title}” (Context Window skeleton)"
+    "empty": "No content is available for “{title}”.",
+    "close": "Close window",
+    "title": "Details"
   },
   "reauth": {
     "title": "Re-authenticate Phira",
@@ -276,8 +334,6 @@
   "preferences": {
     "title": "Display preferences",
     "theme": "Theme",
-    "themeSystem": "System",
-    "themeLight": "Light",
     "themeDark": "Dark",
     "accent": "Accent",
     "locked": "Locked (brand default)",
@@ -337,7 +393,18 @@
     "replaySeek": "Seek",
     "replayUnavailable": "Replay viewer is currently unavailable.",
     "replayNoData": "No replay data.",
-    "replayNoRawDownload": "Raw file download is not provided."
+    "replayNoRawDownload": "Raw file download is not provided.",
+    "offsetDistribution": "Judgement offset distribution",
+    "frameCounts": "{touches} touches · {judges} judges",
+    "meanOffset": "Mean offset: {value} ms",
+    "unmatchedJudges": "{count} judges could not be matched to chart notes.",
+    "bucket": {
+      "early_90": "<-90",
+      "early_45": "-90~-45",
+      "center": "±45",
+      "late_45": "45~90",
+      "late_90": ">90"
+    }
   },
   "live": {
     "modeLabel": "Latency mode",
@@ -360,7 +427,7 @@
     "players": "Players",
     "noPlayers": "No players yet",
     "wsError": "Live connection error.",
-    "wasmVisualPending": "WASM visual rendering is provided once the binary Touch/Judge frame contract is frozen (P-81)."
+    "touchVisual": "Live touches"
   },
   "joinIntent": {
     "title": "Join room",
@@ -393,7 +460,7 @@
   },
   "replays": {
     "title": "Replays",
-    "empty": "No replays yet (shown once the PPB replay API is ready).",
+    "empty": "No public replays yet.",
     "pending": "Loading replays…"
   },
   "error": {
@@ -412,5 +479,151 @@
     "network_error": "Network error, please check your connection",
     "unknown_error": "An unknown error occurred",
     "invalid_response": "The server returned invalid data"
+  },
+  "errors": {
+    "api": {
+      "INVALID_JSON": "The request body is not valid JSON",
+      "INVALID_QUERY": "The query parameters are invalid",
+      "INVALID_PATH_PARAM": "The path parameter is invalid",
+      "METHOD_NOT_ALLOWED": "This request method is not allowed",
+      "REQUEST_BODY_TOO_LARGE": "The request body is too large",
+      "INVALID_CONTENT_TYPE": "The request content type is not supported",
+      "VALIDATION_FAILED": "The input did not pass validation",
+      "RATE_LIMITED": "Too many requests. Try again later",
+      "AUTH_REQUIRED": "Sign in to continue",
+      "SESSION_EXPIRED": "Your session has expired. Sign in again",
+      "PERMISSION_DENIED": "You do not have permission to do that",
+      "CSRF_INVALID": "The security token expired. Refresh and try again",
+      "RESOURCE_NOT_FOUND": "The requested resource was not found",
+      "RESOURCE_CONFLICT": "The operation conflicts with the current state",
+      "CAPABILITY_NOT_SUPPORTED": "This capability is not supported here",
+      "INTERNAL_ERROR": "The service could not complete the request",
+      "LONG_JOB_ACCEPTED": "The job was accepted. Check its progress later",
+      "LONG_RUNNING_ACTION_REQUIRES_JOB": "This operation must run as a background job",
+      "PHIRA_AUTH_FAILED": "The Phira credentials are invalid",
+      "PHIRA_REAUTH_REQUIRED": "Re-authenticate your Phira identity",
+      "PHIRA_API_UNAVAILABLE": "The Phira service is unavailable",
+      "GITHUB_OAUTH_NOT_CONFIGURED": "GitHub sign-in is not configured",
+      "GITHUB_IDENTITY_NOT_BOUND": "This GitHub account is not bound to a Phira+ account",
+      "ROOT_PASSWORD_INVALID": "The Root password is incorrect",
+      "ROOT_PASSWORD_CHANGE_REQUIRED": "Change the initial Root password first",
+      "CURRENT_SESSION_REVOKE_FORBIDDEN": "The current session cannot be revoked here. Sign out instead",
+      "PMP_UNAVAILABLE": "The multiplayer server is unavailable",
+      "PMP_COMMAND_FAILED": "The multiplayer server command failed",
+      "PMP_COMMAND_TIMEOUT": "The multiplayer server command timed out",
+      "PMP_CAPABILITY_MISSING": "The multiplayer server lacks the required capability",
+      "PMP_CONFIG_NOT_AVAILABLE": "Multiplayer server configuration is unavailable",
+      "PMP_INVALID_RESPONSE": "The multiplayer server returned an unsupported response",
+      "ROOM_NOT_FOUND": "The room does not exist or has closed",
+      "ROOM_ID_REQUIRED": "Enter a room ID",
+      "ROOM_HOST_REQUIRED": "Only the room host can perform this action",
+      "ROOM_USER_NOT_PRESENT": "The target player is not in this room",
+      "ROOM_BATCH_TARGET_REQUIRED": "Select at least one batch target",
+      "ROOM_BATCH_ACTION_UNSUPPORTED": "This room batch action is not supported",
+      "ROOM_MOVE_TARGET_REQUIRED": "Choose a destination room",
+      "ROOM_CHAT_EMPTY": "The message cannot be empty",
+      "ROOM_CHAT_TOO_LONG": "The message is too long",
+      "USER_NOT_FOUND": "The user was not found",
+      "ALREADY_FRIENDS": "You are already friends",
+      "FRIEND_REQUEST_ALREADY_SENT": "The friend request has already been sent",
+      "FRIEND_REQUEST_NOT_FOUND": "The friend request was not found or was already handled",
+      "FRIEND_RELATION_REQUIRED": "This action is available to friends only",
+      "USER_BLOCKED": "This user relationship is blocked",
+      "REPLAY_NOT_FOUND": "The Replay was not found",
+      "REPLAY_ACCESS_DENIED": "You do not have access to this Replay",
+      "REPLAY_VISIBILITY_INVALID": "The Replay visibility setting is invalid",
+      "REPLAY_PLAYER_REQUIRED": "Choose the player for this Replay",
+      "REPLAY_SHARE_INVALID": "The Replay share link is invalid",
+      "REPLAY_SHARE_EXPIRED": "The Replay share link has expired",
+      "REPLAY_SHARE_REVOKED": "The Replay share link was revoked",
+      "NOTIFICATION_NOT_FOUND": "The notification was not found",
+      "NOTIFICATION_ACTION_NOT_AVAILABLE": "This notification action is no longer available",
+      "NOTIFICATION_ACTION_TARGET_INVALID": "The notification action target is invalid",
+      "NOTIFICATION_INPUT_NOT_ALLOWED": "This notification does not accept input",
+      "NOTIFICATION_INPUT_EMPTY": "The input cannot be empty",
+      "NOTIFICATION_INPUT_TOO_LONG": "The input is too long",
+      "CONFIG_VALIDATION_FAILED": "The configuration did not pass validation",
+      "CONFIG_SNAPSHOT_NOT_FOUND": "The configuration snapshot was not found",
+      "CONFIG_SCOPE_INVALID": "The configuration scope is invalid",
+      "JOB_NOT_FOUND": "The job was not found",
+      "JOB_TYPE_UNKNOWN": "Unknown job type",
+      "JOB_ALREADY_RUNNING": "A job of this type is already running",
+      "JOB_NOT_RETRYABLE": "This job cannot be retried",
+      "JOB_NOT_CANCELLABLE": "This job cannot be cancelled now",
+      "REDEMPTION_CODE_NOT_FOUND": "The redemption code was not found",
+      "REDEMPTION_CODE_ALREADY_USED": "This account has already used the redemption code",
+      "REDEMPTION_CODE_REVOKED": "The redemption code was revoked",
+      "REDEMPTION_CODE_EXPIRED": "The redemption code has expired",
+      "REDEMPTION_CODE_LIMIT_REACHED": "The redemption code has reached its usage limit",
+      "REDEMPTION_ACTION_UNSUPPORTED": "This redemption action is not supported",
+      "GROUP_NOT_FOUND": "The permission group was not found",
+      "GROUP_NAME_REQUIRED": "Enter a permission group name",
+      "USER_ACTION_TARGET_INVALID": "The user action target is invalid",
+      "AUTH_LEGAL_CONSENT_REQUIRED": "You must explicitly accept the current Terms of Service and Privacy Policy.",
+      "AUTH_LEGAL_DOCUMENTS_UNAVAILABLE": "Approved legal document versions are not configured; public sign-in is disabled.",
+      "GITHUB_OAUTH_FAILED": "GitHub sign-in could not be completed. Try again.",
+      "GITHUB_API_UNAVAILABLE": "GitHub is temporarily unavailable. Try again later.",
+      "GITHUB_OAUTH_STATE_INVALID": "The GitHub sign-in state is invalid or expired. Start sign-in again."
+    },
+    "client": {
+      "NETWORK_ERROR": "Network connection failed. Check your connection and try again",
+      "INVALID_RESPONSE": "The server response does not match the current API contract",
+      "UNKNOWN_ERROR": "An unknown error occurred. Try again"
+    }
+  },
+  "notice": {
+    "saved": "Saved",
+    "saving": "Saving…",
+    "inviteSent": "Invite sent",
+    "friendRequestSent": "Friend request sent",
+    "copied": "Copied",
+    "actionCompleted": "Action completed",
+    "sent": "Sent",
+    "shareCreated": "Share link created",
+    "shareRevoked": "Share link revoked",
+    "visibilityChanged": "Visibility updated",
+    "dismissed": "Handled",
+    "retrying": "Retrying…",
+    "jobCreated": "Job created",
+    "jobRetried": "Job queued again",
+    "jobCancelled": "Job cancelled",
+    "configApplied": "Configuration applied",
+    "commandSubmitted": "Command submitted",
+    "commandCompleted": "Command completed",
+    "signedOut": "Signed out",
+    "languageChanged": "Language changed",
+    "requestId": "Request ID: {requestId}",
+    "close": "Dismiss notification",
+    "redemptionCompleted": "Redemption completed"
+  },
+  "persistent": {
+    "friendRequest": {
+      "title": "New friend request",
+      "body": "Someone sent you a friend request."
+    },
+    "roomInvite": {
+      "title": "Room invitation",
+      "body": "A friend invited you to room {room_id}."
+    },
+    "actions": {
+      "accept": "Accept",
+      "reject": "Reject",
+      "joinRoom": "Join room",
+      "openRoom": "Open room"
+    }
+  },
+  "a11y": {
+    "primaryNavigation": "Primary navigation",
+    "language": "Language",
+    "footer": "Footer navigation",
+    "cookieConsent": "Analytics consent",
+    "reauth": "Re-authenticate",
+    "notifications": "Notifications",
+    "home": "Phira+ home",
+    "skipToContent": "Skip to main content"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "body": "This page does not exist or has moved."
   }
 }

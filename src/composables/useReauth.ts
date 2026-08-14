@@ -30,8 +30,6 @@ const REAUTH_KEY = 'ppf:reauth'
 export function isReauthRequired(err: unknown): boolean {
   if (err instanceof ApiError) {
     return err.code === 'PHIRA_REAUTH_REQUIRED'
-      || err.code === 'AUTH'
-      || err.status === 401
   }
   return false
 }
@@ -95,7 +93,7 @@ export function useReauth() {
         throw err
       const token = await requestReauth()
       if (!token)
-        throw new ApiError({ code: 'AUTH', message: 'Reauth cancelled or failed' })
+        throw new ApiError({ code: 'UNKNOWN_ERROR', message: 'Reauth cancelled or failed' })
       return await fn(token)
     }
   }

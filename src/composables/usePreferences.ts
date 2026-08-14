@@ -1,16 +1,11 @@
 import type { GuestPreferences, ThemeMode } from '~/types/preferences'
-import { usePreferredDark } from '@vueuse/core'
 import { ACCENT_HEX, deriveColorsFromBackground, hexToRgb, hexToRgba, relativeLuminance } from '~/utils/color'
 
-export type ResolvedTheme = 'light' | 'dark'
+export type ResolvedTheme = 'dark'
 
-/** Resolve `system` against the OS preference. Pure + testable. */
-export function resolveTheme(theme: ThemeMode, prefersDark: boolean): ResolvedTheme {
-  if (theme === 'light')
-    return 'light'
-  if (theme === 'dark')
-    return 'dark'
-  return prefersDark ? 'dark' : 'light'
+/** PPF currently ships one complete visual theme: dark. */
+export function resolveTheme(_theme: ThemeMode, _prefersDark: boolean): ResolvedTheme {
+  return 'dark'
 }
 
 /**
@@ -59,11 +54,11 @@ export function applyPreferencesToDom(prefs: GuestPreferences, prefersDark: bool
 
 /**
  * Reactive preferences for components.
- * Keeps the resolved theme in sync with the OS preference when in `system` mode.
+ * Keeps the single supported dark theme and accessibility preferences in sync with DOM state.
  */
 export function usePreferences() {
   const store = usePreferencesStore()
-  const prefersDark = usePreferredDark()
+  const prefersDark = ref(true)
 
   const resolvedTheme = computed<ResolvedTheme>(() =>
     resolveTheme(store.prefs.theme, prefersDark.value),

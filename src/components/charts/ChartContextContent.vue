@@ -4,9 +4,8 @@
  *
  * Compact chart detail rendered inside the overlay: Phira metadata, a
  * data-source badge (Phira vs HSN Phira+), my-best summary, top-5 global ranking
- * and a lazy Chart Preview placeholder. All data is client-only with graceful
- * fallbacks — PPB Phase B may be unready, so every section degrades to a
- * neutral empty state.
+ * and a lazy WASM Chart Preview. Load failures are rendered separately from
+ * authoritative empty ranking/record states.
  */
 import type { ChartRecord } from '~/utils/api/types'
 import { useChart, useChartRecords } from '~/composables/useCharts'
@@ -45,9 +44,9 @@ function fmtAccuracy(acc?: number): string {
       <p class="text-sm text-slate-400">
         {{ $t('common.error') }}
       </p>
-      <BaseButton size="sm" variant="ghost" @click="() => refresh()">
+      <PPButton size="sm" weight="quiet" @click="() => refresh()">
         {{ $t('common.retry') }}
-      </BaseButton>
+      </PPButton>
     </div>
 
     <p v-else-if="!chart" class="py-10 text-center text-sm text-slate-400">

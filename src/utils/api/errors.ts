@@ -2,193 +2,185 @@ import type { AnyErrorCode, ApiErrorCode, ApiErrorEnvelope } from './types'
 import { ApiError } from './types'
 
 /**
- * Server error codes (P4: UPPER_SNAKE_CASE) + client codes (P5: lowercase).
- * Frontend localizes by code.
- */
-const SERVER_CODES = new Set<string>([
-  'REQUEST_ID',
-  'PAGINATION',
-  'VALIDATION',
-  'RATE_LIMIT',
-  'AUTH',
-  'SESSION',
-  'PERMISSION_DENIED',
-  'PMP_UNAVAILABLE',
-  'CAPABILITY_NOT_SUPPORTED',
-  'PHIRA_API_UNAVAILABLE',
-  'PHIRA_REAUTH_REQUIRED',
-  'LONG_JOB_ACCEPTED',
-])
-
-/**
- * Normalize a thrown unknown into an `ApiError`.
- * Handles: `ApiError`, `{ error: {...} }` envelope (contract §2/§24.5), fetch errors.
+ * Normalize any thrown value into the REST Error Contract v1.1 model.
+ *
+ * Classification is intentionally structural:
+ * - no HTTP response => NETWORK_ERROR
+ * - HTTP response + valid ErrorEnvelope => exact server code (future codes kept)
+ * - HTTP response + malformed/legacy body => INVALID_RESPONSE
+ * - other client exception => UNKNOWN_ERROR
+ *
+ * We never infer domain semantics from `message` text.
  */
 export function toApiError(err: unknown): ApiError {
   if (err instanceof ApiError)
     return err
 
-  // Network-level failure (P5 client code): TypeError from fetch, or an
-  // ofetch FetchError with no HTTP response/data attached.
+  if (typeof err !== 'object' || err === null) {
+    return new ApiError({ code: 'UNKNOWN_ERROR', message: String(err ?? 'Unknown error'), cause: err })
+  }
+
+  const raw = err as Record<string, unknown>
+  const response = isRecord(raw.response) ? raw.response : undefined
+  const status = extractStatus(raw, response)
+  const retryAfter = parseRetryAfter(raw, response)
+  const hasHttpResponse = status != null || response != null
+  const data = raw.data ?? response?._data ?? response?.data
+
+  if (hasHttpResponse) {
+    const envelope = asEnvelope(data)
+    if (envelope) {
+      return new ApiError({
+        code: envelope.error.code as ApiErrorCode,
+        message: envelope.error.message,
+        requestId: envelope.error.request_id,
+        details: envelope.error.details,
+        status,
+        retryAfterSeconds: retryAfter,
+        cause: err,
+      })
+    }
+    return new ApiError({
+      code: 'INVALID_RESPONSE',
+      message: 'Server returned a response outside the frozen ErrorEnvelope contract',
+      status,
+      retryAfterSeconds: retryAfter,
+      cause: err,
+    })
+  }
+
   if (looksNetworkError(err)) {
     return new ApiError({
-      code: 'network_error',
+      code: 'NETWORK_ERROR',
       message: err instanceof Error ? err.message : 'Network error',
       cause: err,
     })
   }
 
-  // Plain garbage (non-object, non-Error) → unknown_error.
-  if (typeof err !== 'object' || err === null) {
-    return new ApiError({
-      code: 'unknown_error',
-      message: typeof err === 'string' ? err : 'Unknown error',
-      cause: err,
-    })
-  }
-
-  const errObj = err as Record<string, unknown>
-  const status = extractStatus(errObj)
-  const retryAfter = parseRetryAfter(errObj)
-  const data = (err as { data?: unknown }).data ?? errObj
-
-  const envelope = asEnvelope(data)
-  if (envelope) {
-    return new ApiError({
-      code: envelope.error.code as ApiErrorCode,
-      message: envelope.error.message,
-      requestId: envelope.error.request_id,
-      details: envelope.error.details,
-      status,
-      retryAfterSeconds: retryAfter,
-      cause: err,
-    })
-  }
-
-  const message = extractMessage(errObj)
-  if (message) {
-    return new ApiError({
-      code: inferCode(status, message),
-      message,
-      status,
-      retryAfterSeconds: retryAfter,
-      cause: err,
-    })
-  }
-
   return new ApiError({
-    code: 'unknown_error',
+    code: 'UNKNOWN_ERROR',
     message: err instanceof Error ? err.message : 'Unknown error',
     cause: err,
   })
 }
 
-/** True for network-level failures (no HTTP response available). */
-function looksNetworkError(err: unknown): boolean {
-  if (err instanceof TypeError)
-    return true
-  if (!(err instanceof Error) || typeof err.message !== 'string')
-    return false
-  if ('response' in err || 'data' in err)
-    return false
-  return /failed to fetch|network error|load failed|fetch failed|socket/i.test(err.message)
-}
-
 function asEnvelope(data: unknown): ApiErrorEnvelope | undefined {
   if (!isRecord(data) || !isRecord(data.error))
     return undefined
-  const e = data.error
-  if (typeof e.code !== 'string' || typeof e.message !== 'string')
+  const error = data.error
+  if (typeof error.code !== 'string' || !error.code.trim())
     return undefined
-  const code = normalizeCode(e.code)
+  if (typeof error.message !== 'string')
+    return undefined
+  if (typeof error.request_id !== 'string' || !error.request_id.trim())
+    return undefined
+  if (!isRecord(error.details) || !isRecord(error.details.params))
+    return undefined
+  const params: Record<string, string | number | boolean | null> = {}
+  for (const [key, value] of Object.entries(error.details.params)) {
+    if (value == null || ['string', 'number', 'boolean'].includes(typeof value))
+      params[key] = value as string | number | boolean | null
+  }
+  // Keep unknown future codes verbatim. Only canonicalize casing.
+  const code = error.code.trim().toUpperCase()
   return {
     error: {
       code,
-      message: e.message,
-      request_id: typeof e.request_id === 'string' ? e.request_id : undefined,
-      details: isRecord(e.details) ? e.details as Record<string, unknown> : undefined,
+      message: error.message,
+      request_id: error.request_id,
+      details: { params },
     },
   }
 }
 
-/** Normalize any casing of a server code to the frozen UPPER_SNAKE_CASE form. */
-function normalizeCode(code: string): ApiErrorCode {
-  const upper = code.toUpperCase()
-  if (SERVER_CODES.has(upper))
-    return upper as ApiErrorCode
-  // Accept legacy lowercase from older PPB builds.
-  const legacy: Record<string, ApiErrorCode> = {
-    request_id: 'REQUEST_ID',
-    pagination: 'PAGINATION',
-    validation: 'VALIDATION',
-    rate_limit: 'RATE_LIMIT',
-    auth: 'AUTH',
-    session: 'SESSION',
-    permission_denied: 'PERMISSION_DENIED',
-    pmp_unavailable: 'PMP_UNAVAILABLE',
-    capability_not_supported: 'CAPABILITY_NOT_SUPPORTED',
-    phira_api_unavailable: 'PHIRA_API_UNAVAILABLE',
-    phira_reauth_required: 'PHIRA_REAUTH_REQUIRED',
-    long_job_accepted: 'LONG_JOB_ACCEPTED',
-  }
-  return legacy[code.toLowerCase()] ?? 'REQUEST_ID'
-}
-
-function extractStatus(err: Record<string, unknown>): number | undefined {
-  if (typeof err.status === 'number')
-    return err.status
-  if (typeof (err as { statusCode?: unknown }).statusCode === 'number')
-    return (err as { statusCode: number }).statusCode
-  return undefined
-}
-
-function extractMessage(err: Record<string, unknown>): string | undefined {
-  if (typeof err.message === 'string')
-    return err.message
-  if (typeof err.error === 'string')
-    return err.error
-  return undefined
-}
-
-function inferCode(status: number | undefined, message: string): AnyErrorCode {
-  if (status === 429)
-    return 'RATE_LIMIT'
-  if (status === 401)
-    return 'AUTH'
-  if (status === 403)
-    return 'PERMISSION_DENIED'
-  if (status === 422)
-    return 'VALIDATION'
-  if (/reauth/i.test(message))
-    return 'PHIRA_REAUTH_REQUIRED'
-  return 'REQUEST_ID'
-}
-
-function parseRetryAfter(err: Record<string, unknown>): number | undefined {
-  const resp = (err as { response?: { headers?: { get?: (key: string) => string | null } } }).response
-  const v = err.retryAfter ?? resp?.headers?.get?.('retry-after')
-  if (typeof v === 'number' && Number.isFinite(v))
-    return Math.max(0, Math.round(v))
-  if (typeof v === 'string') {
-    const n = Number(v)
-    return Number.isFinite(n) ? Math.max(0, Math.round(n)) : undefined
+function extractStatus(raw: Record<string, unknown>, response?: Record<string, unknown>): number | undefined {
+  for (const value of [raw.status, raw.statusCode, response?.status, response?.statusCode]) {
+    if (typeof value === 'number')
+      return value
   }
   return undefined
 }
 
-function isRecord(v: unknown): v is Record<string, unknown> {
-  return typeof v === 'object' && v !== null
+function looksNetworkError(err: unknown): boolean {
+  if (err instanceof TypeError)
+    return true
+  if (!(err instanceof Error))
+    return false
+  return /failed to fetch|network error|load failed|fetch failed|socket|connection|timed out/i.test(err.message)
 }
 
-/** i18n key helper: UPPER_SNAKE_CASE code → lowercase dot key used in messages. */
+function parseRetryAfter(raw: Record<string, unknown>, response?: Record<string, unknown>): number | undefined {
+  const headers = isRecord(response?.headers) ? response.headers : undefined
+  const getter = headers?.get
+  let headerValue: unknown
+  if (typeof getter === 'function') {
+    try {
+      headerValue = (getter as (key: string) => unknown)('retry-after')
+    }
+    catch {
+      headerValue = undefined
+    }
+  }
+  const value = raw.retryAfter ?? headerValue
+  const n = typeof value === 'number' ? value : typeof value === 'string' ? Number(value) : Number.NaN
+  return Number.isFinite(n) ? Math.max(0, Math.round(n)) : undefined
+}
+
+function isRecord(value: unknown): value is Record<string, any> {
+  return typeof value === 'object' && value !== null
+}
+
 export function errorMessageKey(code: string): string {
-  return `error.${code.toLowerCase()}`
+  if (code === 'NETWORK_ERROR' || code === 'INVALID_RESPONSE' || code === 'UNKNOWN_ERROR')
+    return `errors.client.${code}`
+  return `errors.api.${code}`
 }
 
-/** Localize a code via vue-i18n `t`; falls back to the raw server message. */
-export function localizeApiError(t: (key: string, params?: Record<string, unknown>) => string, err: unknown): string {
+/** Safe translation params are the only server-provided values allowed into UI strings. */
+export function errorParams(err: unknown): Record<string, string | number> {
+  const normalized = toApiError(err)
+  const params: Record<string, string | number> = {}
+  for (const [key, value] of Object.entries(normalized.details?.params ?? {})) {
+    if (typeof value === 'string' || typeof value === 'number')
+      params[key] = value
+    else if (typeof value === 'boolean')
+      params[key] = value ? 'true' : 'false'
+  }
+  return params
+}
+
+/**
+ * Localize by code only. Raw server `message` is never a formal UI fallback.
+ * Unknown future server codes use UNKNOWN_ERROR and retain request id for support.
+ */
+export function localizeApiError(
+  t: (key: string, params?: Record<string, unknown>) => string,
+  err: unknown,
+): string {
   const normalized = toApiError(err)
   const key = errorMessageKey(normalized.code)
-  const translated = t(key)
-  return translated === key ? normalized.message : translated
+  const translated = t(key, errorParams(normalized))
+  if (translated !== key)
+    return translated
+  return t('errors.client.UNKNOWN_ERROR')
+}
+
+export interface LocalizedApiError {
+  code: AnyErrorCode
+  message: string
+  requestId?: string
+  retryAfterSeconds?: number
+}
+
+export function describeApiError(
+  t: (key: string, params?: Record<string, unknown>) => string,
+  err: unknown,
+): LocalizedApiError {
+  const normalized = toApiError(err)
+  return {
+    code: normalized.code,
+    message: localizeApiError(t, normalized),
+    requestId: normalized.requestId,
+    retryAfterSeconds: normalized.retryAfterSeconds,
+  }
 }

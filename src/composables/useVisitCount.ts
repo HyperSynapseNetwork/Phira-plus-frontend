@@ -4,9 +4,9 @@ import { useApiData } from '~/composables/useApi'
 /**
  * Privacy-friendly website visit count (design §16.10 / §23.3).
  *
- * Prefers a SERVER-AGGREGATED count from PPB (`GET /api/v1/public/site`,
- * proposed `visit_count` field) — no client-side fingerprinting. When PPB is
- * unready or omits the field, returns `null` and the UI shows "—".
+ * Uses only the server-aggregated `visit_count` from `GET /api/v1/public/site` —
+ * no client-side fingerprinting. Missing/unavailable counts return `null` and
+ * are omitted from the UI rather than rendered as a fake placeholder.
  */
 interface PublicSiteStats extends PublicSiteInfo {
   visit_count?: number

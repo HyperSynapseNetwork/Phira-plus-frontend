@@ -5,8 +5,10 @@
 ## 前置条件
 
 - Node ≥ 22
-- pnpm ≥ 11（仓库 `packageManager: pnpm@11.8.0`；registry 走 npmmirror，见 `.npmrc`）
-- 可选的 PPB 实例（默认 `https://api-phira.htadiy.com`，无 PPB 时首页以离线降级展示）
+- pnpm ≥ 11（仓库 `packageManager: pnpm@11.8.0`）
+- Rust stable + `wasm32-unknown-unknown` target
+- `wasm-pack`（clean-source / release 构建 Viewer 必需）
+- 可访问的 PPB 实例；必须在 `.env` 中显式配置 API/Auth/Site URL
 
 ## 安装与开发
 
@@ -26,32 +28,29 @@ pnpm dev
 pnpm lint        # ESLint（@antfu/eslint-config）
 pnpm vue-tsc     # 类型检查（vue-tsc --noEmit）
 pnpm test        # Vitest 单元/组件测试
-pnpm build       # Nuxt SSG 构建 → .output/public
+pnpm build:full  # clean-source：构建 WASM Viewer + Nuxt SSG → .output/public
 ```
 
-四个门禁全部通过后即可提交（CI 同样跑这四步，见 [deployment.md](./deployment.md) 的 CI 章节）。
+clean clone 的发布/验收构建以 `pnpm build:full` 为准；`pnpm build` 只用于 Viewer artifact 已由 CI 或前一步产生的场景。
 
 ## SSG 构建产物
 
-`pnpm build`（等价 `nuxt build`）使用 `nitro.preset: 'static'`，预渲染全部静态路由到 `.output/public/`：
+`pnpm build:full` 最终调用 `nuxt build`，使用 `nitro.preset: 'static'`，预渲染全部静态路由到 `.output/public/`：
 
 - 首页、`/rooms`、`/charts`、`/community`、`/replays`、`/downloads`、`/terms`、`/profile`、`/notifications`、`/login`、`/404` 等
 - 动态路由（`/room/[room_id]`、`/chart/[id]`、`/user/[phira_id]`、`/replay/share/[token]`）作为客户端渲染路由
 - `robots.txt` + `sitemap_index.xml` 由 `@nuxtjs/seo` 在构建期生成
 - `/en/` 前缀的英文路由同样预渲染（`lang="en-US"`）
 
-## WASM 查看器（仅 CI）
+## WASM 查看器
 
-`viewer/` 内是 vendor 的 Rust 查看器（`monitor-common` + `monitor-client` + 固定的 `phira-mp` 快照）。**只由 CI 构建**：
+`viewer/` 是随仓库固定的 Rust workspace，包含 `monitor-common`、`monitor-client` 与 vendored `phira-mp` path dependency。clean-source 发布构建必须先产生 Viewer artifact：
 
 ```sh
-wasm-pack build --target web --out-dir "$GITHUB_WORKSPACE/src/public/viewer" viewer/monitor-client
+pnpm build:full
 ```
 
-产物（`monitor_client.js` + `monitor_client_bg.wasm`）由 CI 上传为 `viewer-wasm` artifact，发布打包时放入 `src/public/viewer/`。SSG 构建无该 artifact 时，TS 集成层（`src/viewer/*`）会优雅降级（查看器不可用，其余站点正常）。
-
-> [!NOTE]
-> 本地 Rust 工具链损坏，请勿在本机运行 `wasm-pack` / `cargo`（见 `viewer/README.md`）。
+该命令执行 `wasm-pack build --target web`，把 `monitor_client.js` 与 `monitor_client_bg.wasm` 写入 `src/public/viewer/`，再运行 Nuxt SSG。CI 也可先构建并下载同一 Viewer artifact 后执行 `pnpm build`。发布镜像不允许缺 Viewer artifact。
 
 ## 本地配置
 

@@ -33,7 +33,7 @@ export interface LiveWsEnvelope {
 export interface LiveStreamState {
   status: LiveStreamStatus
   state: string | null
-  round: number | null
+  round: string | null
   resync: boolean
   resyncingAt: number | null
   heartbeatAt: number | null
@@ -113,7 +113,9 @@ export function createLiveStream(roomId: string, onEvent?: (ev: LiveStreamEvent)
         break
       }
       case 'round_switch': {
-        state.round = typeof raw.round === 'number' ? raw.round : (state.round ?? 0) + 1
+        state.round = typeof raw.round === 'string' || typeof raw.round === 'number'
+          ? String(raw.round)
+          : state.round
         state.resync = false
         state.status = 'live'
         break

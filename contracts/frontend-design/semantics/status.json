@@ -1,0 +1,21 @@
+{
+  "version": "2.1",
+  "rule": "PPStatus is runtime/health/execution state; PPBadge is classification/role/scope/non-state metadata.",
+  "examples": {
+    "PPStatus": [
+      "LIVE",
+      "ERROR",
+      "RUNNING",
+      "FAILED",
+      "DEGRADED",
+      "SUCCEEDED"
+    ],
+    "PPBadge": [
+      "role",
+      "group",
+      "permission scope",
+      "priority",
+      "classification"
+    ]
+  }
+}

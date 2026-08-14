@@ -6,6 +6,7 @@
  * - `skip-to-content` link for accessibility (design §22.7)
  */
 const site = useSiteConfig()
+const { t } = useI18n()
 
 const socialImage = computed(() => `${site.url.replace(/\/$/, '')}/social-card.svg`)
 
@@ -29,12 +30,13 @@ useHead(() => ({
   <div>
     <a
       href="#main-content"
-      class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-accent focus:px-4 focus:py-2 focus:text-accent-fg"
+      class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[var(--pp-z-notice)] focus:rounded-md focus:bg-accent focus:px-4 focus:py-2 focus:text-accent-fg"
     >
-      Skip to content
+      {{ t('a11y.skipToContent') }}
     </a>
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
+    <PPNoticeHost />
   </div>
 </template>

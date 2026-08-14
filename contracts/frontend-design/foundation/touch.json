@@ -1,0 +1,42 @@
+{
+  "version": "2.2",
+  "minimumHitTargetPx": 44,
+  "denseVisualHeightsPx": {
+    "sm": 32,
+    "md": 36,
+    "lg": 40
+  },
+  "policy": "Dense visual controls may be 32/36/40px on fine pointers, but coarse-pointer hit targets and critical controls must be at least 44px.",
+  "criticalControls": [
+    "overlayClose",
+    "noticeAction",
+    "noticeClose",
+    "navigationIcon",
+    "mobileDrawerToggle",
+    "dangerAction",
+    "roomFullPageAction"
+  ],
+  "criticalSemanticMarkers": {
+    "ppf": [
+      "primary-nav",
+      "language",
+      "downloads",
+      "notifications",
+      "account",
+      "login",
+      "room-full-page",
+      "overlay-close",
+      "notice-close"
+    ],
+    "panel": [
+      "mobile-drawer-toggle",
+      "sign-out",
+      "removable-action",
+      "overlay-close",
+      "notice-close",
+      "desktop-window-close",
+      "auth-phira",
+      "auth-github"
+    ]
+  }
+}

@@ -1,0 +1,1 @@
+{"version":2,"fastMs":160,"normalMs":240,"noticeMs":240,"rules":{"normal":"opacity + small translate/state transition","reducedMotion":"opacity only or no non-essential movement"}}

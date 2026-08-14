@@ -4,7 +4,7 @@ import { defineConfig } from 'vitest/config'
 /**
  * Vitest config for unit/component tests (design §26.3).
  *
- * Phase A tests are logic-level (error envelope, preferences, api helpers,
+ * Current tests cover logic-level contracts (error envelope, preferences, API helpers,
  * context window manager) and run in the `node` environment. Nuxt
  * auto-imports used by stores/composables (`useState`, `watch`) are stubbed
  * in `tests/setup.ts`.

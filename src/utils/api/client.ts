@@ -38,9 +38,14 @@ export function createApiClient(opts: ApiClientOptions): $Fetch {
         setCsrfToken(data.csrf_token)
     },
     async onResponseError({ response, error }) {
-      // Normalize envelope / fetch errors into ApiError before callers see them.
-      const normalized = toApiError(error ?? response)
-      throw normalized
+      // Preserve the fact that an HTTP response existed. A malformed response
+      // is INVALID_RESPONSE, never NETWORK_ERROR and never message-inferred.
+      throw toApiError({
+        response,
+        status: response.status,
+        data: response._data,
+        cause: error,
+      })
     },
   })
 }
@@ -85,7 +90,7 @@ export async function apiFetch<T = unknown, R extends ApiFetchOptions<T> = ApiFe
   }
   catch (err) {
     // CSRF token rotated / rejected: refresh and retry once.
-    if (isWriteMethod(method) && err instanceof ApiError && err.code === 'AUTH') {
+    if (isWriteMethod(method) && err instanceof ApiError && err.code === 'CSRF_INVALID') {
       invalidateCsrfToken()
       const token = await ensureCsrfToken()
       if (token) {

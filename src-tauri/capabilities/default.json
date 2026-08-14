@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Default capability for the Phira+ main window (Phase D scaffold).",
+  "description": "Default capability for the Phira+ main window.",
   "windows": ["main"],
   "permissions": [
     "core:default",

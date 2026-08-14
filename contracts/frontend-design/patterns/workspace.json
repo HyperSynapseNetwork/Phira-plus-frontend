@@ -1,0 +1,1 @@
+{"version":2,"rule":"Pages compose domain workspaces; they do not default to PageHeader -> Card -> Card templates.","examples":{"users":"list + inspector","logs":"filter + stream + inspector","config":"section nav + form + sticky action bar","rooms":"dense list + room inspector"}}

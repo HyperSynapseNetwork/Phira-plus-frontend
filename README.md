@@ -2,7 +2,7 @@
 
 # HSN Phira+ Frontend（PPF）
 
-**HSN Phira+（Phira+ V3）三件套之一** · Nuxt 3 SSG 官网 · WASM 谱面/房间查看器 · Tauri 2 桌面/移动壳（Phase D）
+**HSN Phira+（Phira+ V3）三件套之一** · Nuxt 3 SSG 官网 · WASM 谱面/房间查看器 · Tauri 2 Windows/Android 应用壳
 
 <br/>
 
@@ -17,7 +17,7 @@
 
 > [!IMPORTANT]
 > **HSN Phira+ 三件套之一**：`ppb`（Phira-plus-Backend，后端）· `ppf`（本仓库，官网）· `panel`（Phira-plus-panel，管理控制台）。
-> **跨仓冻结契约见 [`contracts/README.md`](../contracts/README.md)（Contract-Freeze v0）** —— 先改契约，再实现；禁止三边猜字段。
+> **跨仓冻结契约以三仓工作区的 `contracts/README.md`（Contract-Freeze v0）与 [契约一致性脚本](scripts/check-contract-consistency.mjs) 为准** —— 先改契约，再实现；禁止三边猜字段。
 > 本仓库采用 **Apache License, Version 2.0**，详见 [LICENSE](LICENSE)。
 
 > [!TIP]
@@ -35,7 +35,7 @@
 - **统一 API 客户端**：`src/utils/api/{types,errors,client}.ts` + `useApi()`，向 PPB 发起 credentialed CORS 请求，按冻结错误契约 `error.code` 本地化
 - **认证网关**：`/login` 跳转 PPB Auth 网关（`${authBase}/auth/phira/login?return_to=<relative>`）；客户端永不接触 Phira access/refresh token
 - **偏好系统**：`usePreferencesStore`（Pinia）+ `useState` 持久化，localStorage 承载 Guest 偏好（命名空间 `common`/`ppf`/`device`），登录后按字段合并到账户偏好
-- **Tauri 2 壳（Phase D）**：`src-tauri/` 为 Windows + Android 应用壳脚手架（`frontendDist` 指向 SSG 产物）；远程推送（FCM/WNS）待 Owner 提供凭据
+- **Tauri 2 壳**：`src-tauri/` 为 Windows + Android 应用壳（`frontendDist` 指向 SSG 产物）；secure refresh credential、生产 FCM/WNS、签名与 full-exit push 仍是 Release Gate
 
 ## 文档
 
@@ -87,7 +87,7 @@ pnpm build
 pnpm preview
 ```
 
-`.env.example` → `.env`，按需覆盖 `NUXT_PUBLIC_*`（见 [docs/configuration.md](docs/configuration.md)）；默认连 `https://api-phira.htadiy.com`。
+`.env.example` → `.env`，显式配置必需的 `NUXT_PUBLIC_*`（见 [docs/configuration.md](docs/configuration.md)）。缺失时构建会直接失败，避免自部署误连官方服务。
 
 ## 配置说明
 
@@ -98,4 +98,3 @@ pnpm preview
 ## 许可证
 
 HSN Phira+ Frontend 采用 **Apache License, Version 2.0** — 详见 [LICENSE](LICENSE)。`viewer/` 内 vendor 的 Rust 代码源自 [phira-web-monitor](https://github.com/HyperSynapseNetwork/phira-web-monitor) 与 [phira-mp](https://github.com/TeamFlos/phira-mp)，同为 Apache-2.0。
-

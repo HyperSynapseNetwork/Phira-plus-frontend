@@ -50,8 +50,8 @@ export function isPaginated<T>(value: unknown): value is Paginated<T> {
  * Graceful client-only data fetch bound to the PPB base (SSG-safe).
  *
  * - `server: false` keeps dynamic data out of the prerendered HTML, leaving a
- *   static skeleton (SEO) and hydrating on the client.
- * - `defaultVal` renders when PPB is unreachable (Phase B may not be ready).
+ *   prerendered placeholder (SEO) and hydrating on the client.
+ * - `defaultVal` keeps the client state shape stable; `error` still records an unavailable API.
  * - The returned `error` ref is normalized to `ApiError` (P4/P5).
  */
 export function useApiData<T>(key: string, path: string, defaultVal: T) {
@@ -62,7 +62,7 @@ export function useApiData<T>(key: string, path: string, defaultVal: T) {
   // - We get exact semantics we need: SSG-safe (server: false), graceful
   //   fallback to `defaultVal` while PPB is unreachable, normalized ApiError.
   // - `useState` shares the payload across routes and is serialized to the
-  //   prerendered HTML (so the skeleton renders without a client flash).
+  //   prerendered HTML (so prerendered fallback renders without a client flash).
   const raw = useState<T | null>(key, () => defaultVal)
   const pending = ref(false)
   const error = ref<ApiError | null>(null)

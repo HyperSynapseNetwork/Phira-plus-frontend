@@ -6,7 +6,7 @@
 
 ```bash
 pnpm install
-pnpm build      # → .output/public
+pnpm build:full # 构建 WASM Viewer 并生成 .output/public
 ```
 
 产物自检：
@@ -15,6 +15,8 @@ pnpm build      # → .output/public
 test -f .output/public/index.html
 test -f .output/public/robots.txt
 test -f .output/public/sitemap_index.xml
+test -f .output/public/viewer/monitor_client.js
+test -f .output/public/viewer/monitor_client_bg.wasm
 ```
 
 ## 方式 A：静态托管（CDN / Nginx / S3）
@@ -38,15 +40,14 @@ server {
     index index.html;
 
     location / {
-        try_files $uri $uri/ =404;   # 纯 SSG：找不到即 404
+        try_files $uri $uri/ /index.html;
     }
 }
 ```
 
-> [!NOTE]
-> 若选择把动态路由也交给 SPA fallback（`try_files $uri $uri/ /index.html;`），记得保留 `/en/` 等真实目录的直出。对动态路由走 SPA fallback 的取舍由部署者决定。
+该 fallback 是 `/room/:id`、`/chart/:id`、`/user/:id` 与 Replay 分享链接直接打开所必需的部署契约。
 
-## 方式 B：Tauri 2 桌面 / 移动壳（Phase D）
+## 方式 B：Tauri 2 桌面 / 移动壳
 
 `src-tauri/` 是 Tauri 2 应用壳（Windows + Android），`frontendDist` 指向 `../.output/public`：
 
@@ -114,6 +115,6 @@ gh secret set WINDOWS_CERT_PASSWORD --body "pfx-password"
 
 ## 生产注意
 
-- `apiBase`/`authBase` 默认指向生产 PPB；自部署时用 `NUXT_PUBLIC_API_BASE` 覆盖并重新构建。
+- `NUXT_PUBLIC_API_BASE`、`NUXT_PUBLIC_AUTH_BASE`、`NUXT_PUBLIC_SITE_URL` 均须在构建时显式注入；缺失会 fail-fast，官方 workflow 也显式写入官方域名。
 - 站点 `robots.txt` + `sitemap` 由构建期生成，改动 SEO 后需重新构建。
 - CSP、安全响应头、`X-Robots-Tag` 建议在反代层强制（design §23.4）。

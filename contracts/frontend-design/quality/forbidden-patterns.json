@@ -1,0 +1,80 @@
+{
+  "version": "2.2",
+  "rules": [
+    {
+      "id": "legacy-public-ui",
+      "mode": "static",
+      "severity": "error"
+    },
+    {
+      "id": "private-notice-protocol",
+      "mode": "static",
+      "severity": "error"
+    },
+    {
+      "id": "numeric-z-index-outside-foundation",
+      "mode": "static",
+      "severity": "error"
+    },
+    {
+      "id": "raw-server-error-message",
+      "mode": "static",
+      "severity": "error"
+    },
+    {
+      "id": "user-visible-phase-scaffold-proposed",
+      "mode": "static",
+      "severity": "error"
+    },
+    {
+      "id": "ppf-business-semantic-css-boundary",
+      "mode": "static",
+      "severity": "error"
+    },
+    {
+      "id": "formal-native-control-outside-policy",
+      "mode": "static",
+      "severity": "error"
+    },
+    {
+      "id": "cyan-glow-decoration",
+      "mode": "manual-review",
+      "severity": "error"
+    },
+    {
+      "id": "gradient-button",
+      "mode": "manual-review",
+      "severity": "error"
+    },
+    {
+      "id": "gradient-text",
+      "mode": "manual-review",
+      "severity": "error"
+    },
+    {
+      "id": "permanent-default-mesh",
+      "mode": "manual-review",
+      "severity": "error"
+    },
+    {
+      "id": "page-local-mutation-message",
+      "mode": "static",
+      "severity": "error"
+    },
+    {
+      "id": "preference-without-consumer",
+      "mode": "manual-review",
+      "severity": "error"
+    },
+    {
+      "id": "PPButton-prop-contract",
+      "mode": "static",
+      "severity": "error"
+    },
+    {
+      "id": "hardcoded-product-copy",
+      "mode": "static",
+      "severity": "error"
+    }
+  ]
+}

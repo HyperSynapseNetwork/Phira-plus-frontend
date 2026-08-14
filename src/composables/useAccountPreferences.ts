@@ -1,4 +1,4 @@
-import type { NamespacedPreferences, PreferenceNamespace, UpdatePreferencesBody } from '~/utils/api/types'
+import type { NamespacedPreferences, PreferenceNamespace, UpdatePreferencesBody } from '~/features/preferences/types'
 import { apiFetch, getApiBase } from '~/utils/api/client'
 
 /**
@@ -9,7 +9,7 @@ import { apiFetch, getApiBase } from '~/utils/api/client'
  * - Device prefs (low-performance, render scale, window geometry) stay local.
  * - Guest prefs merge per-field on login — they do not overwrite device settings.
  *
- * Proposed REST mappings of the frozen `/api/v1/me/preferences/*`:
+ * Frozen REST mappings for `/api/v1/me/preferences/*`:
  *   GET  /api/v1/me/preferences/{namespace}
  *   PUT  /api/v1/me/preferences/{namespace}  { data, base_revision }
  */

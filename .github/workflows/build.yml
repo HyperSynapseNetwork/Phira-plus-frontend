@@ -16,6 +16,13 @@ on:
 permissions:
   contents: read
 
+# Official builds choose the official endpoints explicitly. Self-host builds
+# must provide their own values; nuxt.config.ts fails fast when either is absent.
+env:
+  NUXT_PUBLIC_API_BASE: https://api-phira.htadiy.com
+  NUXT_PUBLIC_AUTH_BASE: https://api-phira.htadiy.com
+  NUXT_PUBLIC_SITE_URL: https://phira.htadiy.com
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -67,6 +74,7 @@ jobs:
 
   quality:
     name: Lint / typecheck / test / SSG build
+    needs: wasm
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -87,11 +95,20 @@ jobs:
       - name: Install (frozen lockfile)
         run: pnpm install --frozen-lockfile
 
+      - name: Download WASM viewer
+        uses: actions/download-artifact@v4
+        with:
+          name: viewer-wasm
+          path: src/public/viewer
+
       - name: ESLint
         run: pnpm lint
 
       - name: vue-tsc
         run: pnpm vue-tsc
+
+      - name: Current documentation truthfulness
+        run: python3 scripts/check-current-docs.py
 
       - name: Unit / component tests
         run: pnpm test
@@ -101,6 +118,14 @@ jobs:
       # OpenAPI (fetched from the PPB repo). CI fails on any unregistered call.
       - name: Contract consistency (calls vs PPB OpenAPI)
         run: node scripts/check-contract-consistency.mjs
+      - name: Frontend Design Contract gate
+        run: pnpm test:design-contract
+
+      - name: Error locale completeness gate
+        run: pnpm test:error-i18n
+      - name: Product copy / accessibility i18n gate
+        run: pnpm test:product-copy
+
 
       - name: Nuxt SSG build
         run: pnpm build
@@ -110,8 +135,43 @@ jobs:
           test -f .output/public/index.html
           test -f .output/public/robots.txt
           test -f .output/public/sitemap_index.xml
+          test -f .output/public/viewer/monitor_client.js
+          test -f .output/public/viewer/monitor_client_bg.wasm
           grep -q "Skip to content" .output/public/index.html
           grep -q "Phira+" .output/public/index.html
+
+  official-image-smoke:
+    name: Official image / direct routes
+    needs: wasm
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build official PPF image from no cache
+        run: docker compose -f compose.ci.yml build --no-cache ppf
+      - name: Start official image
+        run: docker compose -f compose.ci.yml up -d ppf
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.8.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install test harness
+        run: pnpm install --frozen-lockfile
+      - name: Install Chromium
+        run: node node_modules/playwright-core/cli.js install --with-deps chromium
+      - name: Browser direct-route / refresh smoke
+        env:
+          PPF_E2E_BASE: http://127.0.0.1:18080
+        run: node scripts/e2e-direct-routes.mjs
+      - name: Docker diagnostics
+        if: failure()
+        run: docker compose -f compose.ci.yml logs --no-color ppf
+      - name: Stop CI compose
+        if: always()
+        run: docker compose -f compose.ci.yml down -v
 
   # Gate 7 — Tauri 2 native shell (design §17 / §26.3).
   # Windows (nsis+msi) and Android (apk). The frontend is the Nuxt SSG output

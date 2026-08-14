@@ -26,7 +26,7 @@ async function onCancel(): Promise<void> {
 </script>
 
 <template>
-  <div class="content-surface p-4">
+  <PPSurface as="div" class="p-4">
     <h3 class="mb-2 text-sm font-semibold text-slate-100">
       {{ $t('joinIntent.title') }}
     </h3>
@@ -36,9 +36,9 @@ async function onCancel(): Promise<void> {
       <p class="mb-3 text-sm text-slate-400">
         {{ $t('joinIntent.prompt') }}
       </p>
-      <BaseButton variant="primary" size="sm" @click="onConfirm">
+      <PPButton weight="primary" size="sm" @click="onConfirm">
         {{ $t('joinIntent.confirm') }}
-      </BaseButton>
+      </PPButton>
     </template>
 
     <!-- Requesting: brief creation state -->
@@ -62,9 +62,9 @@ async function onCancel(): Promise<void> {
               : $t('joinIntent.countdown', { seconds: countdown })
         }}
       </p>
-      <BaseButton variant="ghost" size="sm" @click="onCancel">
+      <PPButton weight="quiet" size="sm" @click="onCancel">
         {{ $t('joinIntent.cancel') }}
-      </BaseButton>
+      </PPButton>
     </template>
 
     <p v-else-if="status === 'completed'" class="text-sm text-emerald-400">
@@ -72,7 +72,7 @@ async function onCancel(): Promise<void> {
     </p>
 
     <p v-else-if="status === 'failed'" class="text-sm text-rose-400" role="alert">
-      {{ $t('joinIntent.failed', { message: errorMessage ?? '—' }) }}
+      {{ $t('joinIntent.failed', { message: errorMessage ?? $t('common.unknown') }) }}
     </p>
 
     <p v-else-if="status === 'expired'" class="text-sm text-amber-400">
@@ -80,7 +80,7 @@ async function onCancel(): Promise<void> {
     </p>
 
     <p v-else-if="status === 'error'" class="text-sm text-rose-400" role="alert">
-      {{ $t('joinIntent.error', { message: errorMessage ?? '—' }) }}
+      {{ $t('joinIntent.error', { message: errorMessage ?? $t('common.unknown') }) }}
     </p>
-  </div>
+  </PPSurface>
 </template>

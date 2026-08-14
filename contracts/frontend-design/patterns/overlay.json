@@ -1,0 +1,16 @@
+{
+  "version": "2.1",
+  "topmostOnlyEscape": true,
+  "topmostOnlyFocusTrap": true,
+  "focusRestore": true,
+  "scrollLock": "ref-count/token",
+  "nestedOverlay": true,
+  "backdropPolicy": "only topmost overlay may dismiss from backdrop",
+  "layers": [
+    "drawer",
+    "context",
+    "notice",
+    "reauth"
+  ],
+  "systemOverlayPriority": "reauth must remain above experimental desktop windows"
+}

@@ -6,7 +6,7 @@ import type { GuestPreferences } from '~/types/preferences'
  * Layers:
  *   device  — local only (low-performance, geometry, render scale). Never
  *             synced to the account; never overwritten by guest/account.
- *   guest   — local pre-merge base (theme/accent/background/…).
+ *   guest   — local pre-merge base (dark theme/accent/background/…).
  *   account — PPB namespaced JSONB + revision (`common` | `ppf`). Authoritative
  *             for the overlapping fields once a user is authenticated.
  *
@@ -16,7 +16,7 @@ import type { GuestPreferences } from '~/types/preferences'
  */
 
 /** `common` namespace fields we understand (snake_case per contract §7). */
-const THEME_KEYS = new Set(['system', 'light', 'dark'])
+const THEME_KEYS = new Set(['dark'])
 const ACCENT_KEYS = new Set(['cyan', 'blue', 'violet', 'green', 'amber'])
 const LANGUAGE_KEYS = new Set(['zh', 'en'])
 const BACKGROUND_KEYS = new Set(['atmosphere', 'mesh', 'particles', 'none'])

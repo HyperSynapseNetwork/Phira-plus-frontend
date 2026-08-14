@@ -14,9 +14,9 @@ const { needsDecision, grantAnalytics, declineAnalytics } = useConsent()
 <template>
   <div
     v-if="needsDecision"
-    class="fixed inset-x-0 bottom-0 z-[60] p-3 md:p-4"
+    class="fixed inset-x-0 bottom-0 z-[var(--pp-z-drawer)] p-3 md:p-4"
     role="region"
-    aria-label="Cookie consent"
+    :aria-label="$t('a11y.cookieConsent')"
   >
     <div class="glass mx-auto flex max-w-3xl flex-col gap-3 rounded-window p-4 shadow-lg md:flex-row md:items-center">
       <div class="min-w-0 flex-1">
@@ -31,12 +31,12 @@ const { needsDecision, grantAnalytics, declineAnalytics } = useConsent()
         </p>
       </div>
       <div class="flex shrink-0 items-center gap-2">
-        <BaseButton variant="ghost" size="sm" @click="declineAnalytics">
+        <PPButton weight="quiet" size="sm" @click="declineAnalytics">
           {{ $t('consent.decline') }}
-        </BaseButton>
-        <BaseButton variant="primary" size="sm" @click="grantAnalytics">
+        </PPButton>
+        <PPButton weight="primary" size="sm" @click="grantAnalytics">
           {{ $t('consent.accept') }}
-        </BaseButton>
+        </PPButton>
       </div>
     </div>
   </div>

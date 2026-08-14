@@ -16,12 +16,13 @@ usePageSeo(() => ({
 
 <template>
   <div class="mx-auto max-w-3xl">
-    <section class="content-surface p-6 md:p-8">
+    <PPSurface as="section" class="p-6 md:p-8">
       <h1 class="text-2xl font-bold text-slate-50">
         {{ $t('terms.title') }}
       </h1>
       <div class="mt-4 space-y-4 text-sm leading-relaxed text-slate-300">
         <p>{{ $t('terms.intro') }}</p>
+        <p>{{ $t('terms.approval') }}</p>
 
         <h2 class="pt-2 text-base font-semibold text-slate-100">
           HSN Phira+
@@ -57,6 +58,6 @@ usePageSeo(() => ({
           {{ $t('terms.contact.body') }}
         </p>
       </div>
-    </section>
+    </PPSurface>
   </div>
 </template>

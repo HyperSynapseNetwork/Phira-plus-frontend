@@ -1,0 +1,1 @@
+{"version":2,"roles":["body","label","heading","metric","technical"],"rules":["Do not make every Chinese label semibold.","Technical monospace is reserved for ids, commands, logs and machine values."]}

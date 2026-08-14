@@ -1,0 +1,80 @@
+{
+  "version": 1,
+  "policy": {
+    "ppfUnknown": "localized generic unknown; internal enum hidden unless user-relevant",
+    "panelUnknown": "localized unknown plus raw value for operator diagnostics"
+  },
+  "ppf": {},
+  "panel": {
+    "userStatus": [
+      "active",
+      "banned",
+      "disabled",
+      "revoked"
+    ],
+    "roomState": [
+      "idle",
+      "select_chart",
+      "waiting_for_ready",
+      "playing",
+      "closed"
+    ],
+    "jobState": [
+      "queued",
+      "running",
+      "succeeded",
+      "failed",
+      "cancelled"
+    ],
+    "jobType": [
+      "pmp.update.check",
+      "pmp.update.apply",
+      "pmp.update.cancel",
+      "pmp.update.force",
+      "ppf.build",
+      "backup"
+    ],
+    "jobStage": [
+      "checking",
+      "checked",
+      "executing_pmp_update",
+      "cancelling_update",
+      "forcing_update",
+      "building",
+      "backing-up",
+      "completed",
+      "timeout"
+    ],
+    "automationStatus": [
+      "queued",
+      "running",
+      "succeeded",
+      "failed",
+      "cancelled"
+    ],
+    "auditResult": [
+      "succeeded",
+      "failed"
+    ],
+    "redemptionStatus": [
+      "active",
+      "revoked",
+      "expired",
+      "redeemed"
+    ],
+    "redemptionTaskStatus": [
+      "pending",
+      "completed"
+    ],
+    "redemptionActionType": [
+      "account_unlock",
+      "account_role",
+      "admin_alert",
+      "custom_hook"
+    ],
+    "commandStatus": [
+      "succeeded",
+      "failed"
+    ]
+  }
+}

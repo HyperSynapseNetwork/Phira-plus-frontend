@@ -1,4 +1,4 @@
-import type { NotificationInbox } from '~/utils/api/types'
+import type { NotificationActionResult, NotificationInbox, NotificationInputResponse } from '~/utils/api/types'
 import { apiFetch } from '~/utils/api/client'
 
 /**
@@ -7,12 +7,11 @@ import { apiFetch } from '~/utils/api/client'
  *   GET  /api/v1/notifications              → inbox (paginated + unread)
  *   POST /api/v1/notifications/{id}/read    → mark read
  *   POST /api/v1/notifications/{id}/dismiss → dismiss
- *   POST /api/v1/notifications/{id}/action  → run action (elevated reauth)
- *   POST /api/v1/notifications/{id}/input   → chat/text reply (elevated reauth)
+ *   POST /api/v1/notifications/{id}/action  → typed action result
+ *   POST /api/v1/notifications/{id}/input   → chat/text reply
  *
- * `action`/`input` require an elevated reauth context (contract §20 / P11):
- * pass the `X-Reauth-Token` obtained from `POST /api/v1/auth/phira/reauth`.
- * Callers should wrap these in `useReauth().withReauth(...)`.
+ * Social/navigation notification actions use session + CSRF + resource policy;
+ * they do not borrow the admin/high-risk reauth plane.
  */
 
 function emptyInbox(): NotificationInbox {
@@ -32,20 +31,18 @@ export async function dismissNotification(id: string): Promise<void> {
   await apiFetch(`/api/v1/notifications/${encodeURIComponent(id)}/dismiss`, { method: 'POST' })
 }
 
-/** Notification action — PPB re-authenticates every execution (contract §8). */
-export async function runNotificationAction(id: string, actionId: string, reauthToken?: string): Promise<void> {
-  await apiFetch(`/api/v1/notifications/${encodeURIComponent(id)}/action`, {
+/** Execute a server-frozen notification button by stable id. */
+export async function runNotificationAction(id: string, actionId: string): Promise<NotificationActionResult> {
+  return apiFetch<NotificationActionResult>(`/api/v1/notifications/${encodeURIComponent(id)}/action`, {
     method: 'POST',
     body: { action: actionId },
-    headers: reauthToken ? { 'X-Reauth-Token': reauthToken } : {},
   })
 }
 
-/** Input reply (e.g. chat) — goes through PPB `room.chat_send` (contract §8/§12). */
-export async function sendNotificationInput(id: string, text: string, reauthToken?: string): Promise<void> {
-  await apiFetch(`/api/v1/notifications/${encodeURIComponent(id)}/input`, {
+/** Input reply (for notification types that explicitly expose input). */
+export async function sendNotificationInput(id: string, text: string): Promise<NotificationInputResponse> {
+  return apiFetch<NotificationInputResponse>(`/api/v1/notifications/${encodeURIComponent(id)}/input`, {
     method: 'POST',
     body: { text },
-    headers: reauthToken ? { 'X-Reauth-Token': reauthToken } : {},
   })
 }

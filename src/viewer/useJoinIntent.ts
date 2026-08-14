@@ -1,4 +1,4 @@
-import { isApiError } from '~/composables/useApi'
+import { localizeApiError } from '~/utils/api/errors'
 import { apiFetch } from '~/utils/api/client'
 
 /**
@@ -16,7 +16,7 @@ import { apiFetch } from '~/utils/api/client'
  *   3. PPB watches PMP `user.online` and calls `room.force_move` → user lands
  *   4. expired / cancelled → PPB cleans the intent up
  *
- * We poll `GET /api/v1/me/join-intents/{id}` (PROPOSED) for the server-side
+ * We poll `GET /api/v1/me/join-intents/{id}` for the server-side
  * transition to `user_online` / `moving` / `completed` / `failed` / `expired`.
  * Creating a new intent SUPERSEDES any active one (server-side); the client
  * resets its local state first. A `force_move` failure is surfaced (never
@@ -32,7 +32,7 @@ export interface JoinIntent {
   prompt?: string
 }
 
-/** Server-reported intent status (proposed `/api/v1/me/join-intents/{id}`). */
+/** Server-reported intent status (`/api/v1/me/join-intents/{id}`). */
 export interface JoinIntentStatusResponse {
   id: string
   status?: 'pending' | 'user_online' | 'moving' | 'completed' | 'failed' | 'expired'
@@ -60,6 +60,8 @@ export type JoinIntentStatus
 const POLL_MS = 2000
 
 export function useJoinIntent() {
+  const { t } = useI18n()
+  const notice = useNotice()
   const intent = ref<JoinIntent | null>(null)
   const status = ref<JoinIntentStatus>('idle')
   const errorMessage = ref<string | null>(null)
@@ -122,7 +124,7 @@ export function useJoinIntent() {
       else if (s === 'failed') {
         status.value = 'failed'
         // force_move failure is surfaced, not silently swallowed.
-        errorMessage.value = res.error || 'joinIntent.forceMoveFailed'
+        errorMessage.value = t('joinIntent.forceMoveFailed')
         stopTimers()
       }
       else if (s === 'expired') {
@@ -169,8 +171,9 @@ export function useJoinIntent() {
     }
     catch (err) {
       status.value = 'error'
-      const message = isApiError(err) ? err.message : (err instanceof Error ? err.message : String(err))
+      const message = localizeApiError(t, err)
       errorMessage.value = message
+      notice.errorFromApi(err, { dedupKey: 'join-intent:create' })
       return { ok: false, error: message }
     }
   }

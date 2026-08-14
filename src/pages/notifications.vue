@@ -1,28 +1,26 @@
 <script setup lang="ts">
 import type { AppNotification } from '~/utils/api/types'
-import { isApiError } from '~/composables/useApi'
 /**
  * Notification center (design §16.7, contract §8).
  *
  * - Inbox with unread count
  * - Per-notification topic/source icon, action buttons, optional chat/text reply
- * - Actions re-authenticate on the server every time (contract §8); PPF never
- *   trusts a client capability flag.
- *
- * PPB may be unready → graceful empty state. Authenticated state is probed via
- * useSession; unauthenticated users see the empty inbox + login hint.
+ * - Actions execute by stable server-frozen button id; clients cannot substitute
+ *   a different action kind or arbitrary Action Registry id.
+ * - Persistent notification semantic keys are localized here; admin free text
+ *   remains literal.
  */
 import { dismissNotification, markNotificationRead, runNotificationAction, sendNotificationInput, useNotifications } from '~/composables/useNotifications'
-import { useReauth } from '~/composables/useReauth'
 import { useSession } from '~/composables/useSession'
 
-useHead({ title: '通知' })
+const { t } = useI18n()
+useHead(() => ({ title: t('nav.notifications') }))
 
 const { t } = useI18n()
+const notice = useNotice()
 
 const { inbox, error, pending, refresh } = useNotifications()
 const { authenticated } = useSession()
-const { withReauth } = useReauth()
 
 const unread = computed(() => inbox.value.unread)
 const items = computed(() => inbox.value.items)
@@ -30,16 +28,6 @@ const items = computed(() => inbox.value.items)
 const replyOpen = ref<Record<string, string>>({})
 
 const actionBusy = ref<Record<string, boolean>>({})
-/** Inline toast-ish result of the last action / reply / dismiss. */
-const lastActionResult = ref<{ kind: 'success' | 'error', message: string } | null>(null)
-
-function setActionError(err: unknown): void {
-  lastActionResult.value = {
-    kind: 'error',
-    message: isApiError(err) ? err.message : String(err),
-  }
-}
-
 function fmtTime(iso?: string): string {
   if (!iso)
     return '—'
@@ -51,6 +39,22 @@ function isRead(n: AppNotification): boolean {
   return Boolean(n.read_at)
 }
 
+function notificationTitle(n: AppNotification): string {
+  return n.title_key ? t(n.title_key, n.params ?? {}) : n.title
+}
+
+function notificationBody(n: AppNotification): string {
+  return n.body_key ? t(n.body_key, n.params ?? {}) : n.body
+}
+
+function actionLabel(action: NonNullable<AppNotification['actions']>[number], n: AppNotification): string {
+  return action.label_key ? t(action.label_key, n.params ?? {}) : action.label
+}
+
+function trustedInternalPath(path: string): boolean {
+  return /^\/(?:room|chart|user|replay|profile|notifications)(?:\/|$)/.test(path)
+}
+
 async function onRead(n: AppNotification): Promise<void> {
   if (isRead(n))
     return
@@ -58,34 +62,36 @@ async function onRead(n: AppNotification): Promise<void> {
     await markNotificationRead(n.id)
     await refresh()
   }
-  catch {
-    // Non-fatal — inbox will reconcile on next refresh.
+  catch (err) {
+    notice.errorFromApi(err, { dedupKey: `notification:${n.id}:read` })
   }
 }
 
 async function onDismiss(n: AppNotification): Promise<void> {
-  lastActionResult.value = null
   try {
     await dismissNotification(n.id)
     await refresh()
-    lastActionResult.value = { kind: 'success', message: t('notifications.actionSuccess') }
+    notice.success('notice.dismissed', { dedupKey: `notification:${n.id}:dismiss` })
   }
   catch (err) {
-    setActionError(err)
+    notice.errorFromApi(err, { dedupKey: `notification:${n.id}:dismiss:error` })
   }
 }
 
 async function onAction(n: AppNotification, actionId: string): Promise<void> {
   actionBusy.value[`${n.id}:${actionId}`] = true
-  lastActionResult.value = null
   try {
-    // Elevated reauth is required for notification actions (contract §20/P11).
-    await withReauth(token => runNotificationAction(n.id, actionId, token))
+    const result = await runNotificationAction(n.id, actionId)
+    if (result.status === 'navigate') {
+      if (!trustedInternalPath(result.path))
+        throw new Error('untrusted notification navigation path')
+      await navigateTo(result.path)
+    }
     await refresh()
-    lastActionResult.value = { kind: 'success', message: t('notifications.actionSuccess') }
+    notice.success('notice.actionCompleted', { dedupKey: `notification:${n.id}:action` })
   }
   catch (err) {
-    setActionError(err)
+    notice.errorFromApi(err, { dedupKey: `notification:${n.id}:${actionId}:error` })
   }
   finally {
     actionBusy.value[`${n.id}:${actionId}`] = false
@@ -97,25 +103,23 @@ async function onSubmitReply(n: AppNotification): Promise<void> {
   if (!text)
     return
   actionBusy.value[`${n.id}:input`] = true
-  lastActionResult.value = null
   try {
-    // Elevated reauth is required for notification input (contract §20/P11).
-    await withReauth(token => sendNotificationInput(n.id, text, token))
+    await sendNotificationInput(n.id, text)
     replyOpen.value[n.id] = ''
     await refresh()
-    lastActionResult.value = { kind: 'success', message: t('notifications.replySent') }
+    notice.success('notice.sent', { dedupKey: `notification:${n.id}:input` })
   }
   catch (err) {
-    setActionError(err)
+    notice.errorFromApi(err, { dedupKey: `notification:${n.id}:input:error` })
   }
   finally {
     actionBusy.value[`${n.id}:input`] = false
   }
 }
 
-/** Relative PPF deep links use SPA navigation; absolute/external stay `<a>`. */
-function isExternalDeepLink(href: string): boolean {
-  return !href.startsWith('/')
+/** Persistent notification links are restricted to trusted relative PPF paths. */
+function canOpenDeepLink(href: string): boolean {
+  return trustedInternalPath(href)
 }
 
 /** Deep-link clicks also mark the notification read (mirrors `li` click). */
@@ -143,15 +147,6 @@ async function onDeepLink(n: AppNotification): Promise<void> {
       </NuxtLink>
     </header>
 
-    <p
-      v-if="lastActionResult"
-      class="text-sm"
-      :class="lastActionResult.kind === 'success' ? 'text-emerald-400' : 'text-rose-400'"
-      role="status"
-    >
-      {{ lastActionResult.message }}
-    </p>
-
     <p v-if="!authenticated && items.length === 0" class="text-sm text-slate-400">
       {{ $t('notifications.loginHint') }}
     </p>
@@ -163,25 +158,25 @@ async function onDeepLink(n: AppNotification): Promise<void> {
     </p>
 
     <ul v-else class="space-y-3">
-      <li
+      <PPSurface
         v-for="n in items"
+        as="li"
         :key="n.id"
-        class="content-surface p-4"
+        class="p-4"
         :class="isRead(n) ? 'opacity-70' : 'ring-1 ring-accent/20'"
         @click="onRead(n)"
       >
         <div class="flex items-start justify-between gap-3">
           <div class="min-w-0">
             <div class="flex items-center gap-2 text-xs text-slate-500">
-              <span class="rounded bg-white/5 px-1.5 py-0.5 font-mono">{{ n.type }}</span>
               <span v-if="n.priority === 'high'" class="text-amber-400">!</span>
               <span>{{ fmtTime(n.created_at) }}</span>
             </div>
             <h2 class="mt-1 text-sm font-semibold text-slate-100">
-              {{ n.title }}
+              {{ notificationTitle(n) }}
             </h2>
-            <p v-if="n.body" class="mt-1 text-sm text-slate-400">
-              {{ n.body }}
+            <p v-if="notificationBody(n)" class="mt-1 text-sm text-slate-400">
+              {{ notificationBody(n) }}
             </p>
             <p v-if="n.actor" class="mt-1 text-xs text-slate-500">
               {{ n.actor.username }}
@@ -192,14 +187,14 @@ async function onDeepLink(n: AppNotification): Promise<void> {
             <button
               v-if="!isRead(n)"
               type="button"
-              class="rounded-md px-2 py-1 text-xs text-slate-300 hover:bg-white/10"
+              class="pp-touch-target rounded-md px-2 py-1 text-xs text-slate-300 hover:bg-white/10"
               @click.stop="onRead(n)"
             >
               {{ $t('notifications.markRead') }}
             </button>
             <button
               type="button"
-              class="rounded-md px-2 py-1 text-xs text-slate-400 hover:bg-white/10"
+              class="pp-touch-target rounded-md px-2 py-1 text-xs text-slate-400 hover:bg-white/10"
               @click.stop="onDismiss(n)"
             >
               {{ $t('notifications.dismiss') }}
@@ -209,56 +204,43 @@ async function onDeepLink(n: AppNotification): Promise<void> {
 
         <!-- Action buttons -->
         <div v-if="n.actions?.length" class="mt-3 flex flex-wrap gap-2">
-          <BaseButton
+          <PPButton
             v-for="act in n.actions"
             :key="act.id"
-            :variant="act.danger ? 'danger' : 'default'"
+            :weight="act.danger ? 'dangerous' : 'secondary'"
             size="sm"
             :disabled="actionBusy[`${n.id}:${act.id}`]"
-            :as="act.href ? 'a' : 'button'"
-            :href="act.href"
-            :to="act.href?.startsWith('/') ? act.href : undefined"
-            @click="!act.href && onAction(n, act.id)"
+            @click="onAction(n, act.id)"
           >
-            {{ act.label }}
-          </BaseButton>
+            {{ actionLabel(act, n) }}
+          </PPButton>
         </div>
 
         <!-- Chat / text reply input -->
         <div v-if="n.input" class="mt-3 flex gap-2">
-          <input
+          <PPInput
             v-model="replyOpen[n.id]"
             type="text"
             :placeholder="n.input.placeholder || $t('notifications.replyPlaceholder')"
-            class="glass-focusable flex-1 rounded-md bg-white/5 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-accent/60"
+            class="flex-1"
             :disabled="actionBusy[`${n.id}:input`]"
             @keydown.enter="onSubmitReply(n)"
-          >
-          <BaseButton size="sm" :disabled="actionBusy[`${n.id}:input`]" @click="onSubmitReply(n)">
+          />
+          <PPButton size="sm" :disabled="actionBusy[`${n.id}:input`]" @click="onSubmitReply(n)">
             {{ $t('notifications.send') }}
-          </BaseButton>
+          </PPButton>
         </div>
 
-        <!-- Deep link (SPA navigation for relative links; new tab for external) -->
+        <!-- Persistent notification links never execute arbitrary URLs. -->
         <NuxtLink
-          v-if="n.deep_link && !isExternalDeepLink(n.deep_link)"
+          v-if="n.deep_link && canOpenDeepLink(n.deep_link)"
           :to="n.deep_link"
           class="mt-3 inline-block text-xs text-accent hover:underline"
           @click.stop="onDeepLink(n)"
         >
           {{ $t('notifications.open') }} →
         </NuxtLink>
-        <a
-          v-else-if="n.deep_link"
-          :href="n.deep_link"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="mt-3 inline-block text-xs text-accent hover:underline"
-          @click.stop="onDeepLink(n)"
-        >
-          {{ $t('notifications.open') }} →
-        </a>
-      </li>
+      </PPSurface>
     </ul>
 
     <p v-if="error" class="text-xs text-slate-500">

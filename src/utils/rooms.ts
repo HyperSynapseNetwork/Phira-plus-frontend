@@ -50,7 +50,7 @@ function countOf(value: unknown): number | undefined {
 
 /** PMP room identifier (`room_id`) → PPF `room_uuid`. */
 function roomUuid(room: RawRecord): string {
-  return asString(room.room_uuid) ?? asString(room.room_id) ?? asString(room.id) ?? ''
+  return asString(room.room_uuid) ?? asString(room.uuid) ?? asString(room.room_id) ?? asString(room.id) ?? ''
 }
 
 /**
@@ -78,7 +78,7 @@ function playerOf(value: unknown): RoomPlayer | null {
     return null
   return {
     phira_id: phira_id ?? 0,
-    username,
+    username: username ?? String(phira_id ?? ''),
     ready: asBool(p.ready),
     is_host: asBool(p.is_host),
     is_self: asBool(p.is_self),
@@ -96,7 +96,7 @@ function hostOf(room: RawRecord): RoomPlayer | null {
   }
   const direct = asNumber(room.host_id)
   if (direct != null)
-    return { phira_id: direct, is_host: true, is_self: false }
+    return { phira_id: direct, username: String(direct), is_host: true, is_self: false }
   return null
 }
 
@@ -115,8 +115,11 @@ function playersOf(room: RawRecord): RoomPlayer[] {
 
 function chartOf(room: RawRecord): RoomChart | null {
   const chart = asRecord(room.chart) ?? asRecord(room.current_chart)
-  if (chart == null)
-    return null
+  if (chart == null) {
+    const chartId = asNumber(room.chart_id)
+    const chartName = asString(room.chart_name)
+    return chartId == null && chartName == null ? null : { chart_id: chartId, name: chartName }
+  }
   return {
     chart_id: asNumber(chart.chart_id) ?? asNumber(chart.id),
     name: asString(chart.name) ?? asString(chart.song_name),
@@ -132,9 +135,10 @@ export function normalizeRoom(raw: unknown): Room {
   const room = asRecord(raw) ?? {}
   const players = playersOf(room)
   return {
+    room_id: asString(room.room_id) ?? asString(room.id) ?? '',
     room_uuid: roomUuid(room),
-    id: asString(room.id),
-    name: asString(room.name),
+    id: asString(room.room_id) ?? asString(room.id),
+    name: asString(room.name) ?? asString(room.room_id),
     state: roomState(room.state),
     host: hostOf(room),
     players,

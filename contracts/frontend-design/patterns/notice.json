@@ -1,0 +1,9 @@
+{
+  "version":2,"maxVisible":3,"placement":{"desktop":"top-right","mobile":"safe-area-top 12-16px"},
+  "durationsMs":{"info":4200,"success":4200,"warning":6000,"error":8000,"loading":null},
+  "promise":"update-same-item","messageTypes":["i18n","literal"],"serverErrorMessagePolicy":"ErrorCode i18n only; raw server message forbidden",
+  "anatomy":{"container":["tone-rail-or-icon","main-content","close"],"mainContent":["optional-title","message","optional-technical-details","optional-action"],"requestId":"inside collapsed technical details with copy"},
+  "visual":{"maxWidthRem":26,"radiusToken":"--pp-radius-window","shadowToken":"--pp-shadow-window","material":"thick/overlay","toneRailWidthPx":4,"padding":"12-16px"},
+  "a11y":{"info":"role=status aria-live=polite","success":"role=status aria-live=polite","warning":"role=alert aria-live=assertive","error":"role=alert aria-live=assertive","closeAndActionMinTargetPx":44},
+  "motion":{"durationMs":240,"normal":"opacity+translate","reduced":"opacity-only"}
+}

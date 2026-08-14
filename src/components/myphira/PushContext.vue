@@ -1,0 +1,3 @@
+<template>
+  <PushSettingsPanel />
+</template>

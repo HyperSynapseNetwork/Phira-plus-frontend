@@ -3,10 +3,9 @@
  *
  * ChartSource / LiveSource / ReplaySource separate *where* chart data comes
  * from so the renderer / audio / time / resource cores stay shared. The Rust
- * zip→bincode chart parser is NOT yet in the WASM build, so the PPB viewer
- * endpoints below (proposed, not yet frozen) are the source of the raw
- * bincode `(ChartInfo, Chart)` blobs; any failure degrades to "preview
- * unavailable" rather than a client-side parse.
+ * zip→bincode chart parser is not in the WASM build, so the frozen PPB viewer
+ * endpoint is the source of the raw bincode `(ChartInfo, Chart)` blob; any
+ * failure renders preview unavailable rather than pretending an empty chart.
  */
 
 /** Committed default resource-pack files under `/viewer/respack/default/`. */
@@ -30,11 +29,11 @@ const RESOURCE_PACK_FILES = [
 /**
  * ChartSource — raw bincode chart blob for the Chart Player.
  *
- * PROPOSED endpoint (not frozen): `GET {apiBase}/api/v1/charts/{id}/viewer`
+ * Frozen endpoint: `GET {apiBase}/api/v1/charts/{id}/viewer`
  * returns the `(ChartInfo, Chart)` bincode blob consumed by
  * `ChartPlayer.load_chart_bytes`. Client-side zip→bincode parsing is a future
- * step (the Rust parser is not in the WASM build yet); for now the PPB viewer
- * endpoint is the source and failures degrade to "preview unavailable".
+ * step (the Rust parser is not in the WASM build); the PPB viewer endpoint is
+ * the current source and failures render an explicit unavailable state.
  */
 export async function fetchChartBlob(apiBase: string, chartId: number | string): Promise<Uint8Array | null> {
   try {
@@ -65,12 +64,15 @@ export function liveWsUrl(apiBase: string, roomId: string): string {
  * phira_id (server-side) when omitted; the server pins it after auth, so the
  * client cannot read another player's frames with a spoofed id.
  */
-export function replayWsUrl(apiBase: string, roundUuid: string, playerPhiraId?: number | string): string {
+export function replayWsUrl(apiBase: string, roundUuid: string, playerPhiraId?: number | string, shareToken?: string): string {
   const wsBase = apiBase.replace(/^https:/, 'wss:').replace(/^http:/, 'ws:').replace(/\/$/, '')
   const base = `${wsBase}/ws/v1/replays/${encodeURIComponent(roundUuid)}`
-  return playerPhiraId == null
-    ? base
-    : `${base}?player_id=${encodeURIComponent(String(playerPhiraId))}`
+  const query = new URLSearchParams()
+  if (playerPhiraId != null)
+    query.set('player_id', String(playerPhiraId))
+  if (shareToken)
+    query.set('token', shareToken)
+  return query.size ? `${base}?${query}` : base
 }
 
 /**
@@ -93,15 +95,72 @@ export interface ReplayManifest {
 
 export async function fetchReplayManifest(
   apiBase: string,
-  identifier: string,
+  roundUuid: string,
   playerPhiraId?: number | string,
+  shareToken?: string,
 ): Promise<ReplayManifest | null> {
   try {
-    const query = playerPhiraId == null ? '' : `?player_id=${encodeURIComponent(String(playerPhiraId))}`
-    const res = await fetch(`${apiBase}/api/v1/replays/${encodeURIComponent(identifier)}/manifest${query}`)
+    const query = new URLSearchParams()
+    if (playerPhiraId != null)
+      query.set('player_id', String(playerPhiraId))
+    if (shareToken)
+      query.set('token', shareToken)
+    const suffix = query.size ? `?${query}` : ''
+    const res = await fetch(`${apiBase}/api/v1/replays/${encodeURIComponent(roundUuid)}/manifest${suffix}`, { credentials: 'include' })
     if (!res.ok)
       return null
     return await res.json() as ReplayManifest
+  }
+  catch {
+    return null
+  }
+}
+
+export interface ResolvedReplayShare {
+  round_uuid: string
+  player_phira_id: number
+}
+
+export async function resolveReplayShare(apiBase: string, token: string): Promise<ResolvedReplayShare | null> {
+  try {
+    const res = await fetch(`${apiBase}/api/v1/replays/share/${encodeURIComponent(token)}`, { credentials: 'include' })
+    if (!res.ok)
+      return null
+    return await res.json() as ResolvedReplayShare
+  }
+  catch {
+    return null
+  }
+}
+
+export interface ReplayJudgeFrame {
+  time: number
+  line_id: number
+  note_id: number
+  judgement: string
+}
+
+export interface ReplayFrames {
+  round_uuid: string
+  player_phira_id: number
+  touches: Array<{ time: number, finger: number, x: number, y: number }>
+  judges: ReplayJudgeFrame[]
+}
+
+export async function fetchReplayFrames(
+  apiBase: string,
+  roundUuid: string,
+  playerPhiraId: number,
+  shareToken?: string,
+): Promise<ReplayFrames | null> {
+  try {
+    const query = new URLSearchParams({ player_id: String(playerPhiraId) })
+    if (shareToken)
+      query.set('token', shareToken)
+    const res = await fetch(`${apiBase}/api/v1/replays/${encodeURIComponent(roundUuid)}/frames?${query}`, { credentials: 'include' })
+    if (!res.ok)
+      return null
+    return await res.json() as ReplayFrames
   }
   catch {
     return null

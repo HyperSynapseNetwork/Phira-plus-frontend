@@ -1,331 +1,161 @@
 <script setup lang="ts">
-import FriendCards from '~/components/myphira/FriendCards.vue'
-import FriendRequestList from '~/components/myphira/FriendRequestList.vue'
-import ReplayList from '~/components/myphira/ReplayList.vue'
+import AppearanceContext from '~/components/myphira/AppearanceContext.vue'
+import SessionsContext from '~/components/myphira/SessionsContext.vue'
+import PrivacyContext from '~/components/myphira/PrivacyContext.vue'
+import PushContext from '~/components/myphira/PushContext.vue'
+import RedemptionContext from '~/components/myphira/RedemptionContext.vue'
 import UserAvatar from '~/components/myphira/UserAvatar.vue'
+import PPWorkspaceTabs from '~/components/patterns/PPWorkspaceTabs.vue'
+import MyPhiraFriendsWorkspace from '~/features/account/components/MyPhiraFriendsWorkspace.vue'
+import MyPhiraMultiplayerWorkspace from '~/features/account/components/MyPhiraMultiplayerWorkspace.vue'
+import MyPhiraOverview from '~/features/account/components/MyPhiraOverview.vue'
+import MyPhiraReplayWorkspace from '~/features/account/components/MyPhiraReplayWorkspace.vue'
+import MyPhiraSettingsWorkspace from '~/features/account/components/MyPhiraSettingsWorkspace.vue'
+import { apiFetch, getApiBase } from '~/utils/api/client'
 
-/**
- * MyPhira (design §16.5): Overview / Replay / Friends / Settings.
- * Client-only session + community data with graceful empty fallbacks —
- * PPB Phase B may not be finished (replay/aggregation endpoints pending).
- */
-
+/** MyPhira page: session, identity hero, tab routing, and feature composition only. */
 const { t } = useI18n()
+const notice = useNotice()
 useHead({ title: computed(() => t('nav.profile')) })
 
-const { pending, authenticated, profile, identities, requiresReauth, logout } = useSession()
+const { pending, error: sessionError, authenticated, profile, identities, refreshIdentities, logout } = useSession()
+const contextWindow = useContextWindow()
+const githubIdentity = computed(() => identities.value.find(identity => identity.provider === 'github'))
+const apiBase = getApiBase()
 
-type TabKey = 'overview' | 'replay' | 'friends' | 'settings'
+async function bindGithub(): Promise<void> {
+  window.location.href = `${apiBase}/api/v1/auth/github/start`
+}
+async function unbindGithub(): Promise<void> {
+  try { await apiFetch('/api/v1/auth/github/unbind', { method: 'POST' }); await refreshIdentities(); notice.success('notice.saved') }
+  catch (err) { notice.errorFromApi(err) }
+}
+
+type TabKey = 'overview' | 'replay' | 'multiplayer' | 'friends' | 'settings'
 const activeTab = ref<TabKey>('overview')
 const tabs: { key: TabKey, label: string }[] = [
   { key: 'overview', label: 'myphira.tabOverview' },
   { key: 'replay', label: 'myphira.tabReplay' },
+  { key: 'multiplayer', label: 'myphira.tabMultiplayer' },
   { key: 'friends', label: 'myphira.tabFriends' },
   { key: 'settings', label: 'myphira.tabSettings' },
 ]
 
-function selectTab(key: TabKey): void {
-  activeTab.value = key
+function openAccountContext(kind: 'sessions' | 'privacy' | 'redemption' | 'push' | 'appearance'): void {
+  const definitions = {
+    sessions: { title: t('myphira.sessions'), component: SessionsContext },
+    privacy: { title: t('myphira.privacy'), component: PrivacyContext },
+    redemption: { title: t('myphira.redemptionCode'), component: RedemptionContext },
+    push: { title: t('myphira.pushTitle'), component: PushContext },
+    appearance: { title: t('preferences.title'), component: AppearanceContext },
+  } as const
+  contextWindow.open({ ...definitions[kind], mobileMode: 'sheet' })
 }
 
-// Unauthenticated while the session probe settles → guest panel.
-const showGuest = computed(() => !pending.value && !authenticated.value)
-
+const showGuest = computed(() => !pending.value && !sessionError.value && !authenticated.value)
 const { data: friendData, pending: friendsPending, refresh: refreshFriends } = useFriendList()
 const { data: requestData, pending: requestsPending, refresh: refreshRequests } = useFriendRequests()
+const { replays, error: replaysError, pending: replaysPending, refresh: refreshReplays } = useMyReplayList()
+const { data: multiplayer, error: multiplayerError, pending: multiplayerPending, refresh: refreshMultiplayer } = useMyMultiplayer()
 
 async function refreshCommunity(): Promise<void> {
   await Promise.allSettled([refreshFriends(), refreshRequests()])
 }
-
+async function signOut(): Promise<void> {
+  try { await logout(); notice.success('notice.signedOut', undefined, { dedupKey: 'session:logout' }) }
+  catch (err) { notice.errorFromApi(err, { dedupKey: 'session:logout:error' }) }
+}
 async function onRemoveFriend(phiraId: number): Promise<void> {
-  try {
-    await removeFriend(phiraId)
-  }
-  catch {
-    // PPB may be unready — keep the list unchanged rather than crash.
-  }
-  await refreshFriends()
+  try { await removeFriend(phiraId); notice.success('notice.actionCompleted', undefined, { dedupKey: `profile:friend:${phiraId}:remove` }); await refreshFriends() }
+  catch (err) { notice.errorFromApi(err, { dedupKey: `profile:friend:${phiraId}:remove:error` }); throw err }
 }
-
 async function onBlockUser(phiraId: number): Promise<void> {
-  try {
-    await blockUser(phiraId)
-  }
-  catch {
-    // Best-effort.
-  }
-  await refreshFriends()
+  try { await blockUser(phiraId); notice.success('notice.actionCompleted', undefined, { dedupKey: `profile:friend:${phiraId}:block` }); await refreshFriends() }
+  catch (err) { notice.errorFromApi(err, { dedupKey: `profile:friend:${phiraId}:block:error` }); throw err }
 }
 
-const profileVisibilityKey: Record<'public' | 'friends' | 'private', string> = {
-  public: 'myphira.visibilityPublic',
-  friends: 'myphira.visibilityFriends',
-  private: 'myphira.visibilityPrivate',
-}
-
-const profileBadge = computed(() => {
-  const visibility = profile.value?.profile_visibility
-  if (!visibility)
-    return undefined
-  return {
-    label: profileVisibilityKey[visibility] ?? 'myphira.visibilityPublic',
-    cls: 'bg-accent/15 text-accent ring-accent/40',
-  }
-})
-
-/** Fields PPB hasn't frozen for MeProfile yet — render honest `—`. */
-const placeholderStats: { label: string, value: string }[] = [
-  { label: 'myphira.plays', value: '—' },
-  { label: 'myphira.avgAccuracy', value: '—' },
-  { label: 'myphira.bestScore', value: '—' },
-]
-
-function identityLabel(identity: { provider: string, provider_name?: string }): string {
-  return identity.provider_name || identity.provider
-}
+const overviewSummary = computed(() => [
+  profile.value?.rks != null ? { label: t('myphira.rks'), value: String(profile.value.rks) } : null,
+  { label: t('community.friends'), value: String(friendData.value.total) },
+  { label: t('myphira.roundsTotal'), value: multiplayer.value ? String(multiplayer.value.rounds_total) : undefined },
+  { label: t('myphira.completedRounds'), value: multiplayer.value ? String(multiplayer.value.completed_rounds) : undefined },
+].filter((item): item is { label: string, value: string | undefined } => Boolean(item)))
 </script>
 
 <template>
-  <div class="space-y-4">
-    <header class="flex flex-wrap items-center justify-between gap-3">
-      <h1 class="text-2xl font-bold text-slate-50">
-        {{ t('nav.profile') }}
-      </h1>
+  <div class="space-y-5">
+    <header class="flex items-center justify-between gap-3">
+      <h1 class="text-2xl font-bold text-[var(--pp-text-primary)]">{{ t('nav.profile') }}</h1>
     </header>
 
-    <!-- Guest state (design §21.3): login CTA + guest display prefs -->
-    <section v-if="showGuest" class="content-surface p-6">
-      <p class="text-sm text-slate-400">
-        {{ t('profile.empty') }}
-      </p>
-      <BaseButton variant="primary" class="mt-4" as="NuxtLink" to="/login">
-        {{ t('profile.loginCta') }}
-      </BaseButton>
-      <div class="mt-6 border-t border-white/10 pt-6">
-        <PreferencesPanel />
-      </div>
+    <div v-if="!pending && sessionError" class="border-y border-[var(--pp-border-subtle)] py-6" role="alert">
+      <p class="text-sm text-rose-300">{{ t('common.error') }}</p>
+      <p class="mt-1 text-xs text-[var(--pp-text-tertiary)]">{{ t('profile.sessionUnavailable') }}</p>
+    </div>
+
+    <section v-else-if="showGuest" class="border-y border-[var(--pp-border-subtle)] py-6">
+      <p class="text-sm text-[var(--pp-text-secondary)]">{{ t('profile.empty') }}</p>
+      <PPButton weight="primary" class="mt-4" as="NuxtLink" to="/login">{{ t('profile.loginCta') }}</PPButton>
+      <div class="mt-6 border-t border-[var(--pp-border-subtle)] pt-6"><PreferencesPanel /></div>
     </section>
 
-    <template v-else>
-      <!-- MyPhira tab bar -->
-      <nav class="glass-focusable flex flex-wrap gap-1 rounded-lg bg-white/5 p-1" aria-label="MyPhira tabs">
-        <button
-          v-for="tab in tabs"
-          :key="tab.key"
-          type="button"
-          class="rounded-md px-3 py-2 text-sm font-medium transition-colors"
-          :class="activeTab === tab.key ? 'bg-accent/15 text-accent ring-1 ring-accent/50' : 'text-slate-300 hover:text-slate-100'"
-          @click="selectTab(tab.key)"
-        >
-          {{ t(tab.label) }}
-        </button>
-      </nav>
+    <p v-if="pending" class="py-8 text-sm text-[var(--pp-text-secondary)]">{{ t('common.loading') }}</p>
 
-      <!-- ============================ Overview ============================ -->
-      <div v-if="activeTab === 'overview'" class="space-y-4">
-        <section class="content-surface p-6">
-          <div class="flex flex-wrap items-start gap-4">
-            <UserAvatar :name="profile?.username" :avatar="profile?.avatar" size="lg" />
-            <div class="min-w-0 flex-1">
-              <h2 class="text-lg font-semibold text-slate-50">
-                {{ profile?.username || '—' }}
-              </h2>
-              <p class="text-sm text-slate-400">
-                #{{ profile?.phira_id ?? '—' }}
-              </p>
-              <p v-if="profile?.status" class="mt-1 text-sm text-slate-300">
-                {{ profile.status }}
-              </p>
-              <p v-if="profile?.bio" class="mt-1 text-sm text-slate-400">
-                {{ profile.bio }}
-              </p>
-              <div class="mt-2 flex flex-wrap items-center gap-2 text-xs">
-                <span class="rounded-full bg-white/5 px-2 py-0.5 text-slate-300 ring-1 ring-white/10">
-                  {{ t('myphira.rks') }}: —
-                </span>
-                <span
-                  v-if="profileBadge"
-                  class="rounded-full px-2 py-0.5 ring-1"
-                  :class="profileBadge.cls"
-                >
-                  {{ t(profileBadge.label) }}
-                </span>
-              </div>
-            </div>
+    <template v-else-if="authenticated">
+      <section class="relative isolate overflow-hidden rounded-[var(--pp-radius-window)] border border-[var(--pp-border-subtle)]">
+        <img v-if="profile?.background_url" :src="profile.background_url" alt="" class="absolute inset-0 h-full w-full object-cover" aria-hidden="true">
+        <div class="absolute inset-0 bg-[linear-gradient(90deg,rgba(4,9,14,.9),rgba(4,9,14,.58))]" aria-hidden="true" />
+        <div class="flex min-h-56 flex-wrap items-end gap-5 p-6 sm:p-8">
+          <UserAvatar :name="profile?.username" :avatar="profile?.avatar" size="lg" />
+          <div class="min-w-0 flex-1 pb-1">
+            <h2 class="truncate text-2xl font-semibold text-white">{{ profile?.username }}</h2>
+            <p v-if="profile?.phira_id != null" class="mt-1 text-sm text-white/60">#{{ profile.phira_id }}</p>
+            <p v-if="profile?.bio" class="mt-3 max-w-2xl text-sm leading-6 text-white/80">{{ profile.bio }}</p>
           </div>
-
-          <div class="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <div
-              v-for="stat in placeholderStats"
-              :key="stat.label"
-              class="rounded-lg bg-white/5 p-3"
-            >
-              <p class="text-xs text-slate-400">
-                {{ t(stat.label) }}
-              </p>
-              <p class="mt-1 text-lg font-semibold text-slate-100">
-                {{ stat.value }}
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <div class="grid gap-4 lg:grid-cols-2">
-          <section class="content-surface p-6">
-            <h3 class="text-sm font-semibold uppercase tracking-wide text-slate-300">
-              {{ t('myphira.bestRecent') }}
-            </h3>
-            <p class="mt-2 text-sm text-slate-400">
-              {{ t('myphira.bestRecentPlaceholder') }}
-            </p>
-          </section>
-          <section class="content-surface p-6">
-            <h3 class="text-sm font-semibold uppercase tracking-wide text-slate-300">
-              {{ t('myphira.multiplayer') }}
-            </h3>
-            <p class="mt-2 text-sm text-slate-400">
-              {{ t('myphira.multiplayerPlaceholder') }}
-            </p>
-          </section>
         </div>
-
-        <section class="content-surface p-6">
-          <h3 class="text-sm font-semibold uppercase tracking-wide text-slate-300">
-            {{ t('myphira.recentReplay') }}
-          </h3>
-          <div class="mt-3">
-            <ReplayList :replays="[]" />
-          </div>
-          <p class="mt-2 text-sm text-slate-400">
-            {{ t('myphira.replayPlaceholder') }}
-          </p>
-        </section>
-
-        <div class="grid gap-4 lg:grid-cols-2">
-          <section class="content-surface p-6">
-            <h3 class="text-sm font-semibold uppercase tracking-wide text-slate-300">
-              {{ t('community.friends') }}
-            </h3>
-            <p class="mt-2 text-2xl font-semibold text-slate-100">
-              {{ friendData.total }}
-            </p>
-          </section>
-          <section class="content-surface p-6">
-            <h3 class="text-sm font-semibold uppercase tracking-wide text-slate-300">
-              {{ t('community.friendRequests') }}
-            </h3>
-            <p class="mt-2 text-2xl font-semibold text-slate-100">
-              {{ requestData.total }}
-            </p>
-          </section>
-        </div>
-      </div>
-
-      <!-- ============================= Replay ============================= -->
-      <section v-else-if="activeTab === 'replay'" class="content-surface p-6">
-        <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-300">
-          {{ t('myphira.tabReplay') }}
-        </h2>
-        <div class="mt-3">
-          <ReplayList :replays="[]" />
-        </div>
-        <p class="mt-2 text-sm text-slate-400">
-          {{ t('myphira.replayPlaceholder') }}
-        </p>
-        <p class="mt-1 text-sm text-slate-400">
-          {{ t('myphira.replayVisibility') }}
-        </p>
       </section>
 
-      <!-- ============================ Friends ============================= -->
-      <div v-else-if="activeTab === 'friends'" class="space-y-4">
-        <section class="content-surface p-6">
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-300">
-              {{ t('community.friends') }}
-            </h2>
-            <span class="text-xs text-slate-500">
-              {{ friendsPending ? t('common.loading') : friendData.total }}
-            </span>
-          </div>
-          <div class="mt-4">
-            <FriendCards :friends="friendData.items" @remove="onRemoveFriend" @block="onBlockUser" />
-          </div>
-        </section>
+      <PPWorkspaceTabs v-model="activeTab" :tabs="tabs.map(tab => ({ key: tab.key, label: t(tab.label) }))" label="MyPhira" />
 
-        <section class="content-surface p-6">
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-300">
-              {{ t('community.friendRequests') }}
-            </h2>
-            <span class="text-xs text-slate-500">
-              {{ requestsPending ? t('common.loading') : requestData.total }}
-            </span>
-          </div>
-          <div class="mt-4">
-            <FriendRequestList :requests="requestData.items" @changed="refreshCommunity" />
-          </div>
-        </section>
-      </div>
-
-      <!-- ============================ Settings ============================ -->
-      <div v-else class="space-y-4">
-        <section class="content-surface p-6">
-          <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-300">
-            {{ t('myphira.identities') }}
-          </h2>
-
-          <p
-            v-if="requiresReauth"
-            class="mt-3 flex items-center gap-2 rounded-md bg-amber-500/15 px-3 py-2 text-sm text-amber-200 ring-1 ring-amber-400/30"
-          >
-            {{ t('myphira.reauthRequired') }}
-          </p>
-
-          <ul v-if="identities.length" class="mt-3 space-y-2">
-            <li
-              v-for="identity in identities"
-              :key="identity.provider_id"
-              class="flex items-center gap-2 text-sm text-slate-300"
-            >
-              <span class="rounded bg-white/5 px-2 py-0.5 text-xs uppercase text-slate-400">
-                {{ identity.provider }}
-              </span>
-              <span>{{ identityLabel(identity) }}</span>
-            </li>
-          </ul>
-
-          <div class="mt-4 space-y-3 border-t border-white/10 pt-4">
-            <div class="flex items-center justify-between gap-3 text-sm">
-              <span class="text-slate-400">{{ t('myphira.githubBinding') }}</span>
-              <span class="text-xs text-slate-500">—</span>
-            </div>
-            <div class="flex items-center justify-between gap-3 text-sm">
-              <span class="text-slate-400">{{ t('myphira.sessions') }}</span>
-              <span class="text-xs text-slate-500">—</span>
-            </div>
-            <div class="flex items-center justify-between gap-3 text-sm">
-              <span class="text-slate-400">{{ t('myphira.privacy') }}</span>
-              <span class="text-xs text-slate-500">—</span>
-            </div>
-          </div>
-        </section>
-
-        <section class="content-surface p-6">
-          <PushSettingsPanel />
-        </section>
-
-        <section class="content-surface p-6">
-          <PreferencesPanel />
-        </section>
-
-        <section class="content-surface p-6">
-          <BaseButton variant="danger" @click="logout()">
-            {{ t('myphira.signOut') }}
-          </BaseButton>
-        </section>
-      </div>
+      <MyPhiraOverview
+        v-if="activeTab === 'overview'"
+        :summary="overviewSummary"
+        :replays="replays"
+        :replays-pending="replaysPending"
+        :replays-error="replaysError"
+        :multiplayer="multiplayer"
+        :multiplayer-pending="multiplayerPending"
+        :multiplayer-error="multiplayerError"
+        @open="activeTab = $event"
+        @refresh-replays="refreshReplays()"
+        @refresh-multiplayer="refreshMultiplayer()"
+      />
+      <MyPhiraReplayWorkspace v-else-if="activeTab === 'replay'" :replays="replays" :pending="replaysPending" :error="replaysError" @refresh="refreshReplays()" />
+      <MyPhiraMultiplayerWorkspace v-else-if="activeTab === 'multiplayer'" :data="multiplayer" :pending="multiplayerPending" :error="multiplayerError" @refresh="refreshMultiplayer()" />
+      <MyPhiraFriendsWorkspace
+        v-else-if="activeTab === 'friends'"
+        :friends="friendData.items"
+        :friend-total="friendData.total"
+        :requests="requestData.items"
+        :request-total="requestData.total"
+        :friends-pending="friendsPending"
+        :requests-pending="requestsPending"
+        :on-remove="onRemoveFriend"
+        :on-block="onBlockUser"
+        :on-refresh="refreshCommunity"
+      />
+      <MyPhiraSettingsWorkspace
+        v-else
+        :github-identity="githubIdentity"
+        @bind-github="bindGithub"
+        @unbind-github="unbindGithub"
+        @open-privacy="openAccountContext('privacy')"
+        @open-sessions="openAccountContext('sessions')"
+        @open-push="openAccountContext('push')"
+        @open-appearance="openAccountContext('appearance')"
+        @open-redemption="openAccountContext('redemption')"
+        @sign-out="signOut"
+      />
     </template>
   </div>
 </template>

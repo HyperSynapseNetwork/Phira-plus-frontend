@@ -1,0 +1,33 @@
+{
+  "version": "2.1",
+  "PPButton": {
+    "commonAllowed": [
+      "weight",
+      "size",
+      "type",
+      "disabled",
+      "loading"
+    ],
+    "ppfAllowed": [
+      "block",
+      "as",
+      "class",
+      "to",
+      "href",
+      "aria-label",
+      "title"
+    ],
+    "panelAllowed": [
+      "fullWidth",
+      "class",
+      "aria-label",
+      "title"
+    ],
+    "forbiddenLegacy": [
+      "variant",
+      "color",
+      "intent",
+      "tone"
+    ]
+  }
+}

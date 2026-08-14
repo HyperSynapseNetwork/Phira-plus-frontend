@@ -1,0 +1,41 @@
+{
+  "version": "2.1",
+  "exceptions": [
+    {
+      "id": "viewer-range",
+      "scope": "PPF viewer",
+      "allows": [
+        "native range input"
+      ],
+      "reason": "low-level game visualization control"
+    },
+    {
+      "id": "semantic-checkbox",
+      "scope": "PPF/Panel",
+      "allows": [
+        "native checkbox through approved pattern"
+      ],
+      "reason": "native accessibility semantics"
+    },
+    {
+      "id": "native-color-picker",
+      "scope": "PPF preferences",
+      "allows": [
+        "native color input"
+      ],
+      "reason": "platform color picker"
+    },
+    {
+      "id": "experimental-desktop-window",
+      "scope": "Panel experimental DesktopWindow",
+      "allows": [
+        "device-local drag/resize geometry"
+      ],
+      "forbids": [
+        "system-overlay z bypass",
+        "literal close control below touch minimum"
+      ],
+      "reason": "experimental workspace geometry only"
+    }
+  ]
+}

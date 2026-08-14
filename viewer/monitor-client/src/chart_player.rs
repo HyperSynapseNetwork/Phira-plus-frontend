@@ -19,6 +19,8 @@ pub struct ChartPlayer {
     audio_engine: AudioEngine,
     time: TimeManager,
     api_base: String,
+    replay_judges: Vec<(f32, u32, u32, String)>,
+    replay_cursor: usize,
 }
 
 #[wasm_bindgen]
@@ -59,6 +61,8 @@ impl ChartPlayer {
             audio_engine: AudioEngine::new()?,
             time,
             api_base,
+            replay_judges: Vec::new(),
+            replay_cursor: 0,
         };
         player.sync_hitsounds()?;
         Ok(player)
@@ -76,6 +80,7 @@ impl ChartPlayer {
 
     pub fn set_time(&mut self, time: f32) {
         self.time.seek_to(time as f64);
+        self.replay_cursor = 0;
 
         // Reset all judge states on seek
         for line in &mut self.chart_renderer.chart.lines {
@@ -84,6 +89,7 @@ impl ChartPlayer {
             }
         }
 
+        self.apply_replay_judges(time);
         // Force update chart state immediately
         self.chart_renderer
             .update(&mut self.resource, self.time.now());
@@ -91,6 +97,60 @@ impl ChartPlayer {
 
     pub fn set_autoplay(&mut self, flag: bool) {
         self.chart_renderer.autoplay = flag;
+    }
+
+    /// Expected chart time for PMP's `(line_id, note_id)` judge identity.
+    /// The browser uses this to derive per-Replay judgement offsets without
+    /// sending chart internals back to PPB.
+    pub fn note_time(&self, line_id: u32, note_id: u32) -> Option<f32> {
+        self.chart_renderer
+            .chart
+            .lines
+            .get(line_id as usize)
+            .and_then(|line| line.notes.get(note_id as usize))
+            .map(|note| note.time)
+    }
+
+    /// Load one persisted PMP judgement. Events are applied in game-time order
+    /// during render/seek, so Replay playback reflects the selected player
+    /// instead of the ChartPlayer autoplay path.
+    pub fn push_replay_judge(
+        &mut self,
+        time: f32,
+        line_id: u32,
+        note_id: u32,
+        judgement: String,
+    ) {
+        self.replay_judges.push((time, line_id, note_id, judgement));
+        self.replay_judges.sort_by(|a, b| a.0.total_cmp(&b.0));
+        self.replay_cursor = 0;
+        self.chart_renderer.autoplay = false;
+    }
+
+    fn apply_replay_judges(&mut self, current_time: f32) {
+        while let Some((time, line_id, note_id, judgement)) =
+            self.replay_judges.get(self.replay_cursor).cloned()
+        {
+            if time > current_time {
+                break;
+            }
+            if let Some(note) = self
+                .chart_renderer
+                .chart
+                .lines
+                .get_mut(line_id as usize)
+                .and_then(|line| line.notes.get_mut(note_id as usize))
+            {
+                let result = match judgement.to_ascii_lowercase().as_str() {
+                    "good" | "holdgood" | "hold_good" => Judgement::Good,
+                    "bad" => Judgement::Bad,
+                    "miss" => Judgement::Miss,
+                    _ => Judgement::Perfect,
+                };
+                note.judge = JudgeStatus::Judged(time, result);
+            }
+            self.replay_cursor += 1;
+        }
     }
 
     pub fn render(&mut self) -> Result<(), JsValue> {
@@ -115,6 +175,7 @@ impl ChartPlayer {
             1.0, 0.0, 0.0, 0.0, 0.0, aspect, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0,
         ]);
 
+        self.apply_replay_judges(current_time);
         self.chart_renderer.update(&mut self.resource, current_time);
 
         let autoplay = self.chart_renderer.autoplay;

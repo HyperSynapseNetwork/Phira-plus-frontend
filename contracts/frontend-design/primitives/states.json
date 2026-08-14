@@ -1,0 +1,31 @@
+{
+  "version": 2,
+  "commonControlStates": [
+    "default",
+    "hover",
+    "pressed",
+    "focus-visible",
+    "disabled",
+    "loading"
+  ],
+  "nativeControlPolicy": {
+    "allowedDirect": [
+      "hidden/file input",
+      "viewer slider/game visualization input",
+      "simple semantic checkbox through an approved checkbox pattern",
+      "low-level internal adapter control",
+      "native color picker for an explicit color preference"
+    ],
+    "mustUsePrimitive": [
+      "formal form field",
+      "account setting",
+      "admin config",
+      "filter/search",
+      "select",
+      "sensitive input",
+      "replay visibility",
+      "privacy setting",
+      "redemption input"
+    ]
+  }
+}

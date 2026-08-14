@@ -32,6 +32,8 @@ declare class ChartPlayer {
   resume(): Promise<void>
   set_time(time: number): void
   set_autoplay(flag: boolean): void
+  note_time(lineId: number, noteId: number): number | undefined
+  push_replay_judge(time: number, lineId: number, noteId: number, judgement: string): void
   render(): void
   resize(width: number, height: number): void
   load_chart(id: string): Promise<ChartInfoJson>

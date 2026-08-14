@@ -4,7 +4,7 @@
  *
  * Shows Phira metadata, a data-source badge (Phira vs HSN Phira+), a lazy WASM
  * Chart Preview, the global record ranking and the current user's best. All
- * data is client-only with graceful fallbacks — PPB Phase B may be unready.
+ * data is client-only; API failures render explicit unavailable/error states.
  */
 import type { ChartRecord } from '~/utils/api/types'
 import { useChart, useChartRecords } from '~/composables/useCharts'
@@ -84,37 +84,37 @@ function fmtDate(value?: string): string {
     </NuxtLink>
 
     <!-- Loading -->
-    <div v-if="pending" class="content-surface flex items-center justify-center p-16 text-sm text-slate-400">
+    <PPSurface as="div" v-if="pending" class="flex items-center justify-center p-16 text-sm text-slate-400">
       {{ $t('common.loading') }}
-    </div>
+    </PPSurface>
 
     <!-- Invalid chart id -->
-    <section v-else-if="!chartIdValid" class="content-surface p-10 text-center">
+    <PPSurface as="section" v-else-if="!chartIdValid" class="p-10 text-center">
       <p class="text-sm text-slate-400">
         {{ $t('chart.notFound') }}
       </p>
-    </section>
+    </PPSurface>
 
     <!-- Error -->
-    <section v-else-if="error" class="content-surface flex flex-col items-center gap-3 p-10 text-center">
+    <PPSurface as="section" v-else-if="error" class="flex flex-col items-center gap-3 p-10 text-center">
       <p class="text-sm text-slate-400">
         {{ $t('common.error') }}
       </p>
-      <BaseButton size="sm" variant="ghost" @click="() => refresh()">
+      <PPButton size="sm" weight="quiet" @click="() => refresh()">
         {{ $t('common.retry') }}
-      </BaseButton>
-    </section>
+      </PPButton>
+    </PPSurface>
 
     <!-- Empty -->
-    <section v-else-if="!chart" class="content-surface p-10 text-center">
+    <PPSurface as="section" v-else-if="!chart" class="p-10 text-center">
       <p class="text-sm text-slate-400">
         {{ $t('charts.empty') }}
       </p>
-    </section>
+    </PPSurface>
 
     <template v-else>
       <!-- Metadata -->
-      <section class="content-surface p-6">
+      <PPSurface as="section" class="p-6">
         <div class="flex flex-col gap-5 md:flex-row">
           <div class="w-full shrink-0 overflow-hidden rounded-lg bg-white/5 ring-1 ring-white/10 md:w-52">
             <CoverImage
@@ -211,18 +211,18 @@ function fmtDate(value?: string): string {
             </div>
           </div>
         </div>
-      </section>
+      </PPSurface>
 
       <!-- Chart Preview (WASM viewer, lazy — design §12.7) -->
-      <section class="content-surface p-6">
+      <PPSurface as="section" class="p-6">
         <h2 class="text-sm font-semibold text-slate-100">
           {{ $t('chart.preview') }}
         </h2>
         <ChartPlayerCanvas class="mt-4" :chart-id="chart.id" />
-      </section>
+      </PPSurface>
 
       <!-- Global ranking -->
-      <section class="content-surface p-6">
+      <PPSurface as="section" class="p-6">
         <h2 class="text-sm font-semibold text-slate-100">
           {{ $t('chart.globalRanking') }}
         </h2>
@@ -292,10 +292,10 @@ function fmtDate(value?: string): string {
             </tbody>
           </table>
         </div>
-      </section>
+      </PPSurface>
 
       <!-- My best -->
-      <section class="content-surface p-6">
+      <PPSurface as="section" class="p-6">
         <h2 class="text-sm font-semibold text-slate-100">
           {{ $t('chart.myBest') }}
         </h2>
@@ -317,7 +317,7 @@ function fmtDate(value?: string): string {
         <p v-else class="mt-4 text-sm text-slate-400">
           {{ $t('chart.noMyBest') }}
         </p>
-      </section>
+      </PPSurface>
     </template>
   </div>
 </template>

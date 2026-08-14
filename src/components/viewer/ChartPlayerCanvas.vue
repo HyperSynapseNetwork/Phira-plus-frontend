@@ -65,9 +65,9 @@ function onSeek(event: Event): void {
       <p class="text-sm text-slate-400">
         {{ $t('viewer.dataSource') }}
       </p>
-      <BaseButton variant="primary" size="md" @click="startPreview">
+      <PPButton weight="primary" size="md" @click="startPreview">
         {{ $t('viewer.loadPreview') }}
-      </BaseButton>
+      </PPButton>
     </div>
 
     <!-- Viewer stage -->
@@ -98,9 +98,9 @@ function onSeek(event: Event): void {
 
       <!-- Toolbar -->
       <div class="mt-3 flex flex-wrap items-center gap-2">
-        <BaseButton size="sm" variant="ghost" :disabled="!available || !!error || viewerLoading" @click="togglePlay">
+        <PPButton size="sm" weight="quiet" :disabled="!available || !!error || viewerLoading" @click="togglePlay">
           {{ isPaused ? $t('viewer.play') : $t('viewer.pause') }}
-        </BaseButton>
+        </PPButton>
 
         <label class="flex min-w-0 flex-1 items-center gap-2 text-xs text-slate-400">
           <span class="shrink-0">{{ $t('viewer.seek') }}</span>
@@ -118,9 +118,9 @@ function onSeek(event: Event): void {
         <!-- Volume: the WASM ChartPlayer has no gain API yet — the slider is
              disabled and only the mute state is tracked locally. -->
         <span class="inline-flex items-center gap-1.5" :title="$t('viewer.volumeUnsupported')">
-          <BaseButton size="sm" variant="ghost" @click="muted = !muted">
+          <PPButton size="sm" weight="quiet" @click="muted = !muted">
             {{ muted ? $t('viewer.muted') : $t('viewer.volume') }}
-          </BaseButton>
+          </PPButton>
           <input
             type="range"
             min="0"
@@ -133,9 +133,9 @@ function onSeek(event: Event): void {
           >
         </span>
 
-        <BaseButton size="sm" variant="ghost" @click="toggleFullscreen">
+        <PPButton size="sm" weight="quiet" @click="toggleFullscreen">
           {{ $t('viewer.fullscreen') }}
-        </BaseButton>
+        </PPButton>
 
         <span
           v-if="lowPerf"

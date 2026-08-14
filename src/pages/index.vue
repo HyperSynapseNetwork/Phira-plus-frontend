@@ -1,306 +1,105 @@
 <script setup lang="ts">
+import { markRaw } from 'vue'
+import HomeStatusContext from '~/components/context/HomeStatusContext.vue'
 import { useChartList } from '~/composables/useCharts'
-/**
- * Home (design §16.2).
- *
- * - Brand / server entry, availability (public/meta probe)
- * - Online users / room / session summary
- * - External node latency summary (source + latency, never infer IP)
- * - Announcements, popular charts, recent public rooms, downloads entry
- *
- * All data is fetched client-side with graceful fallback — PPB Phase B may be
- * unready, so every section degrades to a neutral empty state (SSG-safe).
- */
-import { useAnnouncements, useNodes, usePublicMeta, useServerSummary } from '~/composables/usePublicContent'
+import { useContextWindow } from '~/composables/useContextWindow'
+import { useAnnouncements, usePublicMeta, useServerSummary } from '~/composables/usePublicContent'
 import { useRoomList } from '~/composables/useRooms'
 
 const { t } = useI18n()
-
+const { open } = useContextWindow()
 usePageSeo(() => ({
   title: t('nav.home'),
   description: t('home.heroSubtitle'),
-  jsonLd: [
-    {
-      '@context': 'https://schema.org',
-      '@type': 'WebSite',
-      'name': 'HSN Phira+',
-      'alternateName': 'HSN Phira+ 官网',
-      'url': 'https://phira.htadiy.com/',
-    },
-    {
-      '@context': 'https://schema.org',
-      '@type': 'Organization',
-      'name': 'HSN Phira+',
-      'url': 'https://phira.htadiy.com/',
-    },
-  ],
+  jsonLd: [{ '@context': 'https://schema.org', '@type': 'WebSite', name: 'HSN Phira+', url: 'https://phira.htadiy.com/' }],
 }))
 
-const { data: meta, pending: metaPending, error: metaError, refresh: refreshMeta } = usePublicMeta()
-const { data: summary, error: summaryError, refresh: refreshSummary } = useServerSummary()
-const { data: announcements, refresh: refreshAnn } = useAnnouncements({ page: 1, pageNum: 5 })
-const { data: nodes, error: nodesError, refresh: refreshNodes } = useNodes()
+const { data: meta, pending: metaPending, error: metaError } = usePublicMeta()
+const { data: summary, error: summaryError } = useServerSummary()
+const { data: announcements, error: announcementsError, refresh: refreshAnn } = useAnnouncements({ page: 1, pageNum: 3 })
 const { charts, pending: chartsPending, error: chartsError, refresh: refreshCharts } = useChartList({ order: 'popular', pageNum: 5 })
 const { rooms, pending: roomsPending, error: roomsError, refresh: refreshRooms } = useRoomList({ pageNum: 5 })
 
-const serverOnline = computed(() => !metaPending.value && !metaError.value && Boolean(meta.value?.version && meta.value?.version !== '0.0.0'))
-
-const nodesTotal = computed(() => nodes.value.items.length)
-
+const serverState = computed<'loading' | 'unknown' | 'online' | 'offline'>(() => {
+  if (metaPending.value) return 'loading'
+  if (metaError.value) return 'unknown'
+  return meta.value?.version && meta.value.version !== '0.0.0' ? 'online' : 'offline'
+})
 const announcementList = computed(() => announcements.value.items)
-
-function fmtTime(iso?: string): string {
-  if (!iso)
-    return '—'
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime()))
-    return '—'
-  return d.toLocaleString()
+function openStatus(): void {
+  open({ id: 'home-server-status', title: t('home.serverDetails'), component: markRaw(HomeStatusContext), mobileMode: 'sheet' })
 }
-
-function fmtLatency(ms?: number | null): string {
-  if (typeof ms !== 'number' || !Number.isFinite(ms))
-    return '—'
-  return `${ms} ms`
+function fmtTime(iso?: string): string {
+  if (!iso) return ''
+  const d = new Date(iso)
+  return Number.isNaN(d.getTime()) ? '' : d.toLocaleString()
 }
 </script>
 
 <template>
-  <div class="space-y-8">
-    <!-- Hero / brand entry（§11 场景首页：几乎完全 Atmosphere，不用 Card 包） -->
-    <section class="flex min-h-[64vh] items-center">
+  <div class="space-y-12 pb-8">
+    <section class="flex min-h-[60vh] items-center">
       <div class="max-w-2xl">
-        <p class="mb-3 text-sm font-medium uppercase tracking-widest text-accent">
-          {{ $t('app.tagline') }}
-        </p>
-        <h1 class="text-4xl font-bold leading-tight text-slate-50 md:text-6xl">
-          {{ $t('home.heroTitle') }}
-        </h1>
-        <p class="mt-4 text-base text-slate-300 md:text-lg">
-          {{ $t('home.heroSubtitle') }}
-        </p>
+        <p class="mb-3 text-sm font-medium uppercase tracking-widest text-accent">{{ $t('app.tagline') }}</p>
+        <h1 class="text-4xl font-bold leading-tight text-[var(--pp-text-primary)] md:text-6xl">{{ $t('home.heroTitle') }}</h1>
+        <p class="mt-4 text-base text-[var(--pp-text-secondary)] md:text-lg">{{ $t('home.heroSubtitle') }}</p>
         <div class="mt-6 flex flex-wrap gap-3">
-          <BaseButton variant="primary" size="lg" as="NuxtLink" to="/rooms">
-            {{ $t('home.ctaRooms') }}
-          </BaseButton>
-          <BaseButton variant="ghost" size="lg" as="NuxtLink" to="/charts">
-            {{ $t('home.ctaCharts') }}
-          </BaseButton>
+          <PPButton weight="primary" size="lg" as="NuxtLink" to="/rooms">{{ $t('home.ctaRooms') }}</PPButton>
+          <PPButton weight="quiet" size="lg" as="NuxtLink" to="/downloads">{{ $t('nav.downloads') }}</PPButton>
         </div>
-        <p class="mt-8 text-sm text-slate-400">
-          <span class="inline-flex items-center gap-2 font-medium" :class="serverOnline ? 'text-emerald-400' : 'text-slate-500'">
-            <span class="h-1.5 w-1.5 rounded-full" :class="serverOnline ? 'bg-emerald-400' : 'bg-slate-500'" />
-            {{ serverOnline ? $t('common.online') : $t('common.offline') }}
+        <div class="mt-8 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-[var(--pp-text-secondary)]">
+          <span class="inline-flex items-center gap-2 font-medium" :class="serverState === 'online' ? 'text-emerald-300' : serverState === 'offline' ? 'text-slate-500' : 'text-[var(--pp-text-secondary)]'">
+            <span class="size-1.5 rounded-full" :class="serverState === 'online' ? 'bg-emerald-400' : serverState === 'offline' ? 'bg-slate-500' : 'bg-amber-300'" aria-hidden="true" />
+            {{ serverState === 'loading' ? $t('common.loading') : serverState === 'unknown' ? $t('common.unknown') : serverState === 'online' ? $t('common.online') : $t('common.offline') }}
           </span>
-          <span v-if="summary.online_users != null"> · {{ summary.online_users }} {{ $t('home.onlineUsers') }}</span>
-          <span v-if="summary.rooms != null"> · {{ summary.rooms }} {{ $t('home.roomCount') }}</span>
-        </p>
+          <template v-if="!summaryError">
+            <span v-if="summary.online_users != null">{{ summary.online_users }} {{ $t('home.onlineUsers') }}</span>
+            <span v-if="summary.rooms != null">{{ summary.rooms }} {{ $t('home.roomCount') }}</span>
+          </template>
+          <button type="button" class="text-xs text-accent hover:underline" @click="openStatus">{{ $t('home.serverDetails') }}</button>
+        </div>
       </div>
     </section>
 
-    <!-- API version + external nodes -->
-    <section class="grid gap-4 lg:grid-cols-2">
-      <GlassSurface>
-        <h2 class="mb-2 text-sm font-semibold text-slate-100">
-          {{ $t('home.apiVersion') }}
-        </h2>
-        <p class="text-sm text-slate-400">
-          {{ meta?.version || '—' }}
-          <template v-if="meta?.api_version">
-            · API v{{ meta.api_version }}
-          </template>
-        </p>
-        <p v-if="summaryError" class="mt-2 text-xs text-slate-500">
-          <button type="button" class="text-accent hover:underline" @click="() => { refreshMeta(); refreshSummary() }">
-            {{ $t('common.retry') }}
-          </button>
-        </p>
-      </GlassSurface>
-
-      <GlassSurface>
-        <h2 class="mb-2 text-sm font-semibold text-slate-100">
-          {{ $t('home.externalNodes') }}
-        </h2>
-        <p v-if="nodesTotal === 0" class="text-sm text-slate-400">
-          {{ $t('home.noNodes') }}
-        </p>
-        <ul v-else class="space-y-1.5">
-          <li
-            v-for="node in nodes.items"
-            :key="node.id"
-            class="flex flex-wrap items-center gap-x-3 text-sm"
-          >
-            <span
-              class="inline-block h-2 w-2 rounded-full"
-              :class="node.status === 'up' ? 'bg-emerald-400' : node.status === 'down' ? 'bg-rose-400' : 'bg-slate-500'"
-              :title="node.status ?? 'unknown'"
-            />
-            <span class="text-slate-200">{{ node.label }}</span>
-            <span class="text-xs text-slate-400">{{ $t('home.latency') }}: {{ fmtLatency(node.latency_ms) }}</span>
-            <span v-if="node.source" class="text-xs text-slate-500">
-              {{ $t('home.nodeSource', { source: node.source }) }}
-            </span>
-          </li>
-        </ul>
-        <p v-if="nodesError" class="mt-2 text-xs text-slate-500">
-          <button type="button" class="text-accent hover:underline" @click="() => refreshNodes()">
-            {{ $t('common.retry') }}
-          </button>
-        </p>
-      </GlassSurface>
-    </section>
-
-    <!-- Announcements + popular charts -->
-    <section class="grid gap-4 lg:grid-cols-3">
-      <GlassSurface class="lg:col-span-1">
-        <div class="mb-3 flex items-center justify-between">
-          <h2 class="text-sm font-semibold text-slate-100">
-            {{ $t('home.announcements') }}
-          </h2>
-          <button
-            type="button"
-            class="text-xs text-accent hover:underline"
-            @click="() => refreshAnn()"
-          >
-            {{ $t('common.retry') }}
-          </button>
-        </div>
-        <p v-if="announcementList.length === 0" class="text-sm text-slate-400">
-          {{ $t('home.noAnnouncements') }}
-        </p>
-        <ul v-else class="space-y-3">
-          <li v-for="a in announcementList" :key="a.id" class="border-b border-white/5 pb-2 last:border-0">
-            <p class="text-sm font-medium text-slate-100">
-              {{ a.title }}
-            </p>
-            <p class="mt-0.5 line-clamp-2 text-xs text-slate-400">
-              {{ a.body }}
-            </p>
-            <p class="mt-1 text-[11px] text-slate-500">
-              {{ fmtTime(a.published_at) }}
-            </p>
-          </li>
-        </ul>
-      </GlassSurface>
-
-      <GlassSurface class="lg:col-span-2">
-        <div class="mb-3 flex items-center justify-between">
-          <h2 class="text-sm font-semibold text-slate-100">
-            {{ $t('home.popularCharts') }}
-          </h2>
-          <NuxtLink to="/charts" class="text-xs text-accent hover:underline">
-            {{ $t('home.viewAllCharts') }}
-          </NuxtLink>
-        </div>
-        <p v-if="chartsPending" class="text-sm text-slate-400">
-          {{ $t('common.loading') }}
-        </p>
-        <p v-else-if="charts.length === 0" class="text-sm text-slate-400">
-          {{ $t('charts.empty') }}
-        </p>
-        <ul v-else class="space-y-2">
-          <li v-for="c in charts" :key="c.id">
-            <NuxtLink
-              :to="`/chart/${c.id}`"
-              class="flex items-center justify-between gap-3 rounded-md px-2 py-1.5 transition-colors hover:bg-white/5"
-            >
-              <span class="truncate text-sm text-slate-200">{{ c.name }}</span>
-              <span class="flex shrink-0 items-center gap-2 text-xs text-slate-400">
-                <span v-if="c.artist">{{ c.artist }}</span>
-                <span v-if="c.difficulty != null" class="text-accent">★{{ c.difficulty }}</span>
-              </span>
-            </NuxtLink>
-          </li>
-        </ul>
-        <p v-if="chartsError" class="mt-2 text-xs text-slate-500">
-          <button type="button" class="text-accent hover:underline" @click="() => refreshCharts()">
-            {{ $t('common.retry') }}
-          </button>
-        </p>
-      </GlassSurface>
-    </section>
-
-    <!-- Recent public rooms -->
     <section>
-      <GlassSurface>
-        <div class="mb-3 flex items-center justify-between">
-          <h2 class="text-sm font-semibold text-slate-100">
-            {{ $t('home.recentRooms') }}
-          </h2>
-          <NuxtLink to="/rooms" class="text-xs text-accent hover:underline">
-            {{ $t('home.viewAllRooms') }}
+      <div class="mb-3 flex items-end justify-between gap-3">
+        <div><p class="text-xs uppercase tracking-wide text-[var(--pp-text-tertiary)]">Live</p><h2 class="text-xl font-semibold text-[var(--pp-text-primary)]">{{ $t('home.recentRooms') }}</h2></div>
+        <NuxtLink to="/rooms" class="text-sm text-accent hover:underline">{{ $t('home.viewAllRooms') }}</NuxtLink>
+      </div>
+      <p v-if="roomsPending" class="border-y border-[var(--pp-border-subtle)] py-5 text-sm text-[var(--pp-text-secondary)]">{{ $t('common.loading') }}</p>
+      <div v-else-if="roomsError" class="flex items-center justify-between gap-3 border-y border-[var(--pp-border-subtle)] py-4 text-sm text-rose-300" role="alert"><span>{{ $t('common.error') }}</span><PPButton weight="quiet" size="sm" @click="() => refreshRooms()">{{ $t('common.retry') }}</PPButton></div>
+      <p v-else-if="rooms.length === 0" class="border-y border-[var(--pp-border-subtle)] py-5 text-sm text-[var(--pp-text-secondary)]">{{ $t('rooms.empty') }}</p>
+      <ul v-else class="divide-y divide-[var(--pp-border-subtle)] border-y border-[var(--pp-border-subtle)]">
+        <li v-for="r in rooms" :key="r.room_uuid">
+          <NuxtLink :to="`/room/${encodeURIComponent(r.room_id)}`" class="group grid gap-1 py-3 transition-colors hover:text-accent sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+            <div class="min-w-0"><p class="truncate text-sm font-medium text-[var(--pp-text-primary)] group-hover:text-accent">{{ r.name || r.room_id }}</p><p class="mt-0.5 truncate text-xs text-[var(--pp-text-secondary)]">{{ r.host?.username || $t('common.unknown') }}<span v-if="r.chart?.name"> · {{ r.chart.name }}</span></p></div>
+            <div class="flex items-center gap-3 text-xs text-[var(--pp-text-secondary)]"><span>{{ $t('rooms.players', { count: r.player_count, max: r.max_players }) }}</span><span v-if="r.live" class="font-medium text-emerald-300">LIVE</span></div>
           </NuxtLink>
-        </div>
-        <p v-if="roomsPending" class="text-sm text-slate-400">
-          {{ $t('common.loading') }}
-        </p>
-        <p v-else-if="rooms.length === 0" class="text-sm text-slate-400">
-          {{ $t('rooms.empty') }}
-        </p>
-        <ul v-else class="divide-y divide-white/5">
-          <li v-for="r in rooms" :key="r.room_uuid">
-            <NuxtLink
-              :to="`/room/${r.room_uuid}`"
-              class="flex items-center justify-between gap-3 rounded-md px-2 py-2.5 transition-colors hover:bg-white/5"
-            >
-              <div class="min-w-0">
-                <p class="truncate text-sm font-medium text-slate-100">
-                  {{ r.name || r.room_uuid }}
-                </p>
-                <p class="mt-0.5 text-xs text-slate-400">
-                  {{ r.host?.username || $t('common.unknown') }}
-                  <span class="mx-1 text-slate-600">·</span>
-                  {{ $t('rooms.players', { count: r.player_count, max: r.max_players }) }}
-                </p>
-              </div>
-              <div class="flex shrink-0 items-center gap-2 text-xs">
-                <span v-if="r.live" class="inline-flex items-center gap-1 font-medium text-emerald-400">
-                  <span class="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                  Live
-                </span>
-                <span v-if="r.chart?.name" class="max-w-40 truncate text-slate-400">{{ r.chart.name }}</span>
-              </div>
-            </NuxtLink>
-          </li>
-        </ul>
-        <p v-if="roomsError" class="mt-2 text-xs text-slate-500">
-          <button type="button" class="text-accent hover:underline" @click="() => refreshRooms()">
-            {{ $t('common.retry') }}
-          </button>
-        </p>
-      </GlassSurface>
+        </li>
+      </ul>
     </section>
 
-    <!-- Downloads entry + sessions -->
-    <section class="grid gap-4 md:grid-cols-3">
-      <NuxtLink
-        to="/downloads"
-        class="glass-focusable content-surface flex items-center justify-between gap-3 rounded-lg p-5 transition-colors hover:bg-white/5"
-      >
-        <div>
-          <h2 class="text-sm font-semibold text-slate-100">
-            {{ $t('nav.downloads') }}
-          </h2>
-          <p class="mt-1 text-xs text-slate-400">
-            {{ $t('home.downloadsHint') }}
-          </p>
-        </div>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5 shrink-0 text-accent">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-          <polyline points="7 10 12 15 17 10" />
-          <line x1="12" x2="12" y1="15" y2="3" />
-        </svg>
-      </NuxtLink>
+    <section class="grid gap-8 lg:grid-cols-[minmax(0,1.5fr)_minmax(16rem,.7fr)]">
+      <div>
+        <div class="mb-3 flex items-center justify-between gap-3"><h2 class="text-xl font-semibold text-[var(--pp-text-primary)]">{{ $t('home.popularCharts') }}</h2><NuxtLink to="/charts" class="text-sm text-accent hover:underline">{{ $t('home.viewAllCharts') }}</NuxtLink></div>
+        <p v-if="chartsPending" class="border-y border-[var(--pp-border-subtle)] py-5 text-sm text-[var(--pp-text-secondary)]">{{ $t('common.loading') }}</p>
+        <div v-else-if="chartsError" class="flex items-center justify-between border-y border-[var(--pp-border-subtle)] py-4 text-sm text-rose-300" role="alert"><span>{{ $t('common.error') }}</span><PPButton weight="quiet" size="sm" @click="() => refreshCharts()">{{ $t('common.retry') }}</PPButton></div>
+        <p v-else-if="charts.length === 0" class="border-y border-[var(--pp-border-subtle)] py-5 text-sm text-[var(--pp-text-secondary)]">{{ $t('charts.empty') }}</p>
+        <ul v-else class="divide-y divide-[var(--pp-border-subtle)] border-y border-[var(--pp-border-subtle)]">
+          <li v-for="c in charts" :key="c.id"><NuxtLink :to="`/chart/${c.id}`" class="flex items-center justify-between gap-4 py-3"><div class="min-w-0"><p class="truncate text-sm font-medium text-[var(--pp-text-primary)]">{{ c.name }}</p><p v-if="c.artist" class="truncate text-xs text-[var(--pp-text-secondary)]">{{ c.artist }}</p></div><span v-if="c.difficulty != null" class="shrink-0 text-xs text-accent">★{{ c.difficulty }}</span></NuxtLink></li>
+        </ul>
+      </div>
 
-      <GlassSurface class="flex items-center justify-between">
-        <span class="text-sm text-slate-300">{{ $t('home.serverSessions') }}</span>
-        <span class="text-sm font-semibold text-slate-100">{{ summary.sessions ?? '—' }}</span>
-      </GlassSurface>
+      <div>
+        <div class="mb-3 flex items-center justify-between gap-3"><h2 class="text-xl font-semibold text-[var(--pp-text-primary)]">{{ $t('home.announcements') }}</h2><button type="button" class="text-xs text-accent hover:underline" @click="() => refreshAnn()">{{ $t('common.retry') }}</button></div>
+        <p v-if="announcementsError" class="border-y border-[var(--pp-border-subtle)] py-4 text-sm text-rose-300" role="alert">{{ $t('common.error') }}</p>
+        <p v-else-if="announcementList.length === 0" class="border-y border-[var(--pp-border-subtle)] py-4 text-sm text-[var(--pp-text-secondary)]">{{ $t('home.noAnnouncements') }}</p>
+        <ul v-else class="divide-y divide-[var(--pp-border-subtle)] border-y border-[var(--pp-border-subtle)]"><li v-for="a in announcementList" :key="a.id" class="py-3"><p class="text-sm font-medium text-[var(--pp-text-primary)]">{{ a.title }}</p><p class="mt-1 line-clamp-2 text-xs text-[var(--pp-text-secondary)]">{{ a.body }}</p><p v-if="fmtTime(a.published_at)" class="mt-1 text-[11px] text-[var(--pp-text-tertiary)]">{{ fmtTime(a.published_at) }}</p></li></ul>
+      </div>
+    </section>
 
-      <GlassSurface class="flex items-center justify-between">
-        <span class="text-sm text-slate-300">API</span>
-        <span class="text-sm font-semibold text-slate-100">{{ meta?.version || '—' }}</span>
-      </GlassSurface>
+    <section class="flex flex-wrap items-center gap-3 border-t border-[var(--pp-border-subtle)] pt-5 text-sm">
+      <NuxtLink to="/downloads" class="font-medium text-accent hover:underline">{{ $t('nav.downloads') }}</NuxtLink><span class="text-[var(--pp-text-tertiary)]">·</span><a href="https://docs.phira.htadiy.com" class="text-[var(--pp-text-secondary)] hover:text-accent" rel="noopener noreferrer">{{ $t('nav.docs') }}</a>
     </section>
   </div>
 </template>

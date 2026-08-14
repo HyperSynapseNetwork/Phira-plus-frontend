@@ -1,17 +1,12 @@
 <script setup lang="ts">
 /**
- * Login (design §6.6 / §16).
- *
- * PPF never handles Phira credentials. Login is delegated to the PPB auth
- * gateway (api-phira.htadiy.com), which owns the Phira login/reauth flow and
- * issues an HttpOnly session cookie on OUR origin (same-site family).
- *
- * NOTE (contract proposal): the exact gateway route
- * `{authBase}/auth/phira/login?return_to=...` is NOT yet frozen in
- * contracts/README.md — see docs/PHASE_A_PLAN.md.
+ * Login boundary. PPF never receives Phira credentials; PPB owns the standalone
+ * authentication gateway, explicit legal acceptance and linked-GitHub login.
+ * `return_to` remains a validated relative product route.
  */
 
-useHead({ title: '登录' })
+const { t, locale } = useI18n()
+useHead(() => ({ title: t('login.title') }))
 
 const config = useRuntimeConfig()
 const route = useRoute()
@@ -25,14 +20,13 @@ const returnTo = computed(() => {
   return typeof r === 'string' && r.startsWith('/') ? r : '/'
 })
 
-const gatewayUrl = computed(() =>
-  `${authBase}/auth/phira/login?return_to=${encodeURIComponent(returnTo.value)}`,
-)
+const gatewayUrl = computed(() => `${authBase}/auth/phira/login?client_type=ppf&lang=${encodeURIComponent(locale.value)}&return_to=${encodeURIComponent(returnTo.value)}`)
+const githubUrl = computed(() => `${authBase}/auth/phira/login?client_type=ppf&intent=github&lang=${encodeURIComponent(locale.value)}&return_to=${encodeURIComponent(returnTo.value)}`)
 </script>
 
 <template>
   <div class="mx-auto max-w-md">
-    <section class="content-surface p-6 md:p-8">
+    <PPSurface as="section" class="p-6 md:p-8">
       <h1 class="text-2xl font-bold text-slate-50">
         {{ $t('login.title') }}
       </h1>
@@ -41,8 +35,8 @@ const gatewayUrl = computed(() =>
       </p>
 
       <div class="mt-6">
-        <BaseButton
-          variant="primary"
+        <PPButton
+          weight="primary"
           size="lg"
           block
           as="a"
@@ -50,10 +44,11 @@ const gatewayUrl = computed(() =>
           rel="noopener noreferrer"
         >
           {{ $t('login.gatewayCta') }}
-        </BaseButton>
-        <p class="mt-3 text-center text-xs text-slate-500">
-          {{ $t('login.gatewayHint') }}
-        </p>
+        </PPButton>
+        <PPButton weight="quiet" size="lg" block as="a" :href="githubUrl" class="mt-3">
+          {{ $t('login.githubCta') }}
+        </PPButton>
+        <p class="mt-3 text-center text-xs text-slate-500">{{ $t('login.gatewayHint') }}</p>
       </div>
 
       <p class="mt-6 border-t border-white/10 pt-4 text-xs text-slate-400">
@@ -72,6 +67,6 @@ const gatewayUrl = computed(() =>
           ← {{ $t('login.backHome') }}
         </NuxtLink>
       </div>
-    </section>
+    </PPSurface>
   </div>
 </template>

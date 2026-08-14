@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * Footer (design §16.10): Docs / GitHub / Terms / Privacy / version placeholders.
+ * Footer (design §16.10): Docs / GitHub / Terms / Privacy / build metadata.
  * Docs links to docs.phira.htadiy.com; not part of the main navigation.
  */
 
@@ -20,7 +20,7 @@ const socialLinks = computed(() => [
 </script>
 
 <template>
-  <footer class="glass mt-auto border-t border-white/10">
+  <PPMaterial as="footer" radius="none" class="mt-auto border-x-0 border-b-0 border-t">
     <div class="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-8 md:flex-row md:items-center md:justify-between md:px-6">
       <div class="flex flex-col gap-1">
         <span class="text-sm font-semibold text-slate-100">
@@ -31,7 +31,7 @@ const socialLinks = computed(() => [
         </span>
       </div>
 
-      <nav class="flex flex-wrap items-center gap-x-5 gap-y-2" aria-label="Footer">
+      <nav class="flex flex-wrap items-center gap-x-5 gap-y-2" :aria-label="$t('a11y.footer')">
         <template v-for="link in socialLinks" :key="link.label">
           <a
             v-if="link.external"
@@ -55,8 +55,8 @@ const socialLinks = computed(() => [
       <div class="flex items-center gap-3 text-xs text-slate-500">
         <span>{{ $t('footer.buildInfo') }}: v{{ version }}</span>
         <span class="hidden h-3 w-px bg-white/15 sm:block" />
-        <span>{{ $t('common.visitCount') }}: {{ visitCount ?? '—' }}</span>
-        <div class="flex items-center gap-1" aria-label="Language">
+        <span v-if="visitCount != null">{{ $t('common.visitCount') }}: {{ visitCount }}</span>
+        <div class="flex items-center gap-1" :aria-label="$t('a11y.language')">
           <button
             type="button"
             class="rounded px-1.5 py-0.5"
@@ -76,5 +76,5 @@ const socialLinks = computed(() => [
         </div>
       </div>
     </div>
-  </footer>
+  </PPMaterial>
 </template>

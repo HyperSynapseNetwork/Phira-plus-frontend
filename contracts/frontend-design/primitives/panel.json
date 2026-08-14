@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "public": [
+    "PPBadge",
+    "PPModal",
+    "PPPagination",
+    "PPStatus"
+  ],
+  "semantics": {
+    "PPStatus": "state: LIVE/ERROR/BANNED/RUNNING etc.",
+    "PPBadge": "classification/role/scope/non-state metadata",
+    "PPModal": "Panel overlay implementation; behavior must follow Context/Sheet overlay contract",
+    "PPPagination": "Panel data-navigation primitive"
+  }
+}

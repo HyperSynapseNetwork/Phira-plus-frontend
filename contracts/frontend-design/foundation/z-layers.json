@@ -1,0 +1,16 @@
+{
+  "version": "2.1",
+  "layers": {
+    "base": 0,
+    "sticky": 20,
+    "sidebar": 30,
+    "drawerBackdrop": 60,
+    "drawer": 70,
+    "context": 80,
+    "notice": 90,
+    "reauth": 100,
+    "desktopWindowBase": 40,
+    "desktopWindowCeiling": 55
+  },
+  "rule": "Desktop windows stay inside the workspace band. Reauth is a system overlay above context/drawer/desktop windows. Product components consume --pp-z-* tokens."
+}

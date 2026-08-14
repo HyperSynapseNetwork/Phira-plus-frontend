@@ -27,7 +27,15 @@
     "online": "在线",
     "offline": "离线",
     "unknown": "未知",
-    "retry": "重试"
+    "retry": "重试",
+    "search": "搜索",
+    "authRequired": "请先登录以查看你的 Replay。",
+    "accept": "接受",
+    "reject": "拒绝",
+    "save": "保存",
+    "open": "打开",
+    "copy": "复制",
+    "moreActions": "更多操作"
   },
   "rooms": {
     "searchPlaceholder": "搜索房间…",
@@ -50,8 +58,6 @@
     "tabChat": "聊天",
     "tabLive": "Live",
     "tabHistory": "历史",
-    "livePlaceholder": "Live 视图将在后续版本提供。",
-    "historyPlaceholder": "房间历史将在后续版本提供。",
     "historyEmpty": "暂无历史对局。",
     "historyNoChart": "未知谱面",
     "chart": "谱面",
@@ -108,7 +114,6 @@
     "notFound": "谱面不存在或 id 无效。",
     "preview": "谱面预览",
     "previewLoad": "加载谱面预览",
-    "previewPlaceholder": "谱面预览将在后续版本提供（Phase D）。",
     "globalRanking": "全局排行",
     "myBest": "我的最佳",
     "noMyBest": "暂无我的成绩",
@@ -127,7 +132,7 @@
     "noRanking": "暂无排行数据"
   },
   "community": {
-    "empty": "社区模块占位：用户资料、好友与公开 Replay。",
+    "empty": "查找玩家、管理好友并浏览公开 Replay。",
     "searchPlaceholder": "输入 Phira ID 查找用户…",
     "friends": "好友",
     "friendRequests": "好友请求",
@@ -136,7 +141,12 @@
     "noFriends": "暂无好友",
     "noRequests": "暂无好友请求",
     "removeFriend": "移除好友",
-    "blockUser": "屏蔽"
+    "blockUser": "屏蔽",
+    "inviteRoom": "邀请加入房间",
+    "inviteRoomTitle": "邀请好友加入房间",
+    "inviteRoomHelp": "输入目标房间 ID。服务端会重新校验好友关系和房间是否存在。",
+    "roomId": "房间 ID",
+    "inviteSent": "房间邀请已发送"
   },
   "downloads": {
     "empty": "下载信息由 PPB public content 配置。",
@@ -162,7 +172,8 @@
   },
   "profile": {
     "empty": "登录后可查看 MyPhira、好友与偏好。",
-    "loginCta": "登录"
+    "loginCta": "登录",
+    "sessionUnavailable": "暂时无法确认登录状态，请稍后重试。"
   },
   "myphira": {
     "tabOverview": "总览",
@@ -177,10 +188,9 @@
     "bestRecent": "Best / Recent",
     "bestRecentPlaceholder": "Best Pool / Recent 数据将在 PPB 聚合就绪后显示。",
     "multiplayer": "多人摘要",
-    "multiplayerPlaceholder": "多人游玩历史将在后续提供。",
     "recentReplay": "最近 Replay",
     "noReplays": "暂无 Replay",
-    "replayPlaceholder": "Replay 列表将在 PPB Replay 接口就绪后显示。",
+    "replayPlaceholder": "暂无公开 Replay。",
     "replayVisibility": "Replay 默认可见性在设置中管理。",
     "share": "复制分享链接",
     "copied": "已复制",
@@ -189,11 +199,54 @@
     "visibilityUnlisted": "不公开",
     "visibilityPrivate": "私密",
     "identities": "身份绑定",
-    "githubBinding": "GitHub 绑定（即将上线）",
+    "githubBinding": "GitHub 身份绑定",
     "reauthRequired": "需要重新验证 Phira 身份",
-    "sessions": "登录会话（即将上线）",
-    "privacy": "隐私设置（即将上线）",
-    "signOut": "退出登录"
+    "sessions": "登录设备与会话",
+    "privacy": "隐私与可见性",
+    "signOut": "退出登录",
+    "sessionsHint": "查看并撤销其他有效会话",
+    "noSessions": "暂无有效会话",
+    "currentSession": "当前会话",
+    "lastSeen": "最近活动",
+    "revokeSession": "撤销会话",
+    "privacyHint": "公开资料、在线状态与 Replay 默认可见性",
+    "profileVisibility": "公开资料可见性",
+    "showOnlineStatus": "显示在线状态",
+    "showRecentActivity": "显示最近活动",
+    "replayDefaultVisibility": "Replay 默认可见性",
+    "visibilityInherit": "继承默认",
+    "visibilityCustom": "自定义",
+    "manageReplay": "管理 Replay",
+    "visibility": "可见性",
+    "createShare": "创建分享链接",
+    "shareTokenOnce": "链接令牌只在创建时返回一次",
+    "revoked": "已撤销",
+    "revokeShare": "撤销分享",
+    "github": "GitHub",
+    "githubNotBound": "尚未绑定 GitHub",
+    "githubBind": "绑定 GitHub",
+    "githubUnbind": "解除绑定",
+    "redemptionCode": "兑换码",
+    "redemptionCodeRequired": "请输入兑换码",
+    "redemptionCodePlaceholder": "输入兑换码",
+    "redemptionHint": "兑换会在服务端校验持有人、次数、有效期，并以事务方式执行受控 Action。",
+    "redemptionHintShort": "兑换受控奖励或账户动作",
+    "redeem": "兑换",
+    "tabMultiplayer": "多人游戏",
+    "multiplayerSummary": "多人游戏摘要",
+    "roundsTotal": "总轮次",
+    "completedRounds": "已完成",
+    "roomsVisited": "访问房间",
+    "playtime": "有效游玩时长",
+    "recentRounds": "最近多人记录",
+    "room": "房间",
+    "chart": "谱面",
+    "startedAt": "开始时间",
+    "duration": "时长",
+    "noRounds": "暂无多人记录",
+    "multiplayerSource": "数据来自 PMP 持久化轮次，仅展示可确认的历史。",
+    "account": "账户",
+    "pushTitle": "推送通知"
   },
   "user": {
     "addFriend": "添加好友",
@@ -205,7 +258,7 @@
     "onlineHidden": "隐身",
     "privateProfile": "该用户资料为私密。",
     "publicReplays": "公开 Replay",
-    "publicReplaysPlaceholder": "公开 Replay 将在 PPB Replay 接口就绪后显示。",
+    "publicReplaysPlaceholder": "暂无公开 Replay。",
     "bio": "简介",
     "friendsCount": "好友 {count}",
     "avatar": "头像",
@@ -231,24 +284,26 @@
     "viewAllCharts": "查看全部谱面",
     "viewAllRooms": "查看全部房间",
     "downloadsHint": "下载 Windows / Android 客户端",
-    "serverSessions": "会话数"
+    "serverSessions": "会话数",
+    "serverDetails": "服务器详情"
   },
   "login": {
     "title": "登录 HSN Phira+",
-    "subtitle": "通过 Phira 账户登录。你的 Phira 凭证由服务端代为验证，不会出现在浏览器中。",
+    "subtitle": "使用 Phira 账户进入 Phira+。Phira 邮箱和密码只提交给 PPB 认证网关进行服务端验证；PPF/Panel 不会接收或存储你的 Phira 密码。",
     "gatewayCta": "前往 Phira 认证网关登录",
     "gatewayHint": "你将被带往 api-phira.htadiy.com 完成登录，随后返回本站。",
-    "agreement": "继续即表示你同意 {terms} 与隐私政策。",
-    "backHome": "返回首页"
+    "agreement": "账户登录会在认证网关中要求你明确同意当前已批准版本的用户协议与隐私政策。",
+    "backHome": "返回首页",
+    "githubCta": "通过认证网关使用已绑定的 GitHub 登录"
   },
   "terms": {
     "title": "用户协议与隐私",
-    "intro": "本页面为占位内容，正式协议正文待定（OWNER LATER）。",
+    "intro": "账户法律同意与分析 Cookie 同意是两套独立机制。公开账户登录仅在部署方配置已批准的用户协议/隐私政策版本与正文地址后开放。",
     "thirdParty": {
       "title": "第三方资源与数据来源",
       "intro": "本站部分功能依赖第三方服务，使用前请知悉：",
-      "authGateway": "登录通过 Phira 认证网关（api-phira.htadiy.com）完成；你的 Phira 凭据由服务端代为验证，不会出现在浏览器中。",
-      "chartCdn": "谱面封面与预览数据可能来自 Phira 官方 CDN / PPB Viewer 接口；请求失败时显示占位图。",
+      "authGateway": "Phira 登录凭据只会提交给 PPB 提供的认证网关进行服务端验证；PPF 与 Panel 应用不会接收或存储你的 Phira 密码，PPB 不持久化 Phira 密码。",
+      "chartCdn": "谱面封面与预览数据可能来自 Phira 官方 CDN / PPB Viewer 接口。资源本身缺失时可使用明确的 fallback artwork；网络或 API 请求失败时应显示错误状态，不伪装成正常占位内容。",
       "externalLinks": "页脚指向 docs.phira.htadiy.com 与 GitHub 仓库；外部链接会在新窗口打开。",
       "probes": "首页服务器状态与外部节点延迟来自 PPB public 接口；仅展示接口给出的来源与延迟，不推断 IP。"
     },
@@ -259,10 +314,13 @@
     "contact": {
       "title": "联系与社区",
       "body": "如需反馈或支持，请访问 GitHub 仓库（HyperSynapseNetwork/Phira-plus-frontend）或通过社区渠道联系我们。"
-    }
+    },
+    "approval": "公开账户登录只有在部署方配置已批准且带版本号的法律文档后才会开放。本页用于说明数据处理与第三方依赖；具有约束力的协议以认证网关展示并链接的已配置文档为准。"
   },
   "context": {
-    "empty": "「{title}」内容占位（Context Window 骨架）"
+    "empty": "「{title}」暂无可用内容。",
+    "close": "关闭窗口",
+    "title": "详情窗口"
   },
   "reauth": {
     "title": "重新验证 Phira 身份",
@@ -276,8 +334,6 @@
   "preferences": {
     "title": "显示偏好",
     "theme": "主题",
-    "themeSystem": "跟随系统",
-    "themeLight": "浅色",
     "themeDark": "深色",
     "accent": "强调色",
     "locked": "已锁定（品牌默认）",
@@ -337,7 +393,18 @@
     "replaySeek": "进度",
     "replayUnavailable": "Replay 视图当前不可用。",
     "replayNoData": "暂无 Replay 数据。",
-    "replayNoRawDownload": "不提供原始文件下载。"
+    "replayNoRawDownload": "不提供原始文件下载。",
+    "offsetDistribution": "判定偏移分布",
+    "frameCounts": "{touches} 触点 · {judges} 判定",
+    "meanOffset": "平均偏移：{value} ms",
+    "unmatchedJudges": "有 {count} 条判定无法匹配谱面 note。",
+    "bucket": {
+      "early_90": "<-90",
+      "early_45": "-90~-45",
+      "center": "±45",
+      "late_45": "45~90",
+      "late_90": ">90"
+    }
   },
   "live": {
     "modeLabel": "延迟模式",
@@ -360,7 +427,7 @@
     "players": "玩家",
     "noPlayers": "暂无玩家",
     "wsError": "实时连接出错。",
-    "wasmVisualPending": "WASM 画面渲染将在二进制 Touch/Judge 帧契约冻结后提供（P-81）。"
+    "touchVisual": "实时触点"
   },
   "joinIntent": {
     "title": "加入房间",
@@ -393,7 +460,7 @@
   },
   "replays": {
     "title": "Replay",
-    "empty": "暂无 Replay（PPB Replay 接口就绪后显示）。",
+    "empty": "暂无公开 Replay。",
     "pending": "Replay 列表加载中…"
   },
   "error": {
@@ -412,5 +479,151 @@
     "network_error": "网络异常，请检查连接",
     "unknown_error": "发生未知错误",
     "invalid_response": "服务器返回了无效数据"
+  },
+  "errors": {
+    "api": {
+      "INVALID_JSON": "请求内容不是有效的 JSON",
+      "INVALID_QUERY": "查询参数无效",
+      "INVALID_PATH_PARAM": "路径参数无效",
+      "METHOD_NOT_ALLOWED": "该请求方法不可用",
+      "REQUEST_BODY_TOO_LARGE": "请求内容过大",
+      "INVALID_CONTENT_TYPE": "请求内容类型不受支持",
+      "VALIDATION_FAILED": "输入校验未通过",
+      "RATE_LIMITED": "请求过于频繁，请稍后再试",
+      "AUTH_REQUIRED": "需要登录后继续",
+      "SESSION_EXPIRED": "会话已过期，请重新登录",
+      "PERMISSION_DENIED": "没有权限执行此操作",
+      "CSRF_INVALID": "安全校验已失效，请刷新后重试",
+      "RESOURCE_NOT_FOUND": "请求的资源不存在",
+      "RESOURCE_CONFLICT": "当前状态与该操作冲突",
+      "CAPABILITY_NOT_SUPPORTED": "当前环境不支持该能力",
+      "INTERNAL_ERROR": "服务暂时无法完成请求",
+      "LONG_JOB_ACCEPTED": "任务已受理，可稍后查看进度",
+      "LONG_RUNNING_ACTION_REQUIRES_JOB": "该操作需要通过后台任务执行",
+      "PHIRA_AUTH_FAILED": "Phira 登录信息无效",
+      "PHIRA_REAUTH_REQUIRED": "需要重新验证 Phira 身份",
+      "PHIRA_API_UNAVAILABLE": "Phira 服务暂不可用",
+      "GITHUB_OAUTH_NOT_CONFIGURED": "GitHub 登录尚未配置",
+      "GITHUB_IDENTITY_NOT_BOUND": "该 GitHub 账号尚未绑定 Phira+ 账号",
+      "ROOT_PASSWORD_INVALID": "Root 密码不正确",
+      "ROOT_PASSWORD_CHANGE_REQUIRED": "请先修改 Root 初始密码",
+      "CURRENT_SESSION_REVOKE_FORBIDDEN": "不能在此处撤销当前会话，请使用退出登录",
+      "PMP_UNAVAILABLE": "多人服务器暂不可用",
+      "PMP_COMMAND_FAILED": "多人服务器命令执行失败",
+      "PMP_COMMAND_TIMEOUT": "多人服务器命令执行超时",
+      "PMP_CAPABILITY_MISSING": "多人服务器缺少所需能力",
+      "PMP_CONFIG_NOT_AVAILABLE": "多人服务器配置当前不可用",
+      "PMP_INVALID_RESPONSE": "无法读取多人服务器返回的数据",
+      "ROOM_NOT_FOUND": "房间不存在或已关闭",
+      "ROOM_ID_REQUIRED": "请填写房间 ID",
+      "ROOM_HOST_REQUIRED": "该操作仅房主可执行",
+      "ROOM_USER_NOT_PRESENT": "目标玩家当前不在该房间",
+      "ROOM_BATCH_TARGET_REQUIRED": "批量操作需要至少一个目标",
+      "ROOM_BATCH_ACTION_UNSUPPORTED": "该批量房间操作不受支持",
+      "ROOM_MOVE_TARGET_REQUIRED": "移动玩家需要目标房间",
+      "ROOM_CHAT_EMPTY": "消息不能为空",
+      "ROOM_CHAT_TOO_LONG": "消息过长",
+      "USER_NOT_FOUND": "用户不存在",
+      "ALREADY_FRIENDS": "你们已经是好友",
+      "FRIEND_REQUEST_ALREADY_SENT": "好友请求已发送，请等待对方处理",
+      "FRIEND_REQUEST_NOT_FOUND": "好友请求不存在或已处理",
+      "FRIEND_RELATION_REQUIRED": "该操作仅限好友之间使用",
+      "USER_BLOCKED": "该用户关系已被屏蔽",
+      "REPLAY_NOT_FOUND": "Replay 不存在",
+      "REPLAY_ACCESS_DENIED": "没有权限查看该 Replay",
+      "REPLAY_VISIBILITY_INVALID": "Replay 可见性设置无效",
+      "REPLAY_PLAYER_REQUIRED": "请选择 Replay 对应玩家",
+      "REPLAY_SHARE_INVALID": "Replay 分享链接无效",
+      "REPLAY_SHARE_EXPIRED": "Replay 分享链接已过期",
+      "REPLAY_SHARE_REVOKED": "Replay 分享链接已撤销",
+      "NOTIFICATION_NOT_FOUND": "通知不存在",
+      "NOTIFICATION_ACTION_NOT_AVAILABLE": "该通知操作已不可用",
+      "NOTIFICATION_ACTION_TARGET_INVALID": "通知操作目标无效",
+      "NOTIFICATION_INPUT_NOT_ALLOWED": "该通知不接受输入",
+      "NOTIFICATION_INPUT_EMPTY": "输入不能为空",
+      "NOTIFICATION_INPUT_TOO_LONG": "输入内容过长",
+      "CONFIG_VALIDATION_FAILED": "配置校验未通过",
+      "CONFIG_SNAPSHOT_NOT_FOUND": "配置快照不存在",
+      "CONFIG_SCOPE_INVALID": "配置作用域无效",
+      "JOB_NOT_FOUND": "任务不存在",
+      "JOB_TYPE_UNKNOWN": "未知任务类型",
+      "JOB_ALREADY_RUNNING": "同类任务正在运行",
+      "JOB_NOT_RETRYABLE": "该任务不能重试",
+      "JOB_NOT_CANCELLABLE": "该任务当前不能取消",
+      "REDEMPTION_CODE_NOT_FOUND": "兑换码不存在",
+      "REDEMPTION_CODE_ALREADY_USED": "该兑换码已被此账号使用",
+      "REDEMPTION_CODE_REVOKED": "兑换码已撤销",
+      "REDEMPTION_CODE_EXPIRED": "兑换码已过期",
+      "REDEMPTION_CODE_LIMIT_REACHED": "兑换码使用次数已达上限",
+      "REDEMPTION_ACTION_UNSUPPORTED": "该兑换码动作不受支持",
+      "GROUP_NOT_FOUND": "权限组不存在",
+      "GROUP_NAME_REQUIRED": "请填写权限组名称",
+      "USER_ACTION_TARGET_INVALID": "用户操作目标无效",
+      "AUTH_LEGAL_CONSENT_REQUIRED": "必须明确同意当前版本的用户协议与隐私政策。",
+      "AUTH_LEGAL_DOCUMENTS_UNAVAILABLE": "当前部署尚未配置已批准的协议版本，公开账户登录已停用。",
+      "GITHUB_OAUTH_FAILED": "GitHub 登录验证失败，请重试。",
+      "GITHUB_API_UNAVAILABLE": "GitHub 服务暂时不可用，请稍后重试。",
+      "GITHUB_OAUTH_STATE_INVALID": "GitHub 登录状态已失效，请重新开始登录。"
+    },
+    "client": {
+      "NETWORK_ERROR": "网络连接异常，请检查连接后重试",
+      "INVALID_RESPONSE": "服务器返回的数据不符合当前接口契约",
+      "UNKNOWN_ERROR": "发生未知错误，请重试"
+    }
+  },
+  "notice": {
+    "saved": "已保存",
+    "saving": "正在保存…",
+    "inviteSent": "邀请已发送",
+    "friendRequestSent": "好友请求已发送",
+    "copied": "已复制",
+    "actionCompleted": "操作已完成",
+    "sent": "已发送",
+    "shareCreated": "分享链接已创建",
+    "shareRevoked": "分享链接已撤销",
+    "visibilityChanged": "可见性已更新",
+    "dismissed": "已处理",
+    "retrying": "正在重试…",
+    "jobCreated": "任务已创建",
+    "jobRetried": "任务已重新入队",
+    "jobCancelled": "任务已取消",
+    "configApplied": "配置已应用",
+    "commandSubmitted": "命令已提交",
+    "commandCompleted": "命令执行完成",
+    "signedOut": "已退出登录",
+    "languageChanged": "语言已切换",
+    "requestId": "请求 ID：{requestId}",
+    "close": "关闭通知",
+    "redemptionCompleted": "兑换完成"
+  },
+  "persistent": {
+    "friendRequest": {
+      "title": "新的好友请求",
+      "body": "有玩家请求添加你为好友。"
+    },
+    "roomInvite": {
+      "title": "好友邀请你加入房间",
+      "body": "好友邀请你加入房间 {room_id}。"
+    },
+    "actions": {
+      "accept": "接受",
+      "reject": "拒绝",
+      "joinRoom": "加入房间",
+      "openRoom": "查看房间"
+    }
+  },
+  "a11y": {
+    "primaryNavigation": "主导航",
+    "language": "语言",
+    "footer": "页脚导航",
+    "cookieConsent": "分析统计同意",
+    "reauth": "重新验证身份",
+    "notifications": "通知区域",
+    "home": "Phira+ 首页",
+    "skipToContent": "跳到主要内容"
+  },
+  "notFound": {
+    "title": "页面不存在",
+    "body": "该页面不存在或已被移动。"
   }
 }

@@ -117,6 +117,13 @@ function extractFromTypes(text) {
 }
 
 async function fetchContractPaths() {
+  const localOpenapi = path.resolve(import.meta.dirname, '../contracts/openapi.json')
+  if (fs.existsSync(localOpenapi)) {
+    const parsed = JSON.parse(fs.readFileSync(localOpenapi, 'utf8'))
+    const paths = extractFromOpenapi(parsed)
+    if (paths.length)
+      return { source: localOpenapi, paths }
+  }
   const urls = [
     `${RAW}/${REPO}/${BRANCH}/contracts/openapi.json`,
     `${RAW}/${REPO}/${BRANCH}/contracts/types.ts`,

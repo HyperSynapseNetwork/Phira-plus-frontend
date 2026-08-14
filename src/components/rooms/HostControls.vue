@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { Room } from '~/utils/api/types'
-import { isApiError } from '~/composables/useApi'
 import { sendHostAction } from '~/composables/useRooms'
 
 /**
@@ -17,6 +16,7 @@ const props = defineProps<{ room: Room | null }>()
 const emit = defineEmits<{ acted: [] }>()
 
 const { t } = useI18n()
+const notice = useNotice()
 
 const isHost = computed(() => {
   const r = props.room
@@ -26,7 +26,6 @@ const isHost = computed(() => {
 })
 
 const busy = ref(false)
-const actionError = ref('')
 
 interface HostAction {
   action: string
@@ -60,13 +59,13 @@ async function run(a: HostAction): Promise<void> {
   if (!r || busy.value)
     return
   busy.value = true
-  actionError.value = ''
   try {
-    await sendHostAction({ action: a.action, room_id: r.room_uuid, args: a.args ?? {} })
+    await sendHostAction({ action: a.action, room_id: r.room_id, args: a.args ?? {} })
+    notice.success('notice.actionCompleted', { dedupKey: `room-host:${a.action}` })
     emit('acted')
   }
   catch (err) {
-    actionError.value = isApiError(err) ? err.message : t('common.unknown')
+    notice.errorFromApi(err, { dedupKey: `room-host:${a.action}:error` })
   }
   finally {
     busy.value = false
@@ -81,24 +80,21 @@ async function run(a: HostAction): Promise<void> {
     </h3>
 
     <div class="flex flex-wrap gap-2">
-      <BaseButton
+      <PPButton
         v-for="a in actions"
         :key="a.action"
-        :variant="a.danger ? 'danger' : 'default'"
+        :weight="a.danger ? 'dangerous' : 'secondary'"
         size="sm"
         :disabled="busy || a.disabled"
         @click="run(a)"
       >
         {{ $t(a.label) }}
-      </BaseButton>
+      </PPButton>
     </div>
 
     <p class="text-xs text-slate-500">
       {{ $t('room.hostServerCheck') }}
     </p>
 
-    <p v-if="actionError" class="text-xs text-red-400" role="alert">
-      {{ actionError }}
-    </p>
   </div>
 </template>

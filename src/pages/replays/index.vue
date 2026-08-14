@@ -2,18 +2,19 @@
 /**
  * Replays list page (design §16.5 Replay).
  *
- * PPB replay list endpoints are not ready yet — this page renders a graceful
- * placeholder and the presentational `ReplayList` with an empty array so the
- * structure is in place for when the replay API lands.
+ * Uses PPB's public replay inventory and keeps authentication, loading, error,
+ * and empty states distinct.
  */
-import type { Replay } from '~/utils/api/types'
 import ReplayList from '~/components/myphira/ReplayList.vue'
+import { useReplayList } from '~/composables/useReplays'
 
 const { t } = useI18n()
 
 useHead({ title: () => t('replays.title') })
 
-const replays: Replay[] = []
+const { profile, authenticated } = useSession()
+const playerId = computed(() => profile.value?.phira_id)
+const { replays, error, pending, refresh } = useReplayList(playerId)
 </script>
 
 <template>
@@ -22,18 +23,24 @@ const replays: Replay[] = []
       <h1 class="text-2xl font-bold text-slate-50">
         {{ $t('replays.title') }}
       </h1>
-      <p class="mt-1 text-sm text-slate-400">
-        {{ $t('replays.pending') }}
+      <p v-if="!authenticated" class="mt-1 text-sm text-slate-400">
+        {{ $t('common.authRequired') }}
       </p>
     </header>
 
-    <section class="content-surface p-6">
-      <p class="text-sm text-slate-400">
-        {{ $t('replays.empty') }}
+    <PPSurface as="section" class="p-6">
+      <p v-if="pending" class="text-sm text-slate-400">
+        {{ $t('common.loading') }}
       </p>
-      <div class="mt-4">
-        <ReplayList :replays="replays" />
+      <div v-else-if="error" class="space-y-3">
+        <p class="text-sm text-rose-300">
+          {{ $t('common.error') }}
+        </p>
+        <PPButton size="sm" weight="quiet" @click="() => refresh()">
+          {{ $t('common.retry') }}
+        </PPButton>
       </div>
-    </section>
+      <ReplayList v-else :replays="replays" />
+    </PPSurface>
   </div>
 </template>

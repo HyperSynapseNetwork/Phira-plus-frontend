@@ -1,0 +1,11 @@
+services:
+  ppf:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NUXT_PUBLIC_API_BASE: https://api.example.invalid
+        NUXT_PUBLIC_AUTH_BASE: https://api.example.invalid
+        NUXT_PUBLIC_SITE_URL: https://ppf.example.invalid
+    ports:
+      - "18080:80"

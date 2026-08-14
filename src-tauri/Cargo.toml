@@ -1,7 +1,7 @@
-# HSN Phira+ — Tauri 2 app shell (Phase D scaffold, design §17)
+# HSN Phira+ — Tauri 2 Windows/Android app shell
 #
-# CONFIG/STUB ONLY. Nothing here compiles locally — the native toolchain is
-# broken and packaging is CI-only (see README.md). This crate is standalone
+# Native compilation/package verification is CI-owned in this source bundle.
+# This crate is standalone
 # (no [workspace]) and intentionally OUTSIDE the `viewer/` WASM workspace.
 #
 # Remote push (FCM for Android / WNS for Windows, design §14.7) is stubbed in

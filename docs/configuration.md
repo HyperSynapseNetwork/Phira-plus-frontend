@@ -8,17 +8,19 @@ Nuxt 自动把 `NUXT_PUBLIC_API_BASE` 映射到 `runtimeConfig.public.apiBase`�
 
 | 变量 | 默认 | 说明 |
 |---|---|---|
-| `NUXT_PUBLIC_API_BASE` | `https://api-phira.htadiy.com` | PPB REST API 基础 URL（credentialed CORS） |
-| `NUXT_PUBLIC_AUTH_BASE` | `https://api-phira.htadiy.com` | PPB Auth 网关基础 URL（login/reauth/refresh/root） |
-| `NUXT_PUBLIC_SITE_URL` | `https://phira.htadiy.com` | 站点权威 URL（`@nuxtjs/seo` 用于 sitemap/OG/canonical） |
+| `NUXT_PUBLIC_API_BASE` | **必填** | PPB REST API 基础 URL（credentialed CORS） |
+| `NUXT_PUBLIC_AUTH_BASE` | **必填** | PPB Auth 网关基础 URL（login/reauth/refresh/root） |
+| `NUXT_PUBLIC_SITE_URL` | **必填** | 站点权威 URL（`@nuxtjs/seo` 用于 sitemap/OG/canonical） |
 
 ## `runtimeConfig.public`（`nuxt.config.ts`）
 
 | 键 | 默认 | 说明 |
 |---|---|---|
-| `apiBase` | `https://api-phira.htadiy.com` | 同 `NUXT_PUBLIC_API_BASE` |
-| `authBase` | `https://api-phira.htadiy.com` | 同 `NUXT_PUBLIC_AUTH_BASE` |
-| `siteUrl` | `https://phira.htadiy.com` | 同 `NUXT_PUBLIC_SITE_URL` |
+| `apiBase` | 无默认值 | 同 `NUXT_PUBLIC_API_BASE` |
+| `authBase` | 无默认值 | 同 `NUXT_PUBLIC_AUTH_BASE` |
+| `siteUrl` | 无默认值 | 同 `NUXT_PUBLIC_SITE_URL` |
+
+三项 URL 均在 Nuxt 配置载入时校验；缺失或不是绝对 HTTP(S) URL 时，开发服务器与构建均 fail-fast。
 | `analytics.provider` | `''` | `''` \| `plausible` \| `ga4`；仅在用户授予同意后激活，凭据/聊天永不发送 |
 | `analytics.plausibleDomain` | `''` | Plausible 域名 |
 | `analytics.gaId` | `''` | GA4 测量 ID |

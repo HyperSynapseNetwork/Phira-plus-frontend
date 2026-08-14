@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "contentSurface": {
+    "publicBoundary": "PPSurface",
+    "purpose": "Standalone readable content panel. Owns surface background, border, radius and surface shadow; padding is an explicit prop.",
+    "businessRule": "Use PPSurface when a region is semantically a standalone content panel instead of recreating rounded+border+surface anatomy in each page."
+  },
+  "workspaceRegion": {
+    "purpose": "Structural tool region inside a workspace; may remain a semantic region without card chrome.",
+    "rule": "Do not add rounded/border/background merely to make every region look like a card."
+  },
+  "inspector": {
+    "purpose": "Object/detail inspection region; pattern owns its chrome when introduced with multiple consumers."
+  },
+  "tableFrame": {
+    "purpose": "Dense table/list framing; may use table-specific separators rather than PPSurface."
+  },
+  "promotionRule": "Create a new public pattern only after at least two real consumers share stable behavior/anatomy."
+}

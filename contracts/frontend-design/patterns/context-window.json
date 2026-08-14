@@ -1,0 +1,1 @@
+{"version":2,"behavior":["body teleport","backdrop","Esc close","focus trap","focus restore","body scroll lock","topmost-only dismissal"],"sizes":["sm","md","lg","content"],"desktop":"modal sized by intent","mobile":"sheet/fullscreen by intent","zToken":"--pp-z-context","icons":"Icon Registry via PPIcon"}

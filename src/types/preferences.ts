@@ -10,7 +10,7 @@
  *   { common: {...}, ppf: {...}, device: {...} }
  */
 
-export type ThemeMode = 'system' | 'light' | 'dark'
+export type ThemeMode = 'dark'
 export type AccentKey = 'cyan' | 'blue' | 'violet' | 'green' | 'amber'
 export type BackgroundKey = 'atmosphere' | 'mesh' | 'particles' | 'none'
 export type BackgroundQuality = 'auto' | 'original'
@@ -23,27 +23,27 @@ export interface GuestPreferences {
   language: LocaleCode
   reducedMotion: boolean
   reducedTransparency: boolean
-  /** ppf namespace */
+  /** account-scoped PPF appearance */
   background: BackgroundKey
-  /** Custom solid background color (hex, e.g. `#0a0a0a`); overrides `background` visually. Local-only — never synced to PPB. */
-  backgroundCustom: string | null
   backgroundIntensity: number // 0..1
-  /** 背景画质：auto（srcset 自适应）/ original（前代 15MB 原图）。 */
-  backgroundQuality: BackgroundQuality
   particles: boolean
-  /** device local */
+  /** device-scoped rendering / local appearance */
+  /** Custom solid background color (hex, e.g. `#0a0a0a`); never synced to PPB. */
+  backgroundCustom: string | null
+  /** Background asset quality is rendering/device specific and never synced. */
+  backgroundQuality: BackgroundQuality
   lowPerformance: boolean
 }
 
 /** Shape persisted to localStorage (mirrors PPB namespaces for later merge). */
 export interface StoredGuestPreferences {
   common: Pick<GuestPreferences, 'theme' | 'accent' | 'language' | 'reducedMotion' | 'reducedTransparency'>
-  ppf: Pick<GuestPreferences, 'background' | 'backgroundCustom' | 'backgroundIntensity' | 'backgroundQuality' | 'particles'>
-  device: Pick<GuestPreferences, 'lowPerformance'>
+  ppf: Pick<GuestPreferences, 'background' | 'backgroundIntensity' | 'particles'>
+  device: Pick<GuestPreferences, 'backgroundCustom' | 'backgroundQuality' | 'lowPerformance'>
 }
 
 export const DEFAULT_GUEST_PREFERENCES: GuestPreferences = {
-  theme: 'system',
+  theme: 'dark',
   accent: 'cyan',
   language: 'zh',
   reducedMotion: false,
@@ -74,7 +74,7 @@ export function isBackgroundQuality(value: string): value is BackgroundQuality {
 }
 
 export function isThemeMode(value: string): value is ThemeMode {
-  return value === 'system' || value === 'light' || value === 'dark'
+  return value === 'dark'
 }
 
 export function isLocaleCode(value: string): value is LocaleCode {
@@ -159,12 +159,12 @@ export function toStoredPreferences(prefs: GuestPreferences): StoredGuestPrefere
     },
     ppf: {
       background: prefs.background,
-      backgroundCustom: prefs.backgroundCustom,
       backgroundIntensity: prefs.backgroundIntensity,
-      backgroundQuality: prefs.backgroundQuality,
       particles: prefs.particles,
     },
     device: {
+      backgroundCustom: prefs.backgroundCustom,
+      backgroundQuality: prefs.backgroundQuality,
       lowPerformance: prefs.lowPerformance,
     },
   }
@@ -177,6 +177,9 @@ export function fromStoredPreferences(stored: unknown): GuestPreferences {
   const common = (typeof s.common === 'object' && s.common !== null) ? s.common as Record<string, unknown> : {}
   const ppf = (typeof s.ppf === 'object' && s.ppf !== null) ? s.ppf as Record<string, unknown> : {}
   const device = (typeof s.device === 'object' && s.device !== null) ? s.device as Record<string, unknown> : {}
+  // Legacy v1 stored backgroundCustom/backgroundQuality under `ppf` even
+  // though they were never account-synced. Reading ppf before device preserves
+  // those local values once, while all new writes place them under `device`.
   return normalizeGuestPreferences({
     ...DEFAULT_GUEST_PREFERENCES,
     ...common,

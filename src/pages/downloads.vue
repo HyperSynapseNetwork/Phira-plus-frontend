@@ -8,7 +8,8 @@
  */
 import { useDownloads } from '~/composables/usePublicContent'
 
-useHead({ title: '下载' })
+const { t } = useI18n()
+useHead(() => ({ title: t('nav.downloads') }))
 
 const { data: downloads, pending, error, refresh } = useDownloads({ page: 1, pageNum: 50 })
 
@@ -43,13 +44,14 @@ function fmtSize(bytes?: number): string {
     </p>
 
     <div v-else class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      <a
+      <PPSurface
+        as="a"
         v-for="d in items"
         :key="d.id"
         :href="d.url"
         target="_blank"
         rel="noopener noreferrer"
-        class="glass-focusable content-surface group flex flex-col gap-3 rounded-lg p-5 transition-colors hover:bg-white/5"
+        class="group flex flex-col gap-3 rounded-lg p-5 transition-colors hover:bg-white/5"
       >
         <div class="flex items-center justify-between gap-3">
           <span class="text-sm font-semibold text-slate-100">
@@ -72,7 +74,7 @@ function fmtSize(bytes?: number): string {
             <path d="M7 7h10v10" />
           </svg>
         </span>
-      </a>
+      </PPSurface>
     </div>
 
     <p v-if="error" class="text-xs text-slate-500">

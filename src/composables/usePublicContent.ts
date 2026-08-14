@@ -3,8 +3,8 @@ import { withQuery } from './useApi'
 
 /**
  * Public content endpoints (`/api/v1/public/*`, contract §1/§9/§24.4).
- * All fetches are client-only with graceful fallback to empty/default values —
- * PPB Phase B may not be ready, so callers never see a hard failure.
+ * Fetches are client-only. Default values keep SSG deterministic while the
+ * returned error ref remains authoritative, so load failure is never treated as empty data.
  */
 
 const EMPTY_META: PublicMeta = {

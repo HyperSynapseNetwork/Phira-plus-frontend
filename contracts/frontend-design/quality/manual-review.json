@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "rules": [
+    "cyan-glow-decoration",
+    "gradient-button",
+    "gradient-text",
+    "permanent-default-mesh",
+    "preference-without-consumer",
+    "atmosphere-quality",
+    "glass-vs-content-material",
+    "typography-hierarchy",
+    "responsive-behavior",
+    "visual-acceptance"
+  ]
+}

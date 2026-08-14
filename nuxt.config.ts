@@ -2,8 +2,27 @@ import process from 'node:process'
 import tailwindcss from '@tailwindcss/vite'
 import { defineNuxtConfig } from 'nuxt/config'
 
+function requirePublicUrl(name: string): string {
+  const value = process.env[name]?.trim()
+  if (!value)
+    throw new Error(`${name} is required; refusing to build a frontend that could target the wrong deployment`)
+  try {
+    const parsed = new URL(value)
+    if (!['http:', 'https:'].includes(parsed.protocol))
+      throw new Error('unsupported protocol')
+    return parsed.toString().replace(/\/$/, '')
+  }
+  catch {
+    throw new Error(`${name} must be an absolute http(s) URL`)
+  }
+}
+
+const apiBase = requirePublicUrl('NUXT_PUBLIC_API_BASE')
+const authBase = requirePublicUrl('NUXT_PUBLIC_AUTH_BASE')
+const siteUrl = requirePublicUrl('NUXT_PUBLIC_SITE_URL')
+
 /**
- * HSN Phira+ PPF — Nuxt 3 SSG official site (Phase A scaffold)
+ * HSN Phira+ PPF — Nuxt 3 SSG site configuration
  *
  * Reference: DESIGN/PP-B-F-P_V3_总体设计规范.md §3.2, §16, §22, §23, §26.3
  * Frozen cross-repo contract: contracts/README.md (Contract-Freeze v0)
@@ -33,9 +52,9 @@ export default defineNuxtConfig({
    */
   runtimeConfig: {
     public: {
-      apiBase: 'https://api-phira.htadiy.com',
-      authBase: 'https://api-phira.htadiy.com',
-      siteUrl: 'https://phira.htadiy.com',
+      apiBase,
+      authBase,
+      siteUrl,
       // Analytics provider (design §23.3). Defaults to none. When configured via
       // NUXT_PUBLIC_ANALYTICS_* env, tracking only activates after the user
       // grants consent; credentials/chat are never sent. Supported providers:
@@ -145,14 +164,14 @@ export default defineNuxtConfig({
    *   a static branded fallback lives at /social-card.svg (used by usePageSeo).
    */
   site: {
-    url: 'https://phira.htadiy.com',
+    url: siteUrl,
     name: 'HSN Phira+',
     description: 'HSN Phira+ 官网 — 房间、谱面、社区与 Replay（PPF）',
     defaultLocale: 'zh',
     identity: {
       type: 'Organization',
       name: 'HSN Phira+',
-      url: 'https://phira.htadiy.com/',
+      url: `${siteUrl}/`,
     },
     searchVerification: {
       google: process.env.NUXT_SITE_SEARCH_VERIFICATION_GOOGLE,

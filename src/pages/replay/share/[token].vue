@@ -31,11 +31,11 @@ usePageSeo(() => ({
       </p>
     </header>
 
-    <section class="content-surface p-6">
+    <PPSurface as="section" class="p-6">
       <p v-if="!token" class="py-10 text-center text-sm text-slate-400">
         {{ $t('viewer.replayNoData') }}
       </p>
       <ReplayViewer v-else :share-token="token" />
-    </section>
+    </PPSurface>
   </div>
 </template>

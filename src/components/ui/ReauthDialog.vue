@@ -8,13 +8,35 @@
  * `withReauth` so the original operation can retry with the token. Cancellation
  * / failure resolves `null` → the caller surfaces an explicit error.
  */
+import { nextTick, onBeforeUnmount, onMounted, watch } from 'vue'
 import { useReauth } from '~/composables/useReauth'
+import { focusableElements, trapTab, useOverlayManager } from '~/composables/useOverlayManager'
 
 const { isReauthOpen, reauth, settleReauth } = useReauth()
 
 const password = ref('')
 const submitting = ref(false)
 const error = ref<string | null>(null)
+const panelEl = ref<HTMLElement | null>(null)
+const overlay = useOverlayManager()
+const overlayId = `ppf-reauth-${Math.random().toString(36).slice(2, 9)}`
+
+function onKeydown(event: KeyboardEvent): void {
+  if (!isReauthOpen.value || !overlay.isTopmost(overlayId)) return
+  if (event.key === 'Escape') { event.preventDefault(); onCancel(); return }
+  trapTab(event, panelEl.value)
+}
+
+watch(isReauthOpen, async (open) => {
+  if (!import.meta.client) return
+  if (open) {
+    overlay.push(overlayId, 'reauth')
+    await nextTick()
+    ;(focusableElements(panelEl.value)[0] ?? panelEl.value)?.focus({ preventScroll: true })
+  } else overlay.pop(overlayId)
+}, { immediate: true })
+onMounted(() => window.addEventListener('keydown', onKeydown))
+onBeforeUnmount(() => { window.removeEventListener('keydown', onKeydown); overlay.pop(overlayId) })
 
 async function onSubmit(): Promise<void> {
   if (!password.value || submitting.value)
@@ -43,13 +65,15 @@ function onCancel(): void {
   <Teleport to="body">
     <div
       v-if="isReauthOpen"
-      class="fixed inset-0 z-[70] grid place-items-center p-4"
+      class="fixed inset-0 z-[var(--pp-z-reauth)] grid place-items-center p-4"
       role="dialog"
       aria-modal="true"
-      aria-label="Re-authenticate"
+      :aria-label="$t('a11y.reauth')"
     >
-      <div class="absolute inset-0 bg-black/60" @click="onCancel" />
+      <div class="absolute inset-0 bg-black/60" @click="overlay.isTopmost(overlayId) && onCancel()" />
       <form
+        ref="panelEl"
+        tabindex="-1"
         class="context-window-panel relative w-full max-w-sm rounded-window p-5"
         @submit.prevent="onSubmit"
       >
@@ -64,13 +88,7 @@ function onCancel(): void {
           <span class="mb-1 block text-xs text-slate-400">
             {{ $t('reauth.passwordLabel') }}
           </span>
-          <input
-            v-model="password"
-            type="password"
-            autocomplete="current-password"
-            :placeholder="$t('reauth.passwordPlaceholder')"
-            class="glass-focusable w-full rounded-md bg-white/5 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-accent/60"
-          >
+          <PPInput v-model="password" type="password" autocomplete="current-password" :placeholder="$t('reauth.passwordPlaceholder')" />
         </label>
 
         <p v-if="error" class="mt-2 text-xs text-rose-400" role="alert">
@@ -81,12 +99,12 @@ function onCancel(): void {
         </p>
 
         <div class="mt-4 flex justify-end gap-2">
-          <BaseButton variant="ghost" size="sm" :disabled="submitting" @click="onCancel">
+          <PPButton weight="quiet" size="sm" :disabled="submitting" @click="overlay.isTopmost(overlayId) && onCancel()">
             {{ $t('common.cancel') }}
-          </BaseButton>
-          <BaseButton variant="primary" size="sm" type="submit" :disabled="submitting || !password">
+          </PPButton>
+          <PPButton weight="primary" size="sm" type="submit" :disabled="submitting || !password">
             {{ submitting ? $t('common.loading') : $t('reauth.confirm') }}
-          </BaseButton>
+          </PPButton>
         </div>
       </form>
     </div>

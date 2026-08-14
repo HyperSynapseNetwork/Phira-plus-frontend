@@ -1,7 +1,7 @@
 # Tauri icons
 
 `icon.png` / `icon.ico` are **placeholder** icons generated for CI builds (a
-simple cyan-ring mark, see the generator in the Phase D/Gate 7 commit). Replace
+simple cyan-ring mark used by the current shell). Replace
 them with real Phira+ brand assets before release.
 
 Tauri needs, per platform:

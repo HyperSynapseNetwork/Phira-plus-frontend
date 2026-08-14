@@ -4,14 +4,17 @@
   "version": "0.1.0",
   "private": true,
   "packageManager": "pnpm@11.8.0",
-  "description": "HSN Phira+ PPF — Nuxt 3 SSG official site (Phase A scaffold)",
+  "description": "HSN Phira+ PPF — Nuxt 3 SSG official site",
   "engines": {
     "node": ">=22.0.0",
     "pnpm": ">=11.0.0"
   },
   "scripts": {
     "dev": "nuxt dev",
-    "build": "nuxt build",
+    "build": "pnpm viewer:verify && nuxt build",
+    "build:full": "pnpm viewer:build && pnpm build",
+    "viewer:build": "wasm-pack build --target web --out-dir ../../src/public/viewer viewer/monitor-client",
+    "viewer:verify": "test -f src/public/viewer/monitor_client.js && test -f src/public/viewer/monitor_client_bg.wasm",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
@@ -20,7 +23,10 @@
     "vue-tsc": "vue-tsc --noEmit",
     "typecheck": "vue-tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:error-i18n": "node scripts/check-error-i18n.mjs",
+    "test:design-contract": "node scripts/check-design-contract.mjs",
+    "test:product-copy": "node scripts/check-product-copy.mjs"
   },
   "dependencies": {
     "@formkit/auto-animate": "0.10.0",
@@ -48,6 +54,7 @@
     "eslint": "10.8.1",
     "typescript": "5.9.3",
     "vitest": "4.1.10",
-    "vue-tsc": "3.3.9"
+    "vue-tsc": "3.3.9",
+    "playwright-core": "1.62.1"
   }
 }

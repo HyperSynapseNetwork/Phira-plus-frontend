@@ -3,7 +3,7 @@
  * Push channel settings (design §14.7, contract §8).
  * Used in MyPhira → Settings. Shows Web Push status for this browser and lets
  * the user enable / disable it. Windows / Android remote push is handled by
- * the Tauri native adapter (Phase D, design §17.2) and is not shown here.
+ * the Tauri native adapter and is intentionally outside this Web Push panel.
  */
 import { usePush } from '~/composables/usePush'
 
@@ -47,15 +47,15 @@ async function onToggle(): Promise<void> {
       {{ subscription.endpoint }}
     </p>
 
-    <BaseButton
+    <PPButton
       v-if="supported"
       size="sm"
       :disabled="busy"
-      :variant="enabled ? 'ghost' : 'primary'"
+      :weight="enabled ? 'quiet' : 'primary'"
       @click="onToggle"
     >
       {{ busy ? $t('common.loading') : (enabled ? $t('push.disable') : $t('push.enable')) }}
-    </BaseButton>
+    </PPButton>
 
     <p v-if="error" class="text-xs text-rose-400">
       {{ $t('push.error') }}：{{ $t(error) }}

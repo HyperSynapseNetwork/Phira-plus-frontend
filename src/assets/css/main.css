@@ -34,18 +34,71 @@
  * Phira+ Design Tokens（设计语言 §二十五 规范词汇）— PPF 侧别名层。
  * 与 Panel 共用同一套 `--pp-*` 命名；值映射到上方 PPF token。
  * ========================================================================== */
-:root {
+ :root {
   --pp-atmosphere: var(--color-atmosphere-deep);
   --pp-canvas: var(--color-atmosphere-deep);
-  --pp-surface-0: var(--color-atmosphere-base);
-  --pp-surface-1: var(--color-content-surface);
+  --pp-surface-0: oklch(0.16 0.025 250 / .90);
+  --pp-surface-1: oklch(0.19 0.03 252 / .88);
+  --pp-surface-2: oklch(0.23 0.035 252 / .82);
+  --pp-surface-3: oklch(0.27 0.04 252 / .82);
+  --pp-material-thin: oklch(0.16 0.03 250 / .58);
+  --pp-material-regular: oklch(0.16 0.03 250 / .72);
+  --pp-material-thick: oklch(0.14 0.03 250 / .90);
+  --pp-material-blur: 14px;
+  --pp-border-subtle: oklch(1 0 0 / .09);
+  --pp-border-strong: oklch(1 0 0 / .17);
+  --pp-text-primary: #f1f5f9;
+  --pp-text-secondary: #cbd5e1;
+  --pp-text-tertiary: #7f8da3;
   --pp-accent: var(--color-accent);
   --pp-accent-hover: var(--color-accent-strong);
   --pp-accent-fg: var(--color-accent-fg);
+  --pp-success: #34d399;
+  --pp-warning: #fbbf24;
+  --pp-danger: #fb7185;
+  --pp-info: #60a5fa;
+  --pp-live: var(--color-accent);
+  --pp-radius-control: .5rem;
   --pp-radius-surface: var(--radius-surface);
   --pp-radius-window: var(--radius-window);
-  --pp-shadow-window: 0 24px 64px oklch(0 0 0 / 0.5);
+  --pp-radius-capsule: 999px;
+  --pp-shadow-surface: 0 1px 2px oklch(0 0 0 / .28), 0 8px 24px oklch(0 0 0 / .16);
+  --pp-shadow-floating: 0 10px 30px oklch(0 0 0 / .32);
+  --pp-shadow-window: 0 24px 64px oklch(0 0 0 / .5);
+  --pp-motion-fast: 160ms;
+  --pp-motion-normal: 240ms;
+  --pp-z-sticky: 20;
+  --pp-z-sidebar: 30;
+  --pp-z-drawer-backdrop: 60;
+  --pp-z-drawer: 70;
+  --pp-z-desktop-window-base: 40;
+  --pp-z-context: 80;
+  --pp-z-notice: 90;
+  --pp-z-reauth: 100;
 }
+
+/* Touch contract: dense visual controls stay compact on fine pointers; coarse pointers get >=44px hit targets. */
+@media (pointer: coarse) {
+  .pp-touch-target { min-height: 44px !important; min-width: 44px !important; }
+}
+
+/* Reduced Transparency is a material-token change, not a blanket opacity override. */
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --pp-material-blur: 0px;
+    --pp-material-thin: var(--pp-surface-1);
+    --pp-material-regular: var(--pp-surface-1);
+    --pp-material-thick: var(--pp-surface-0);
+  }
+}
+:root[data-reduced-transparency="true"],
+:root[data-low-performance="true"] {
+  --pp-material-blur: 0px;
+  --pp-material-thin: var(--pp-surface-1);
+  --pp-material-regular: var(--pp-surface-1);
+  --pp-material-thick: var(--pp-surface-0);
+}
+
 
 /* ============================================================================
  * Base layer
@@ -85,10 +138,14 @@ body {
   z-index: -10;
   pointer-events: none;
   overflow: hidden;
-  background:
-    radial-gradient(60rem 40rem at 85% -10%, oklch(0.45 0.16 210 / 0.28), transparent 65%),
-    radial-gradient(50rem 34rem at -10% 110%, oklch(0.38 0.14 290 / 0.2), transparent 65%),
-    linear-gradient(180deg, oklch(0.12 0.03 250), oklch(0.15 0.035 255));
+  background: linear-gradient(180deg, #0b1018, #101722);
+}
+.atmosphere::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(6,10,16,.34), rgba(6,10,16,.58));
+  pointer-events: none;
 }
 
 .atmosphere__image {
@@ -116,12 +173,6 @@ body {
   mask-image: radial-gradient(60rem 40rem at 50% 0%, black 0%, transparent 75%);
 }
 
-.atmosphere__glow {
-  position: absolute;
-  border-radius: 9999px;
-  filter: blur(90px);
-  opacity: 0.5;
-}
 
 /* ============================================================================
  * Layer 2 — Content surface
@@ -193,6 +244,28 @@ body {
   -webkit-backdrop-filter: blur(20px) saturate(160%);
 }
 
+/* Context Window motion communicates depth without turning detail into a flat page. */
+.context-layer-enter-active,
+.context-layer-leave-active {
+  transition: opacity 240ms cubic-bezier(.22, 1, .36, 1);
+}
+.context-layer-enter-from,
+.context-layer-leave-to { opacity: 0; }
+.context-layer-enter-active .context-window-panel {
+  animation: pp-context-panel-in 240ms cubic-bezier(.22, 1, .36, 1);
+}
+@keyframes pp-context-panel-in {
+  from { opacity: 0; transform: translate(-50%, calc(-50% + 12px)) scale(.985); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+@media (max-width: 767px) {
+  .context-layer-enter-active .context-window-panel { animation-name: pp-context-sheet-in; }
+  @keyframes pp-context-sheet-in {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
+
 /* ============================================================================
  * Accessibility / preference-driven behavior (default OFF)
  * ========================================================================== */
@@ -252,3 +325,42 @@ body {
 [data-low-performance="true"] .particles-canvas {
   display: none !important;
 }
+
+/* PPNotice — short-lived global operation feedback. */
+.pp-notice-enter-active,
+.pp-notice-leave-active,
+.pp-notice-move {
+  transition: opacity 240ms cubic-bezier(.22, 1, .36, 1), transform 240ms cubic-bezier(.22, 1, .36, 1);
+}
+.pp-notice-enter-from,
+.pp-notice-leave-to {
+  opacity: 0;
+  transform: translate3d(0, -10px, 0);
+}
+@media (min-width: 640px) {
+  .pp-notice-enter-from,
+  .pp-notice-leave-to { transform: translate3d(12px, 0, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pp-notice-enter-active,
+  .pp-notice-leave-active,
+  .pp-notice-move { transition-duration: 1ms; transform: none !important; }
+  .pp-notice-enter-from,
+  .pp-notice-leave-to { transform: none; }
+  .pp-notice-card .animate-spin { animation: none; }
+}
+
+/* Public material utility for persistent navigation/control shells. */
+.pp-material {
+  background: var(--pp-material-regular);
+  border-color: var(--pp-border-subtle);
+  backdrop-filter: blur(var(--pp-material-blur)) saturate(150%);
+  -webkit-backdrop-filter: blur(var(--pp-material-blur)) saturate(150%);
+}
+
+
+.context-window-layer {
+  --pp-context-layer-index: 0;
+  z-index: calc(var(--pp-z-context) + var(--pp-context-layer-index));
+}
+

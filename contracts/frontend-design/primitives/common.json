@@ -1,0 +1,40 @@
+{
+  "version": 2,
+  "required": [
+    "PPButton",
+    "PPIcon",
+    "PPInput",
+    "PPSelect",
+    "PPSurface",
+    "PPSwitch"
+  ],
+  "optional": [
+    "PPTextarea",
+    "PPTabs"
+  ],
+  "PPButton": {
+    "weights": [
+      "primary",
+      "secondary",
+      "quiet",
+      "dangerous"
+    ],
+    "sizes": [
+      "sm",
+      "md",
+      "lg"
+    ],
+    "defaultWeight": "secondary",
+    "defaultSize": "md",
+    "defaultType": "button"
+  },
+  "PPSurface": {
+    "meaning": "readable content surface; never translucent glass by default"
+  },
+  "PPInput": {
+    "meaning": "formal text/search/password/account/admin form control"
+  },
+  "PPSelect": {
+    "meaning": "formal product/admin select; viewer/internal native controls are exceptions"
+  }
+}

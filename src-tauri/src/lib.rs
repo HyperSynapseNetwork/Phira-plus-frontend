@@ -1,6 +1,6 @@
 // Phira+ — Tauri 2 app shell entry point (design §17).
 //
-// Phase D scaffold. The desktop/mobile shell shares a single `run()`; on
+// The desktop/mobile shell shares a single `run()`; on
 // Android the `tauri::mobile_entry_point` shim is injected by tauri-build so
 // this crate compiles to a staticlib for the Gradle build.
 
