@@ -27,6 +27,9 @@ export default antfu({
     'src/public/viewer/**',
     // PPB OpenAPI generated contract types (synced via scripts/gen-types.sh).
     'src/utils/api/generated.ts',
+    // Design-contract data + vendored PPB OpenAPI (validated by dedicated
+    // contract-consistency / design-contract gates, not by app lint).
+    'contracts/**',
     // Standalone Node tooling scripts (not part of the frontend lint surface).
     'scripts/**',
   ],
