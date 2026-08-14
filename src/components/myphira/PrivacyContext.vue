@@ -10,7 +10,7 @@ const { data, pending, error, refresh } = useFetch<MyPrivacySettings>('/api/v1/m
   retry: 0,
   server: false,
   lazy: true,
-  default: () => ({ profile_visibility: 'public', show_online_status: true, show_recent_activity: true }),
+  default: (): MyPrivacySettings => ({ profile_visibility: 'public', show_online_status: true, show_recent_activity: true }),
 })
 const { data: ppfPref, refresh: refreshPpfPref } = useFetch<{ namespace?: string, revision?: number, json_data?: Record<string, unknown> }>('/api/v1/me/preferences/ppf', {
   baseURL: getApiBase(),

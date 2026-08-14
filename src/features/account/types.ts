@@ -10,6 +10,8 @@ export interface MeProfile {
   created_at?: string
   bio?: string
   profile_visibility?: 'public' | 'friends' | 'private'
+  rks?: number
+  background_url?: string | null
 }
 export interface MySessionItem { id: string, client_type: string, device_name: string, ip: string, created_at: string, expires_at: string, last_seen_at?: string | null, current: boolean }
 export interface MySessionsResponse { items: MySessionItem[] }

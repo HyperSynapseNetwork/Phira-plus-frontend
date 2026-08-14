@@ -10,7 +10,7 @@
  *   { common: {...}, ppf: {...}, device: {...} }
  */
 
-export type ThemeMode = 'dark'
+export type ThemeMode = 'dark' | 'light' | 'system'
 export type AccentKey = 'cyan' | 'blue' | 'violet' | 'green' | 'amber'
 export type BackgroundKey = 'atmosphere' | 'mesh' | 'particles' | 'none'
 export type BackgroundQuality = 'auto' | 'original'
@@ -74,7 +74,7 @@ export function isBackgroundQuality(value: string): value is BackgroundQuality {
 }
 
 export function isThemeMode(value: string): value is ThemeMode {
-  return value === 'dark'
+  return value === 'dark' || value === 'light' || value === 'system'
 }
 
 export function isLocaleCode(value: string): value is LocaleCode {

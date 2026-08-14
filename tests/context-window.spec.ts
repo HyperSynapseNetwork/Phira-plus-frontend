@@ -22,9 +22,9 @@ describe('context window manager (design §22.4)', () => {
 
   it('closes by id and clears all', () => {
     const { stack, open, close, closeAll } = useContextWindow()
-    const id = open({ title: 'A' })
+    const result = open({ title: 'A' })
     open({ title: 'B' })
-    close(id)
+    close(result.ok ? result.id : undefined)
     expect(stack.value.map(e => e.title)).toEqual(['B'])
     closeAll()
     expect(stack.value).toHaveLength(0)
@@ -34,6 +34,6 @@ describe('context window manager (design §22.4)', () => {
     const { open } = useContextWindow()
     const a = open({ title: 'A' })
     const b = open({ title: 'B' })
-    expect(a).not.toBe(b)
+    expect(a.ok ? a.id : null).not.toBe(b.ok ? b.id : null)
   })
 })
