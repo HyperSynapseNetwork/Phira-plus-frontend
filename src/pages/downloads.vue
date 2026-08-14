@@ -45,9 +45,9 @@ function fmtSize(bytes?: number): string {
 
     <div v-else class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       <PPSurface
-        as="a"
         v-for="d in items"
         :key="d.id"
+        as="a"
         :href="d.url"
         target="_blank"
         rel="noopener noreferrer"

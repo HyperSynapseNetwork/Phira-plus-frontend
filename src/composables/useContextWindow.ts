@@ -14,9 +14,9 @@ export interface ContextWindowEntry {
   opener?: HTMLElement
 }
 
-export type ContextOpenResult =
-  | { ok: true, id: string }
-  | { ok: false, reason: 'MAX_CONTEXT_DEPTH' }
+export type ContextOpenResult
+  = | { ok: true, id: string }
+    | { ok: false, reason: 'MAX_CONTEXT_DEPTH' }
 
 export const CONTEXT_WINDOW_MAX_DEPTH = 2
 
@@ -53,9 +53,11 @@ export function useContextWindow() {
     return id
   }
 
-  /** Public close semantics are top-only. A hidden lower layer must never be
+  /**
+   * Public close semantics are top-only. A hidden lower layer must never be
    * removed behind the active Context because that would restore focus through
-   * the top layer and break spatial continuity. */
+   * the top layer and break spatial continuity.
+   */
   function close(id?: string): boolean {
     const top = stack.value.at(-1)
     if (!top)

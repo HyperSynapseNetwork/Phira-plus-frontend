@@ -1,17 +1,24 @@
 <script setup lang="ts">
 const { visible, dismiss, runAction, renderMessage } = useNotice()
 const { t } = useI18n()
-async function copyRequestId(id: string) { if (import.meta.client) await navigator.clipboard?.writeText(id) }
+async function copyRequestId(id: string) {
+  if (import.meta.client)
+    await navigator.clipboard?.writeText(id)
+}
 
 function roleFor(tone: string): 'alert' | 'status' {
   return tone === 'error' || tone === 'warning' ? 'alert' : 'status'
 }
 
 function railClass(tone: string): string {
-  if (tone === 'error') return 'bg-rose-400/80'
-  if (tone === 'warning') return 'bg-amber-300/80'
-  if (tone === 'success') return 'bg-emerald-300/80'
-  if (tone === 'loading') return 'bg-sky-300/70'
+  if (tone === 'error')
+    return 'bg-rose-400/80'
+  if (tone === 'warning')
+    return 'bg-amber-300/80'
+  if (tone === 'success')
+    return 'bg-emerald-300/80'
+  if (tone === 'loading')
+    return 'bg-sky-300/70'
   return 'bg-slate-300/60'
 }
 </script>
@@ -34,11 +41,21 @@ function railClass(tone: string): string {
           <div class="flex items-start gap-3 px-4 py-3 pl-5">
             <span v-if="item.tone === 'loading'" class="mt-1 h-3.5 w-3.5 shrink-0 animate-spin rounded-full border-2 border-slate-400 border-t-slate-100" aria-hidden="true" />
             <div class="min-w-0 flex-1">
-              <p v-if="item.titleKey" class="text-sm font-semibold text-slate-100">{{ t(item.titleKey) }}</p>
-              <p class="text-sm leading-5 text-slate-200">{{ renderMessage(item) }}</p>
+              <p v-if="item.titleKey" class="text-sm font-semibold text-slate-100">
+                {{ t(item.titleKey) }}
+              </p>
+              <p class="text-sm leading-5 text-slate-200">
+                {{ renderMessage(item) }}
+              </p>
               <details v-if="item.requestId" class="mt-1.5 text-xs text-slate-500">
-                <summary class="cursor-pointer select-none">{{ t('common.details') }}</summary>
-                <div class="mt-1 flex items-center gap-2"><code class="break-all">{{ item.requestId }}</code><button type="button" class="inline-flex min-h-11 items-center text-accent hover:underline" @click="copyRequestId(item.requestId)">{{ t('common.copy') }}</button></div>
+                <summary class="cursor-pointer select-none">
+                  {{ t('common.details') }}
+                </summary>
+                <div class="mt-1 flex items-center gap-2">
+                  <code class="break-all">{{ item.requestId }}</code><button type="button" class="inline-flex min-h-11 items-center text-accent hover:underline" @click="copyRequestId(item.requestId)">
+                    {{ t('common.copy') }}
+                  </button>
+                </div>
               </details>
               <button
                 v-if="item.action"

@@ -9,8 +9,8 @@
  * / failure resolves `null` → the caller surfaces an explicit error.
  */
 import { nextTick, onBeforeUnmount, onMounted, watch } from 'vue'
-import { useReauth } from '~/composables/useReauth'
 import { focusableElements, trapTab, useOverlayManager } from '~/composables/useOverlayManager'
+import { useReauth } from '~/composables/useReauth'
 
 const { isReauthOpen, reauth, settleReauth } = useReauth()
 
@@ -22,18 +22,23 @@ const overlay = useOverlayManager()
 const overlayId = `ppf-reauth-${Math.random().toString(36).slice(2, 9)}`
 
 function onKeydown(event: KeyboardEvent): void {
-  if (!isReauthOpen.value || !overlay.isTopmost(overlayId)) return
+  if (!isReauthOpen.value || !overlay.isTopmost(overlayId))
+    return
   if (event.key === 'Escape') { event.preventDefault(); onCancel(); return }
   trapTab(event, panelEl.value)
 }
 
 watch(isReauthOpen, async (open) => {
-  if (!import.meta.client) return
+  if (!import.meta.client)
+    return
   if (open) {
     overlay.push(overlayId, 'reauth')
     await nextTick()
     ;(focusableElements(panelEl.value)[0] ?? panelEl.value)?.focus({ preventScroll: true })
-  } else overlay.pop(overlayId)
+  }
+  else {
+    overlay.pop(overlayId)
+  }
 }, { immediate: true })
 onMounted(() => window.addEventListener('keydown', onKeydown))
 onBeforeUnmount(() => { window.removeEventListener('keydown', onKeydown); overlay.pop(overlayId) })

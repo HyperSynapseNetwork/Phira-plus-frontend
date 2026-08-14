@@ -107,7 +107,12 @@ export async function blockUser(phiraId: number | string): Promise<void> {
 
 function emptyMultiplayer(): MyMultiplayerSummary {
   return {
-    phira_id: 0, rounds_total: 0, completed_rounds: 0, rooms_visited: 0, playtime_ms: 0, recent_rounds: [],
+    phira_id: 0,
+    rounds_total: 0,
+    completed_rounds: 0,
+    rooms_visited: 0,
+    playtime_ms: 0,
+    recent_rounds: [],
   }
 }
 

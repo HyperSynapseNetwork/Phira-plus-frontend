@@ -34,6 +34,12 @@ export default antfu({
     'scripts/**',
   ],
 }, {
+  // The design-language refactor deliberately writes compact one-liners;
+  // --fix cannot split them and the cap is a stylistic preference, not a defect.
+  rules: {
+    'style/max-statements-per-line': 'off',
+  },
+}, {
   // `pnpm/yaml-enforce-settings` demands `trustPolicy: no-downgrade`, which is
   // incompatible with the npmmirror registry (no npm provenance attestation).
   // Reproducibility is guaranteed by the committed pnpm-lock.yaml instead.

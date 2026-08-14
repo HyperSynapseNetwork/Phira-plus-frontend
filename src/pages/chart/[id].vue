@@ -84,19 +84,19 @@ function fmtDate(value?: string): string {
     </NuxtLink>
 
     <!-- Loading -->
-    <PPSurface as="div" v-if="pending" class="flex items-center justify-center p-16 text-sm text-slate-400">
+    <PPSurface v-if="pending" as="div" class="flex items-center justify-center p-16 text-sm text-slate-400">
       {{ $t('common.loading') }}
     </PPSurface>
 
     <!-- Invalid chart id -->
-    <PPSurface as="section" v-else-if="!chartIdValid" class="p-10 text-center">
+    <PPSurface v-else-if="!chartIdValid" as="section" class="p-10 text-center">
       <p class="text-sm text-slate-400">
         {{ $t('chart.notFound') }}
       </p>
     </PPSurface>
 
     <!-- Error -->
-    <PPSurface as="section" v-else-if="error" class="flex flex-col items-center gap-3 p-10 text-center">
+    <PPSurface v-else-if="error" as="section" class="flex flex-col items-center gap-3 p-10 text-center">
       <p class="text-sm text-slate-400">
         {{ $t('common.error') }}
       </p>
@@ -106,7 +106,7 @@ function fmtDate(value?: string): string {
     </PPSurface>
 
     <!-- Empty -->
-    <PPSurface as="section" v-else-if="!chart" class="p-10 text-center">
+    <PPSurface v-else-if="!chart" as="section" class="p-10 text-center">
       <p class="text-sm text-slate-400">
         {{ $t('charts.empty') }}
       </p>

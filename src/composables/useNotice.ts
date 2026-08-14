@@ -1,22 +1,49 @@
 import { errorMessageKey, errorParams, toApiError } from '~/utils/api/errors'
-export type NoticeTone='info'|'success'|'warning'|'error'|'loading'
-export type NoticeMessage={type:'i18n',key:string,params?:Record<string,string|number>}|{type:'literal',value:string}
-export interface PPNoticeAction{labelKey:string,run:()=>void|Promise<void>}
-export interface PPNotice{id:string,tone:NoticeTone,titleKey?:string,message:NoticeMessage,requestId?:string,durationMs?:number|null,dismissible?:boolean,dedupKey?:string,action?:PPNoticeAction}
-export interface NoticeOptions extends Partial<Omit<PPNotice,'id'|'tone'|'message'>>{}
-const D:Record<NoticeTone,number|null>={info:4200,success:4200,warning:6000,error:8000,loading:null}; const timers=new Map<string,ReturnType<typeof setTimeout>>()
-export function useNotice(){const notices=useState<PPNotice[]>('pp-notice-queue',()=>[]);const{t}=useI18n();const visible=computed(()=>notices.value.slice(0,3));
-function clear(id:string){const x=timers.get(id);if(x)clearTimeout(x);timers.delete(id)}
-function dismiss(id:string){clear(id);notices.value=notices.value.filter(x=>x.id!==id)}
-function schedule(n:PPNotice){clear(n.id);const ms=n.durationMs===undefined?D[n.tone]:n.durationMs;if(!import.meta.client||ms==null||ms<=0)return;timers.set(n.id,setTimeout(()=>dismiss(n.id),ms))}
-function add(tone:NoticeTone,message:NoticeMessage,options:NoticeOptions={}){const id=cryptoSafeId();const item:PPNotice={id,tone,message,dismissible:options.dismissible??tone!=='loading',...options};if(item.dedupKey){const i=notices.value.findIndex(x=>x.dedupKey===item.dedupKey);if(i>=0){clear(notices.value[i]!.id);notices.value.splice(i,1,item);schedule(item);return id}}notices.value.push(item);while(notices.value.length>20){const x=notices.value.shift();if(x)clear(x.id)}schedule(item);return id}
-function push(tone:NoticeTone,key:string,params?:Record<string,string|number>,options:NoticeOptions={}){return add(tone,{type:'i18n',key,params},options)}
-function update(id:string,patch:Partial<PPNotice>){const i=notices.value.findIndex(x=>x.id===id);if(i<0)return;const n={...notices.value[i]!,...patch};notices.value.splice(i,1,n);schedule(n)}
-function splitArgs(p?:Record<string,string|number>|NoticeOptions,o?:NoticeOptions):[Record<string,string|number>|undefined,NoticeOptions|undefined]{if(p&&('dedupKey'in p||'durationMs'in p||'dismissible'in p||'titleKey'in p||'requestId'in p||'action'in p))return[undefined,p as NoticeOptions];return[p as Record<string,string|number>|undefined,o]}
-const success=(k:string,p?:Record<string,string|number>|NoticeOptions,o?:NoticeOptions)=>{const[x,y]=splitArgs(p,o);return push('success',k,x,y)};const info=(k:string,p?:Record<string,string|number>|NoticeOptions,o?:NoticeOptions)=>{const[x,y]=splitArgs(p,o);return push('info',k,x,y)};const warning=(k:string,p?:Record<string,string|number>|NoticeOptions,o?:NoticeOptions)=>{const[x,y]=splitArgs(p,o);return push('warning',k,x,y)};const error=(k:string,p?:Record<string,string|number>|NoticeOptions,o?:NoticeOptions)=>{const[x,y]=splitArgs(p,o);return push('error',k,x,y)}
-function errorFromApi(err:unknown,options:NoticeOptions={}){const e=toApiError(err);const key=errorMessageKey(e.code);const translated=t(key,errorParams(e));const message:NoticeMessage=translated===key?{type:'i18n',key:'errors.client.UNKNOWN_ERROR'}:{type:'i18n',key,params:errorParams(e)};const id=add('error',message,{...options,requestId:e.requestId,durationMs:options.durationMs??8000});return{id,code:e.code,requestId:e.requestId}}
-async function promise<T>(op:Promise<T>,keys:{loading:string,success:string},options:NoticeOptions={}){const id=push('loading',keys.loading,undefined,{...options,dismissible:false,durationMs:null});try{const v=await op;update(id,{tone:'success',message:{type:'i18n',key:keys.success},dismissible:true,durationMs:4200});return v}catch(err){const e=toApiError(err);const key=errorMessageKey(e.code);const translated=t(key,errorParams(e));update(id,{tone:'error',message:translated===key?{type:'i18n',key:'errors.client.UNKNOWN_ERROR'}:{type:'i18n',key,params:errorParams(e)},requestId:e.requestId,dismissible:true,durationMs:8000});throw err}}
-async function runAction(n:PPNotice){if(!n.action)return;try{await n.action.run();dismiss(n.id)}catch(e){errorFromApi(e)}}
-function renderMessage(n:PPNotice){return n.message.type==='literal'?n.message.value:t(n.message.key,n.message.params??{})}
-return{notices,visible,push,dismiss,update,success,info,warning,error,errorFromApi,promise,runAction,renderMessage}}
-function cryptoSafeId(){return globalThis.crypto?.randomUUID?globalThis.crypto.randomUUID():`notice-${Date.now()}-${Math.random().toString(36).slice(2)}`}
+
+export type NoticeTone = 'info' | 'success' | 'warning' | 'error' | 'loading'
+export type NoticeMessage = { type: 'i18n', key: string, params?: Record<string, string | number> } | { type: 'literal', value: string }
+export interface PPNoticeAction { labelKey: string, run: () => void | Promise<void> }
+export interface PPNotice { id: string, tone: NoticeTone, titleKey?: string, message: NoticeMessage, requestId?: string, durationMs?: number | null, dismissible?: boolean, dedupKey?: string, action?: PPNoticeAction }
+export interface NoticeOptions extends Partial<Omit<PPNotice, 'id' | 'tone' | 'message'>> {}
+const D: Record<NoticeTone, number | null> = { info: 4200, success: 4200, warning: 6000, error: 8000, loading: null }; const timers = new Map<string, ReturnType<typeof setTimeout>>()
+export function useNotice() {
+  const notices = useState<PPNotice[]>('pp-notice-queue', () => []); const { t } = useI18n(); const visible = computed(() => notices.value.slice(0, 3))
+  function clear(id: string) {
+    const x = timers.get(id); if (x)
+      clearTimeout(x); timers.delete(id)
+  }
+  function dismiss(id: string) { clear(id); notices.value = notices.value.filter(x => x.id !== id) }
+  function schedule(n: PPNotice) {
+    clear(n.id); const ms = n.durationMs === undefined ? D[n.tone] : n.durationMs; if (!import.meta.client || ms == null || ms <= 0)
+      return; timers.set(n.id, setTimeout(dismiss, ms, n.id))
+  }
+  function add(tone: NoticeTone, message: NoticeMessage, options: NoticeOptions = {}) {
+    const id = cryptoSafeId(); const item: PPNotice = { id, tone, message, dismissible: options.dismissible ?? tone !== 'loading', ...options }; if (item.dedupKey) { const i = notices.value.findIndex(x => x.dedupKey === item.dedupKey); if (i >= 0) { clear(notices.value[i]!.id); notices.value.splice(i, 1, item); schedule(item); return id } }notices.value.push(item); while (notices.value.length > 20) {
+      const x = notices.value.shift(); if (x)
+        clear(x.id)
+    }schedule(item); return id
+  }
+  function push(tone: NoticeTone, key: string, params?: Record<string, string | number>, options: NoticeOptions = {}) { return add(tone, { type: 'i18n', key, params }, options) }
+  function update(id: string, patch: Partial<PPNotice>) {
+    const i = notices.value.findIndex(x => x.id === id); if (i < 0)
+      return; const n = { ...notices.value[i]!, ...patch }; notices.value.splice(i, 1, n); schedule(n)
+  }
+  function splitArgs(p?: Record<string, string | number> | NoticeOptions, o?: NoticeOptions): [Record<string, string | number> | undefined, NoticeOptions | undefined] {
+    if (p && ('dedupKey' in p || 'durationMs' in p || 'dismissible' in p || 'titleKey' in p || 'requestId' in p || 'action' in p))
+      return [undefined, p as NoticeOptions]; return [p as Record<string, string | number> | undefined, o]
+  }
+  const success = (k: string, p?: Record<string, string | number> | NoticeOptions, o?: NoticeOptions) => { const [x, y] = splitArgs(p, o); return push('success', k, x, y) }; const info = (k: string, p?: Record<string, string | number> | NoticeOptions, o?: NoticeOptions) => { const [x, y] = splitArgs(p, o); return push('info', k, x, y) }; const warning = (k: string, p?: Record<string, string | number> | NoticeOptions, o?: NoticeOptions) => { const [x, y] = splitArgs(p, o); return push('warning', k, x, y) }; const error = (k: string, p?: Record<string, string | number> | NoticeOptions, o?: NoticeOptions) => { const [x, y] = splitArgs(p, o); return push('error', k, x, y) }
+  function errorFromApi(err: unknown, options: NoticeOptions = {}) { const e = toApiError(err); const key = errorMessageKey(e.code); const translated = t(key, errorParams(e)); const message: NoticeMessage = translated === key ? { type: 'i18n', key: 'errors.client.UNKNOWN_ERROR' } : { type: 'i18n', key, params: errorParams(e) }; const id = add('error', message, { ...options, requestId: e.requestId, durationMs: options.durationMs ?? 8000 }); return { id, code: e.code, requestId: e.requestId } }
+  async function promise<T>(op: Promise<T>, keys: { loading: string, success: string }, options: NoticeOptions = {}) {
+    const id = push('loading', keys.loading, undefined, { ...options, dismissible: false, durationMs: null }); try { const v = await op; update(id, { tone: 'success', message: { type: 'i18n', key: keys.success }, dismissible: true, durationMs: 4200 }); return v }
+    catch (err) { const e = toApiError(err); const key = errorMessageKey(e.code); const translated = t(key, errorParams(e)); update(id, { tone: 'error', message: translated === key ? { type: 'i18n', key: 'errors.client.UNKNOWN_ERROR' } : { type: 'i18n', key, params: errorParams(e) }, requestId: e.requestId, dismissible: true, durationMs: 8000 }); throw err }
+  }
+  async function runAction(n: PPNotice) {
+    if (!n.action)
+      return; try { await n.action.run(); dismiss(n.id) }
+    catch (e) { errorFromApi(e) }
+  }
+  function renderMessage(n: PPNotice) { return n.message.type === 'literal' ? n.message.value : t(n.message.key, n.message.params ?? {}) }
+  return { notices, visible, push, dismiss, update, success, info, warning, error, errorFromApi, promise, runAction, renderMessage }
+}
+function cryptoSafeId() { return globalThis.crypto?.randomUUID ? globalThis.crypto.randomUUID() : `notice-${Date.now()}-${Math.random().toString(36).slice(2)}` }

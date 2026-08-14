@@ -64,7 +64,11 @@ function formatDate(value: string): string {
             {{ request.from?.username || t('common.unknown') }}
           </p>
           <p class="text-xs text-slate-400">
-            <template v-if="request.from?.phira_id != null">#{{ request.from.phira_id }}</template><template v-else>{{ t('common.unknown') }}</template> · {{ formatDate(request.created_at) }}
+            <template v-if="request.from?.phira_id != null">
+              #{{ request.from.phira_id }}
+            </template><template v-else>
+              {{ t('common.unknown') }}
+            </template> · {{ formatDate(request.created_at) }}
           </p>
         </div>
         <div class="flex items-center gap-2">

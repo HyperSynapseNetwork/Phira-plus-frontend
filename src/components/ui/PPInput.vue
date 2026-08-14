@@ -9,8 +9,13 @@ withDefaults(defineProps<{
   required?: boolean
   mono?: boolean
 }>(), {
-  modelValue: '', type: 'text', placeholder: '', autocomplete: undefined,
-  disabled: false, required: false, mono: false,
+  modelValue: '',
+  type: 'text',
+  placeholder: '',
+  autocomplete: undefined,
+  disabled: false,
+  required: false,
+  mono: false,
 })
 const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
 function onInput(event: Event) { emit('update:modelValue', (event.target as HTMLInputElement).value) }

@@ -11,14 +11,13 @@ import { usePreferences } from '~/composables/usePreferences'
 import { usePreferencesSync } from '~/composables/usePreferencesSync'
 
 const { prefs, update, reset, isLocked } = usePreferences()
-const { t } = useI18n()
 const notice = useNotice()
 const { authenticated, syncing, saving, syncError, lastSavedAt, saveAll } = usePreferencesSync()
 
 async function onSave(): Promise<void> {
   try {
     await saveAll()
-    notice.success('notice.saved', undefined, { dedupKey: 'preferences:save'  })
+    notice.success('notice.saved', undefined, { dedupKey: 'preferences:save' })
   }
   catch (err) {
     notice.errorFromApi(err, { dedupKey: 'preferences:save:error' })
@@ -146,9 +145,15 @@ function resetAll(): void {
 
     <!-- Toggles -->
     <div class="space-y-3">
-      <div class="flex items-center justify-between gap-3"><span class="text-sm text-slate-300">{{ $t('preferences.reducedMotion') }}</span><PPSwitch v-model="prefs.reducedMotion" /></div>
-      <div class="flex items-center justify-between gap-3"><span class="text-sm text-slate-300">{{ $t('preferences.reducedTransparency') }}</span><PPSwitch v-model="prefs.reducedTransparency" /></div>
-      <div class="flex items-center justify-between gap-3"><span class="text-sm text-slate-300">{{ $t('preferences.lowPerformance') }}</span><PPSwitch v-model="prefs.lowPerformance" /></div>
+      <div class="flex items-center justify-between gap-3">
+        <span class="text-sm text-slate-300">{{ $t('preferences.reducedMotion') }}</span><PPSwitch v-model="prefs.reducedMotion" />
+      </div>
+      <div class="flex items-center justify-between gap-3">
+        <span class="text-sm text-slate-300">{{ $t('preferences.reducedTransparency') }}</span><PPSwitch v-model="prefs.reducedTransparency" />
+      </div>
+      <div class="flex items-center justify-between gap-3">
+        <span class="text-sm text-slate-300">{{ $t('preferences.lowPerformance') }}</span><PPSwitch v-model="prefs.lowPerformance" />
+      </div>
     </div>
 
     <!-- Reset -->

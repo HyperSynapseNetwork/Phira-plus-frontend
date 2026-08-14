@@ -142,6 +142,5 @@ async function submit(): Promise<void> {
         {{ $t('room.chatSend') }}
       </PPButton>
     </form>
-
   </div>
 </template>

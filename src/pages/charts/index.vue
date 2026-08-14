@@ -36,7 +36,9 @@ function openContext(chart: Chart): void {
   <div class="space-y-5">
     <header class="flex flex-wrap items-end justify-between gap-4 border-b border-[var(--pp-border-subtle)] pb-4">
       <div>
-        <h1 class="text-2xl font-bold text-[var(--pp-text-primary)]">{{ t('nav.charts') }}</h1>
+        <h1 class="text-2xl font-bold text-[var(--pp-text-primary)]">
+          {{ t('nav.charts') }}
+        </h1>
         <p v-if="!pending && !error" class="mt-1 text-xs text-[var(--pp-text-tertiary)]">
           {{ t('charts.totalCharts', { total }) }}
         </p>
@@ -48,11 +50,17 @@ function openContext(chart: Chart): void {
     </header>
 
     <section aria-live="polite">
-      <p v-if="pending" class="py-16 text-center text-sm text-[var(--pp-text-secondary)]">{{ t('common.loading') }}</p>
+      <p v-if="pending" class="py-16 text-center text-sm text-[var(--pp-text-secondary)]">
+        {{ t('common.loading') }}
+      </p>
 
       <div v-else-if="error" class="border-y border-[var(--pp-border-subtle)] py-8 text-center">
-        <p class="text-sm text-rose-300">{{ t('common.error') }}</p>
-        <PPButton size="sm" weight="quiet" class="mt-3" @click="() => refresh()">{{ t('common.retry') }}</PPButton>
+        <p class="text-sm text-rose-300">
+          {{ t('common.error') }}
+        </p>
+        <PPButton size="sm" weight="quiet" class="mt-3" @click="() => refresh()">
+          {{ t('common.retry') }}
+        </PPButton>
       </div>
 
       <p v-else-if="charts.length === 0" class="border-y border-[var(--pp-border-subtle)] py-8 text-center text-sm text-[var(--pp-text-secondary)]">

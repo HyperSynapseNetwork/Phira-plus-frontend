@@ -44,7 +44,8 @@ function normalizeReplayList(raw: unknown): Replay[] {
           : '',
       share_links: Array.isArray(value.share_links)
         ? value.share_links.flatMap((raw): NonNullable<Replay['share_links']> => {
-            if (!raw || typeof raw !== 'object') return []
+            if (!raw || typeof raw !== 'object')
+              return []
             const link = raw as Record<string, unknown>
             return typeof link.id === 'string' ? [{ id: link.id, expires_at: typeof link.expires_at === 'string' ? link.expires_at : null, revoked_at: typeof link.revoked_at === 'string' ? link.revoked_at : null }] : []
           })
@@ -71,10 +72,13 @@ export function useReplayList(playerId: MaybeRefOrGetter<number | undefined>) {
   return { replays: computed(() => normalizeReplayList(data.value)), error, pending, refresh }
 }
 
-
 export function useMyReplayList() {
   const { data, error, pending, refresh } = useFetch<unknown>('/api/v1/me/replays', {
-    baseURL: getApiBase(), credentials: 'include', retry: 0, server: false, lazy: true,
+    baseURL: getApiBase(),
+    credentials: 'include',
+    retry: 0,
+    server: false,
+    lazy: true,
   })
   return { replays: computed(() => normalizeReplayList(data.value)), error, pending, refresh }
 }

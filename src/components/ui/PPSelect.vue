@@ -20,8 +20,12 @@ function onChange(event: Event) { emit('update:modelValue', (event.target as HTM
     :class="compact ? 'h-9 px-2 text-sm' : 'h-10 px-3 text-sm'"
     @change="onChange"
   >
-    <option v-if="placeholder" value="">{{ placeholder }}</option>
-    <option v-for="option in options" :key="option.value" :value="option.value">{{ option.label }}</option>
+    <option v-if="placeholder" value="">
+      {{ placeholder }}
+    </option>
+    <option v-for="option in options" :key="option.value" :value="option.value">
+      {{ option.label }}
+    </option>
     <slot />
   </select>
 </template>

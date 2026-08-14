@@ -33,12 +33,18 @@ async function submit(): Promise<void> {
     <div class="flex items-center gap-3 border-b border-white/10 pb-4">
       <UserAvatar :name="friend.username" :avatar="friend.avatar" size="sm" />
       <div class="min-w-0">
-        <p class="truncate text-sm font-medium text-slate-100">{{ friend.username }}</p>
-        <p class="text-xs text-slate-500">#{{ friend.phira_id }}</p>
+        <p class="truncate text-sm font-medium text-slate-100">
+          {{ friend.username }}
+        </p>
+        <p class="text-xs text-slate-500">
+          #{{ friend.phira_id }}
+        </p>
       </div>
     </div>
 
-    <p class="text-sm leading-6 text-slate-400">{{ t('community.inviteRoomHelp') }}</p>
+    <p class="text-sm leading-6 text-slate-400">
+      {{ t('community.inviteRoomHelp') }}
+    </p>
 
     <label class="block">
       <span class="mb-1 block text-xs font-medium text-slate-300">{{ t('community.roomId') }}</span>

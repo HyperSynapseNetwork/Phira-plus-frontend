@@ -83,17 +83,25 @@ async function addFriend(): Promise<void> {
 <template>
   <div class="space-y-6">
     <header class="flex items-center justify-between gap-3">
-      <h1 class="text-xl font-semibold text-[var(--pp-text-primary)]">{{ t('nav.community') }}</h1>
+      <h1 class="text-xl font-semibold text-[var(--pp-text-primary)]">
+        {{ t('nav.community') }}
+      </h1>
       <NuxtLink to="/community" class="min-h-11 py-3 text-sm text-[var(--pp-text-secondary)] hover:text-accent">
         ← {{ t('user.backToCommunity') }}
       </NuxtLink>
     </header>
 
-    <p v-if="pending" class="py-12 text-sm text-[var(--pp-text-secondary)]">{{ t('common.loading') }}</p>
+    <p v-if="pending" class="py-12 text-sm text-[var(--pp-text-secondary)]">
+      {{ t('common.loading') }}
+    </p>
 
     <div v-else-if="userError || !user" class="border-y border-[var(--pp-border-subtle)] py-8" role="alert">
-      <p class="text-sm text-rose-300">{{ t('common.error') }}</p>
-      <PPButton weight="quiet" size="sm" class="mt-3" @click="refresh()">{{ t('common.retry') }}</PPButton>
+      <p class="text-sm text-rose-300">
+        {{ t('common.error') }}
+      </p>
+      <PPButton weight="quiet" size="sm" class="mt-3" @click="refresh()">
+        {{ t('common.retry') }}
+      </PPButton>
     </div>
 
     <template v-else>
@@ -111,7 +119,9 @@ async function addFriend(): Promise<void> {
             <UserAvatar :name="user.username" :avatar="user.avatar" size="lg" />
             <div class="min-w-0 flex-1 pb-1">
               <div class="flex flex-wrap items-center gap-2">
-                <h2 class="truncate text-2xl font-semibold text-white">{{ user.username }}</h2>
+                <h2 class="truncate text-2xl font-semibold text-white">
+                  {{ user.username }}
+                </h2>
                 <span v-if="user.online_status" class="inline-flex items-center gap-1.5 text-xs text-white/70">
                   <span class="h-2 w-2 rounded-full" :class="onlineTone" aria-hidden="true" />
                   {{ t(onlineKey) }}
@@ -120,8 +130,12 @@ async function addFriend(): Promise<void> {
                   {{ t('user.privateProfile') }}
                 </span>
               </div>
-              <p class="mt-1 text-sm text-white/60">#{{ user.phira_id }}</p>
-              <p v-if="user.bio && !isPrivate" class="mt-3 max-w-2xl text-sm leading-6 text-white/80">{{ user.bio }}</p>
+              <p class="mt-1 text-sm text-white/60">
+                #{{ user.phira_id }}
+              </p>
+              <p v-if="user.bio && !isPrivate" class="mt-3 max-w-2xl text-sm leading-6 text-white/80">
+                {{ user.bio }}
+              </p>
             </div>
 
             <div class="flex flex-wrap gap-2 pb-1">
@@ -138,8 +152,12 @@ async function addFriend(): Promise<void> {
       <section v-if="!isPrivate && summaryItems.length" class="border-y border-[var(--pp-border-subtle)] py-4">
         <dl class="flex flex-wrap gap-x-8 gap-y-3">
           <div v-for="item in summaryItems" :key="item.label" class="min-w-24">
-            <dt class="text-xs text-[var(--pp-text-tertiary)]">{{ item.label }}</dt>
-            <dd class="mt-1 text-lg font-semibold text-[var(--pp-text-primary)]">{{ item.value }}</dd>
+            <dt class="text-xs text-[var(--pp-text-tertiary)]">
+              {{ item.label }}
+            </dt>
+            <dd class="mt-1 text-lg font-semibold text-[var(--pp-text-primary)]">
+              {{ item.value }}
+            </dd>
           </div>
         </dl>
       </section>
@@ -150,12 +168,20 @@ async function addFriend(): Promise<void> {
 
       <section v-else>
         <div class="mb-3 flex items-center justify-between gap-3">
-          <h2 class="text-sm font-semibold uppercase tracking-wide text-[var(--pp-text-secondary)]">{{ t('user.publicReplays') }}</h2>
+          <h2 class="text-sm font-semibold uppercase tracking-wide text-[var(--pp-text-secondary)]">
+            {{ t('user.publicReplays') }}
+          </h2>
         </div>
-        <p v-if="replaysPending" class="py-5 text-sm text-[var(--pp-text-secondary)]">{{ t('common.loading') }}</p>
+        <p v-if="replaysPending" class="py-5 text-sm text-[var(--pp-text-secondary)]">
+          {{ t('common.loading') }}
+        </p>
         <div v-else-if="replaysError" class="border-y border-[var(--pp-border-subtle)] py-5">
-          <p class="text-sm text-rose-300">{{ t('common.error') }}</p>
-          <PPButton weight="quiet" size="sm" class="mt-3" @click="refreshReplays()">{{ t('common.retry') }}</PPButton>
+          <p class="text-sm text-rose-300">
+            {{ t('common.error') }}
+          </p>
+          <PPButton weight="quiet" size="sm" class="mt-3" @click="refreshReplays()">
+            {{ t('common.retry') }}
+          </PPButton>
         </div>
         <ReplayList v-else :replays="replays" />
       </section>

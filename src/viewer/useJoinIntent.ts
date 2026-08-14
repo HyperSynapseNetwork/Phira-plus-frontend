@@ -1,5 +1,5 @@
-import { localizeApiError } from '~/utils/api/errors'
 import { apiFetch } from '~/utils/api/client'
+import { localizeApiError } from '~/utils/api/errors'
 
 /**
  * JoinIntent UX (design §14.6, contract §19 / P-86, Gate 4).

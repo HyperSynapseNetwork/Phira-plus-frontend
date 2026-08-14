@@ -94,7 +94,7 @@ function hostName(): string {
 
     <!-- JoinIntent: confirm-join → PPB intent → prompt → force_move (design §14.6, P-86).
          Join-intents are keyed by ROOM ID (P-82/P-86), not the shareable uuid. -->
-    <PPSurface as="section" v-if="room" class="p-6">
+    <PPSurface v-if="room" as="section" class="p-6">
       <JoinIntentPanel :room-id="room.room_id" />
     </PPSurface>
   </div>

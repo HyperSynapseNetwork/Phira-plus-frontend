@@ -48,7 +48,9 @@ const githubUrl = computed(() => `${authBase}/auth/phira/login?client_type=ppf&i
         <PPButton weight="quiet" size="lg" block as="a" :href="githubUrl" class="mt-3">
           {{ $t('login.githubCta') }}
         </PPButton>
-        <p class="mt-3 text-center text-xs text-slate-500">{{ $t('login.gatewayHint') }}</p>
+        <p class="mt-3 text-center text-xs text-slate-500">
+          {{ $t('login.gatewayHint') }}
+        </p>
       </div>
 
       <p class="mt-6 border-t border-white/10 pt-4 text-xs text-slate-400">

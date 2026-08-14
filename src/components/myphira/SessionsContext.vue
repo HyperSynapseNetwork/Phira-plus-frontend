@@ -41,12 +41,18 @@ async function revoke(session: MySessionItem): Promise<void> {
 
 <template>
   <div class="space-y-3">
-    <p v-if="pending" class="text-sm text-slate-400">{{ t('common.loading') }}</p>
+    <p v-if="pending" class="text-sm text-slate-400">
+      {{ t('common.loading') }}
+    </p>
     <div v-else-if="error" class="flex items-center justify-between gap-3 text-sm text-rose-300" role="alert">
       <span>{{ t('common.error') }}</span>
-      <button type="button" class="text-accent hover:underline" @click="() => refresh()">{{ t('common.retry') }}</button>
+      <button type="button" class="text-accent hover:underline" @click="() => refresh()">
+        {{ t('common.retry') }}
+      </button>
     </div>
-    <p v-else-if="!data.items.length" class="text-sm text-slate-400">{{ t('myphira.noSessions') }}</p>
+    <p v-else-if="!data.items.length" class="text-sm text-slate-400">
+      {{ t('myphira.noSessions') }}
+    </p>
     <ul v-else class="divide-y divide-white/10 border-y border-white/10">
       <li v-for="session in data.items" :key="session.id" class="flex flex-wrap items-center gap-3 py-3">
         <div class="min-w-0 flex-1">
@@ -54,8 +60,12 @@ async function revoke(session: MySessionItem): Promise<void> {
             <strong class="text-sm text-slate-100">{{ session.device_name || session.client_type }}</strong>
             <span v-if="session.current" class="rounded-full bg-accent/15 px-2 py-0.5 text-[11px] text-accent">{{ t('myphira.currentSession') }}</span>
           </div>
-          <p class="mt-1 text-xs text-slate-400">{{ session.client_type }} · {{ session.ip || t('common.unknown') }}</p>
-          <p class="mt-1 text-xs text-slate-500">{{ t('myphira.lastSeen') }}: {{ date(session.last_seen_at || session.created_at) }}</p>
+          <p class="mt-1 text-xs text-slate-400">
+            {{ session.client_type }} · {{ session.ip || t('common.unknown') }}
+          </p>
+          <p class="mt-1 text-xs text-slate-500">
+            {{ t('myphira.lastSeen') }}: {{ date(session.last_seen_at || session.created_at) }}
+          </p>
         </div>
         <PPButton v-if="!session.current" weight="quiet" size="sm" :disabled="busy === session.id" @click="revoke(session)">
           {{ t('myphira.revokeSession') }}

@@ -26,7 +26,13 @@ const stateOptions = [
 <template>
   <div class="space-y-6">
     <header class="flex flex-wrap items-end justify-between gap-4">
-      <div><h1 class="text-2xl font-bold text-[var(--pp-text-primary)]">{{ $t('nav.rooms') }}</h1><p v-if="!pending" class="mt-1 text-sm text-[var(--pp-text-secondary)]">{{ $t('rooms.totalRooms', { total }) }}</p></div>
+      <div>
+        <h1 class="text-2xl font-bold text-[var(--pp-text-primary)]">
+          {{ $t('nav.rooms') }}
+        </h1><p v-if="!pending" class="mt-1 text-sm text-[var(--pp-text-secondary)]">
+          {{ $t('rooms.totalRooms', { total }) }}
+        </p>
+      </div>
       <PPInput v-model="search" type="search" :placeholder="$t('rooms.searchPlaceholder')" :aria-label="$t('rooms.searchPlaceholder')" class="w-full sm:w-72" />
     </header>
 
@@ -36,11 +42,29 @@ const stateOptions = [
     </div>
 
     <section>
-      <p v-if="pending && rooms.length === 0" class="border-y border-[var(--pp-border-subtle)] py-10 text-center text-sm text-[var(--pp-text-secondary)]">{{ $t('common.loading') }}</p>
-      <div v-else-if="error && rooms.length === 0" class="flex flex-col items-center gap-3 border-y border-[var(--pp-border-subtle)] py-10 text-center"><p class="text-sm text-rose-300">{{ $t('common.error') }}</p><PPButton weight="quiet" size="sm" @click="() => refresh()">{{ $t('common.retry') }}</PPButton></div>
-      <p v-else-if="rooms.length === 0" class="border-y border-[var(--pp-border-subtle)] py-10 text-center text-sm text-[var(--pp-text-secondary)]">{{ $t('rooms.empty') }}</p>
-      <ul v-else class="divide-y divide-[var(--pp-border-subtle)] border-y border-[var(--pp-border-subtle)]"><li v-for="room in rooms" :key="room.room_uuid"><RoomListRow :room="room" @select="openRoom(room)" /></li></ul>
-      <div v-if="error && rooms.length > 0" class="mt-4 flex items-center gap-2 text-sm text-rose-300" role="alert"><span>{{ $t('common.error') }}</span><button type="button" class="text-accent hover:underline" @click="() => refresh()">{{ $t('common.retry') }}</button></div>
+      <p v-if="pending && rooms.length === 0" class="border-y border-[var(--pp-border-subtle)] py-10 text-center text-sm text-[var(--pp-text-secondary)]">
+        {{ $t('common.loading') }}
+      </p>
+      <div v-else-if="error && rooms.length === 0" class="flex flex-col items-center gap-3 border-y border-[var(--pp-border-subtle)] py-10 text-center">
+        <p class="text-sm text-rose-300">
+          {{ $t('common.error') }}
+        </p><PPButton weight="quiet" size="sm" @click="() => refresh()">
+          {{ $t('common.retry') }}
+        </PPButton>
+      </div>
+      <p v-else-if="rooms.length === 0" class="border-y border-[var(--pp-border-subtle)] py-10 text-center text-sm text-[var(--pp-text-secondary)]">
+        {{ $t('rooms.empty') }}
+      </p>
+      <ul v-else class="divide-y divide-[var(--pp-border-subtle)] border-y border-[var(--pp-border-subtle)]">
+        <li v-for="room in rooms" :key="room.room_uuid">
+          <RoomListRow :room="room" @select="openRoom(room)" />
+        </li>
+      </ul>
+      <div v-if="error && rooms.length > 0" class="mt-4 flex items-center gap-2 text-sm text-rose-300" role="alert">
+        <span>{{ $t('common.error') }}</span><button type="button" class="text-accent hover:underline" @click="() => refresh()">
+          {{ $t('common.retry') }}
+        </button>
+      </div>
     </section>
   </div>
 </template>

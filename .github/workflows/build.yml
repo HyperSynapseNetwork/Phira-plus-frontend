@@ -126,7 +126,6 @@ jobs:
       - name: Product copy / accessibility i18n gate
         run: pnpm test:product-copy
 
-
       - name: Nuxt SSG build
         run: pnpm build
 

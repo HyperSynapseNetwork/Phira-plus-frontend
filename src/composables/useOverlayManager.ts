@@ -13,13 +13,15 @@ function ordered(): OverlayEntry[] {
 }
 
 export function focusableElements(root: HTMLElement | null): HTMLElement[] {
-  if (!root) return []
+  if (!root)
+    return []
   return [...root.querySelectorAll<HTMLElement>('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),summary,[tabindex]:not([tabindex="-1"])')]
     .filter(el => !el.hasAttribute('hidden') && el.getAttribute('aria-hidden') !== 'true')
 }
 
 export function trapTab(event: KeyboardEvent, root: HTMLElement | null): void {
-  if (event.key !== 'Tab' || !root) return
+  if (event.key !== 'Tab' || !root)
+    return
   const items = focusableElements(root)
   if (!items.length) { event.preventDefault(); root.focus(); return }
   const first = items[0]!
@@ -31,7 +33,8 @@ export function trapTab(event: KeyboardEvent, root: HTMLElement | null): void {
 
 export function useOverlayManager() {
   function push(id: string, layer: OverlayLayer): void {
-    if (!import.meta.client || entries.value.some(e => e.id === id)) return
+    if (!import.meta.client || entries.value.some(e => e.id === id))
+      return
     if (!entries.value.length) {
       originalBodyOverflow = document.body.style.overflow
       document.body.style.overflow = 'hidden'
@@ -39,12 +42,15 @@ export function useOverlayManager() {
     entries.value.push({ id, layer, sequence: ++sequence, restoreFocus: document.activeElement instanceof HTMLElement ? document.activeElement : null })
   }
   function pop(id: string): void {
-    if (!import.meta.client) return
+    if (!import.meta.client)
+      return
     const topBefore = ordered().at(-1)
     const entry = entries.value.find(e => e.id === id)
     entries.value = entries.value.filter(e => e.id !== id)
-    if (!entries.value.length) document.body.style.overflow = originalBodyOverflow
-    if (entry && topBefore?.id === id) entry.restoreFocus?.focus({ preventScroll: true })
+    if (!entries.value.length)
+      document.body.style.overflow = originalBodyOverflow
+    if (entry && topBefore?.id === id)
+      entry.restoreFocus?.focus({ preventScroll: true })
   }
   function isTopmost(id: string): boolean { return ordered().at(-1)?.id === id }
   function topId(): string | undefined { return ordered().at(-1)?.id }

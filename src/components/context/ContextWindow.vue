@@ -35,16 +35,15 @@ function setPanelRef(id: string, element: unknown): void {
     panels.delete(id)
 }
 
-
 async function focusTop(): Promise<void> {
   await nextTick()
   const top = entries.value.at(-1)
   if (!top || !overlay.isTopmost(overlayId))
     return
   const panel = panels.get(top.id)
-  if (!panel)
+  if (!panel) {
     return
-  ;(focusableElements(panel)[0] ?? panel).focus({ preventScroll: true })
+  }(focusableElements(panel)[0] ?? panel).focus({ preventScroll: true })
 }
 
 function closeTop(): void {

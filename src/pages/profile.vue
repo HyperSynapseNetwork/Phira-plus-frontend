@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import AppearanceContext from '~/components/myphira/AppearanceContext.vue'
-import SessionsContext from '~/components/myphira/SessionsContext.vue'
 import PrivacyContext from '~/components/myphira/PrivacyContext.vue'
 import PushContext from '~/components/myphira/PushContext.vue'
 import RedemptionContext from '~/components/myphira/RedemptionContext.vue'
+import SessionsContext from '~/components/myphira/SessionsContext.vue'
 import UserAvatar from '~/components/myphira/UserAvatar.vue'
 import PPWorkspaceTabs from '~/components/patterns/PPWorkspaceTabs.vue'
 import MyPhiraFriendsWorkspace from '~/features/account/components/MyPhiraFriendsWorkspace.vue'
@@ -85,21 +85,35 @@ const overviewSummary = computed(() => [
 <template>
   <div class="space-y-5">
     <header class="flex items-center justify-between gap-3">
-      <h1 class="text-2xl font-bold text-[var(--pp-text-primary)]">{{ t('nav.profile') }}</h1>
+      <h1 class="text-2xl font-bold text-[var(--pp-text-primary)]">
+        {{ t('nav.profile') }}
+      </h1>
     </header>
 
     <div v-if="!pending && sessionError" class="border-y border-[var(--pp-border-subtle)] py-6" role="alert">
-      <p class="text-sm text-rose-300">{{ t('common.error') }}</p>
-      <p class="mt-1 text-xs text-[var(--pp-text-tertiary)]">{{ t('profile.sessionUnavailable') }}</p>
+      <p class="text-sm text-rose-300">
+        {{ t('common.error') }}
+      </p>
+      <p class="mt-1 text-xs text-[var(--pp-text-tertiary)]">
+        {{ t('profile.sessionUnavailable') }}
+      </p>
     </div>
 
     <section v-else-if="showGuest" class="border-y border-[var(--pp-border-subtle)] py-6">
-      <p class="text-sm text-[var(--pp-text-secondary)]">{{ t('profile.empty') }}</p>
-      <PPButton weight="primary" class="mt-4" as="NuxtLink" to="/login">{{ t('profile.loginCta') }}</PPButton>
-      <div class="mt-6 border-t border-[var(--pp-border-subtle)] pt-6"><PreferencesPanel /></div>
+      <p class="text-sm text-[var(--pp-text-secondary)]">
+        {{ t('profile.empty') }}
+      </p>
+      <PPButton weight="primary" class="mt-4" as="NuxtLink" to="/login">
+        {{ t('profile.loginCta') }}
+      </PPButton>
+      <div class="mt-6 border-t border-[var(--pp-border-subtle)] pt-6">
+        <PreferencesPanel />
+      </div>
     </section>
 
-    <p v-if="pending" class="py-8 text-sm text-[var(--pp-text-secondary)]">{{ t('common.loading') }}</p>
+    <p v-if="pending" class="py-8 text-sm text-[var(--pp-text-secondary)]">
+      {{ t('common.loading') }}
+    </p>
 
     <template v-else-if="authenticated">
       <section class="relative isolate overflow-hidden rounded-[var(--pp-radius-window)] border border-[var(--pp-border-subtle)]">
@@ -108,9 +122,15 @@ const overviewSummary = computed(() => [
         <div class="flex min-h-56 flex-wrap items-end gap-5 p-6 sm:p-8">
           <UserAvatar :name="profile?.username" :avatar="profile?.avatar" size="lg" />
           <div class="min-w-0 flex-1 pb-1">
-            <h2 class="truncate text-2xl font-semibold text-white">{{ profile?.username }}</h2>
-            <p v-if="profile?.phira_id != null" class="mt-1 text-sm text-white/60">#{{ profile.phira_id }}</p>
-            <p v-if="profile?.bio" class="mt-3 max-w-2xl text-sm leading-6 text-white/80">{{ profile.bio }}</p>
+            <h2 class="truncate text-2xl font-semibold text-white">
+              {{ profile?.username }}
+            </h2>
+            <p v-if="profile?.phira_id != null" class="mt-1 text-sm text-white/60">
+              #{{ profile.phira_id }}
+            </p>
+            <p v-if="profile?.bio" class="mt-3 max-w-2xl text-sm leading-6 text-white/80">
+              {{ profile.bio }}
+            </p>
           </div>
         </div>
       </section>

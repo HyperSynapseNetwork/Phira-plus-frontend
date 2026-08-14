@@ -16,7 +16,6 @@ import { useSession } from '~/composables/useSession'
 const { t } = useI18n()
 useHead(() => ({ title: t('nav.notifications') }))
 
-const { t } = useI18n()
 const notice = useNotice()
 
 const { inbox, error, pending, refresh } = useNotifications()
@@ -160,8 +159,8 @@ async function onDeepLink(n: AppNotification): Promise<void> {
     <ul v-else class="space-y-3">
       <PPSurface
         v-for="n in items"
-        as="li"
         :key="n.id"
+        as="li"
         class="p-4"
         :class="isRead(n) ? 'opacity-70' : 'ring-1 ring-accent/20'"
         @click="onRead(n)"

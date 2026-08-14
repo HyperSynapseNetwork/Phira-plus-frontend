@@ -8,4 +8,4 @@ services:
         NUXT_PUBLIC_AUTH_BASE: https://api.example.invalid
         NUXT_PUBLIC_SITE_URL: https://ppf.example.invalid
     ports:
-      - "18080:80"
+      - '18080:80'

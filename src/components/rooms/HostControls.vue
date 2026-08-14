@@ -15,7 +15,6 @@ const props = defineProps<{ room: Room | null }>()
 
 const emit = defineEmits<{ acted: [] }>()
 
-const { t } = useI18n()
 const notice = useNotice()
 
 const isHost = computed(() => {
@@ -95,6 +94,5 @@ async function run(a: HostAction): Promise<void> {
     <p class="text-xs text-slate-500">
       {{ $t('room.hostServerCheck') }}
     </p>
-
   </div>
 </template>

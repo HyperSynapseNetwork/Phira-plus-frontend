@@ -1,3 +1,8 @@
+import type { PublicMeta } from '../../features/public/types'
+
+export * from '../../features/account/types'
+export * from '../../features/charts/types'
+export * from '../../features/common/errors'
 /**
  * Compatibility barrel for PPF product/domain types.
  *
@@ -6,17 +11,12 @@
  * import its own domain module directly rather than growing this barrel.
  */
 export * from '../../features/common/types'
-export * from '../../features/common/errors'
-export * from '../../features/public/types'
-export * from '../../features/account/types'
-export * from '../../features/rooms/types'
-export * from '../../features/charts/types'
-export * from '../../features/social/types'
-export * from '../../features/replay/types'
 export * from '../../features/notifications/types'
 export * from '../../features/preferences/types'
-
-import type { PublicMeta } from '../../features/public/types'
+export * from '../../features/public/types'
+export * from '../../features/replay/types'
+export * from '../../features/rooms/types'
+export * from '../../features/social/types'
 
 export function hasCapability(meta: PublicMeta, capability: string): boolean {
   return meta.capabilities.includes(capability)
