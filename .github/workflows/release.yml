@@ -147,7 +147,7 @@ jobs:
           test -f .output/public/sitemap_index.xml
           test -f .output/public/viewer/monitor_client.js
           test -f .output/public/viewer/monitor_client_bg.wasm
-          grep -q "Skip to content" .output/public/index.html
+          grep -q "#main-content" .output/public/index.html
           grep -q "Phira+" .output/public/index.html
 
       - name: Upload SSG static output
