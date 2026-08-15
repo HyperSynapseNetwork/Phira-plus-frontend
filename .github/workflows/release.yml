@@ -11,6 +11,12 @@ name: Release
 #   artifact, Tauri stays optional / build.yml-only.
 
 on:
+  workflow_dispatch:
+    inputs:
+      description:
+        description: 版本说明（可选）
+        type: string
+        default: ''
   push:
     tags:
       - 'v*'
