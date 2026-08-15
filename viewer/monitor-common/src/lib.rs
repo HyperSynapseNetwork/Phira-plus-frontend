@@ -2,6 +2,7 @@
 
 pub mod core;
 pub mod live;
+pub mod parse;
 
 // Re-exports for phira_mp_macros::BinaryData derive (generates `crate::X` references)
 pub use anyhow::{bail, Result};
